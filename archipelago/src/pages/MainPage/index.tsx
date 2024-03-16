@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 // import * as d3 from 'd3';
 import {GraphNode} from "../../types/graph-types";
-import {AudioConverter} from "../../utils/speech-kit.module";
+import {AudioSummarizer} from "../../utils/speech-kit.module";
 
 const MainPage = () => {
     // const d3Container = useRef(null);
@@ -79,7 +79,11 @@ const MainPage = () => {
     //     .x(d => d.y)   // Предполагаем, что 'y' используется для горизонтального положения
     //     .y(d => d.x);  // 'x' - для вертикального (если рисуем горизонтальное дерево)
 
-    const audioConverter = new AudioConverter('https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general', 'AQVNwCGJU5ig_17yfiOwJrhKojbesdqV2UEx1ho2')
+    const audioConverter = new AudioSummarizer(
+        'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general',
+        'AQVNwCGJU5ig_17yfiOwJrhKojbesdqV2UEx1ho2',
+        'http://185.241.194.125:8080/get-summarize'
+    )
     const summarizedText = audioConverter.getSummarized();
 
     const [recording, setRecording] = useState(false);
@@ -146,7 +150,7 @@ const MainPage = () => {
     React.useEffect(() => {
         if (chunk) {
             const blob = new Blob(chunk ? [chunk] : [], {type: 'audio/ogg'});
-            audioConverter.saveAudio(blob);
+            audioConverter.convertAudio(blob);
         }
     }, [chunk]);
 
