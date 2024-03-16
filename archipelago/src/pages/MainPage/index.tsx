@@ -1,83 +1,75 @@
 import React, {useState} from 'react';
-// import * as d3 from 'd3';
+import * as d3 from 'd3';
 import {GraphNode} from "../../types/graph-types";
 import {AudioConverter} from "../../utils/speech-kit.module";
+import {HierarchyPointLink, HierarchyPointNode} from "d3";
 
 const MainPage = () => {
-    // const d3Container = useRef(null);
+    const d3Container = React.useRef(null);
 
-    // const data: GraphNode = {
-    //     id: '1',
-    //     name: 'Root',
-    //     children: [
-    //         {
-    //             id: '2',
-    //             name: 'Branch 1',
-    //             children: [
-    //                 { id: '3', name: 'Leaf 1' },
-    //                 { id: '4', name: 'Leaf 2' }
-    //             ]
-    //         },
-    //         {
-    //             id: '5',
-    //             name: 'Branch 2',
-    //             children: [
-    //                 { id: '6', name: 'Leaf 3' }
-    //             ]
-    //         },
-    //     ]
-    // };
+    const data: GraphNode = {
+        name: '1. ХУйsadfsfafsffsa',
+        children: [
+            {
+                name: '2. Жопа' ,
+                children: [{
+                    name: '3. Говно',
+                }]
+            },
+        ]
+    };
 
-    // React.useEffect(() => {
-    //     if (data && d3Container.current) {
-    //         const width = 800;
-    //         const height = 600;
-    //
-    //         const svg = d3.select(d3Container.current)
-    //             .append('svg')
-    //             .attr('width', width)
-    //             .attr('height', height);
-    //
-    //         const treeLayout = d3.tree<GraphNode>()
-    //             .size([width - 160, height - 160]);
-    //
-    //         const root = d3.hierarchy(data, d => d.children);
-    //
-    //         treeLayout(root);
-    //
-    //         svg.selectAll('.link')
-    //             .data(root.links())
-    //             .enter()
-    //             .append('path')
-    //             .attr('class', 'link')
-    //         // .attr('d', d3.linkHorizontal()
-    //         //     .x((d) => d.x)
-    //         //     .y((d) => d.y)
-    //         // );
-    //
-    //         svg.selectAll('.node')
-    //             .data(root.descendants())
-    //             .enter()
-    //             .append('g')
-    //             .attr('class', 'node')
-    //             // .attr('transform', d => `translate(${d.x},${d.y})`);
-    //
-    //         svg.selectAll('.node')
-    //             .append('circle')
-    //             .attr('r', 5);
-    //
-    //         svg.selectAll('.node')
-    //             .append('text')
-    //             .attr('dx', 8)
-    //             .attr('dy', 3)
-    //         // .text(d => d.data.name);
-    //     }
-    // }, [data, d3Container.current]);  // Эффект будет перезапускаться только если данные или ссылка на DOM изменились
+    React.useEffect(() => {
+        if (data && d3Container.current) {
+            const margin = { top: 10, right: 10, bottom: 10, left: 100 };
+            const width = 400;
+            const height = 200;
 
-    // // Создаём функцию для генерации путей для связей
-    // const linkGenerator = linkHorizontal()
-    //     .x(d => d.y)   // Предполагаем, что 'y' используется для горизонтального положения
-    //     .y(d => d.x);  // 'x' - для вертикального (если рисуем горизонтальное дерево)
+            // Очищаем контейнер перед добавлением новых элементов
+            d3.select(d3Container.current).selectAll('*').remove();
+
+            const svg = d3.select(d3Container.current)
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Создаем иерархию данных и вычисляем расположение узлов
+            const root = d3.hierarchy(data);
+            const treeLayout = d3.tree<GraphNode>().size([height, width]);
+            const rootNode: HierarchyPointNode<GraphNode> = treeLayout(root);
+
+            const linkGenerator = d3.linkVertical<HierarchyPointLink<GraphNode>, HierarchyPointNode<GraphNode>>()
+                .x(node => node.x)
+                .y(node => node.y);
+
+
+            svg.selectAll('.link')
+                .data(rootNode.links())
+                .enter()
+                .append('path')
+                .attr('class', 'link')
+                .attr('d', linkGenerator);
+
+            // Создаем каждый узел в виде группы с кругом и текстом
+            const nodes = svg.selectAll('.node')
+                .data(rootNode.descendants())
+                .enter()
+                .append('g')
+                .attr('class', 'node')
+                .attr('transform', d => `translate(${d.x},${d.y / 2})`);
+
+            nodes.append('circle')
+                .attr('r', 10);
+
+            nodes.append('text')
+                .attr('dy', '.35em')
+                .attr('x', -13)
+                .style('text-anchor', 'end')
+                .text(d => d.data.name);
+        }
+    }, [data, d3Container.current]);  // Эффект будет перезапускаться только если данные или ссылка на DOM изменились
 
     const audioConverter = new AudioConverter('https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general', 'AQVNwCGJU5ig_17yfiOwJrhKojbesdqV2UEx1ho2')
     const summarizedText = audioConverter.getSummarized();
@@ -151,13 +143,17 @@ const MainPage = () => {
     }, [chunk]);
 
     return (
-        <div>
-            <button onClick={handleStartRecording} disabled={recording}>
-                Start Recording
-            </button>
-            <button onClick={handleStopRecording} disabled={!recording}>
-                Stop Recording
-            </button>
+        <div style={{display: 'flex', flexDirection: 'column', gap: '32px', padding: '10px'}}>
+            <div style={{display: 'flex', flexDirection: 'row', gap: '32px'}}>
+                <button className='glow-on-hover' type={"button"} onClick={handleStartRecording} disabled={recording}>
+                    Начать запись
+                </button>
+                <button className='glow-on-hover' type={"button"} onClick={handleStopRecording} disabled={!recording}>
+                    Остановить запись
+                </button>
+            </div>
+            <h3 style={{paddingLeft: '30px'}}>Что было в звонке</h3>
+            <svg style={{height: '1000px'}} ref={d3Container}></svg>
         </div>
     )
 };
