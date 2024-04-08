@@ -12,7 +12,7 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import {useParams} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     headingsPlugin,
     listsPlugin,
@@ -23,17 +23,25 @@ import {
     thematicBreakPlugin,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
-import {getZoomSum, produceZoomJoin} from '../../api/zoom';
-import {getChatSum} from '../../api/chat';
-import {Note as NoteType} from '../../types/notes';
-import {getNote, updateNote} from '../../api/notes';
+import { getZoomSum, produceZoomJoin } from '../../api/zoom';
+import { getChatSum } from '../../api/chat';
+import { Note as NoteType } from '../../types/notes';
+import { getNote, updateNote } from '../../api/notes';
 
-function Note() {
-    const {id = ''} = useParams();
+import { useDocument } from '@automerge/automerge-repo-react-hooks';
 
-    const ref = React.useRef<MDXEditorMethods>(null);
+interface NoteDoc {
+    text: string;
+}
 
-    const [note, setNote] = React.useState<NoteType | undefined>(undefined);
+function Note({ route }) {
+    // const { id = '' } = useParams();
+
+    const note = route.params.note;
+
+    const [doc, changeDoc] = useDocument<NoteDoc>(note.automerge_url);
+
+    // const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
@@ -105,7 +113,7 @@ function Note() {
             console.error('Error fetching data:', error);
             return undefined;
         }
-    }, [id]);
+    }, []);
 
     const handleFormSubmit = React.useCallback(async () => {
         console.log(userId, zoomUrl);
@@ -116,22 +124,23 @@ function Note() {
     }, [userId, zoomUrl]);
 
     const handleChangeMd = debounce((value: string) => {
-        updateNote({
+        changeDoc((doc: NoteDoc) => (doc.text = value));
+        /*updateNote({
             ...(note as NoteType),
             plain_text: value,
-        });
+        });*/
     }, 5000);
 
-    React.useEffect(() => {
-        getNote({id}).then((noteData) => {
+    /*React.useEffect(() => {
+        getNote({ id }).then((noteData) => {
             setNote(noteData.data);
-            ref.current?.setMarkdown(noteData.data.plain_text || '');
+            ref.current?.setMarkdown('');
         });
-    }, [id]);
+    }, [id]);*/
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
-            if (userId && zoomUrl && !!note) {
+            if (userId && zoomUrl) {
                 fetchZoomGetSum(userId).then((text) => {
                     setSum(text || '');
                 });
@@ -142,7 +151,7 @@ function Note() {
     }, [userId, zoomUrl]);
 
     return (
-        <Stack gap={2} sx={{p: 2}}>
+        <Stack gap={2} sx={{ p: 2 }}>
             <Box gap={2} display="flex">
                 <Button variant="outlined" color="secondary" onClick={fetchChatSum}>
                     Получить суммаризацию чата
@@ -162,7 +171,7 @@ function Note() {
                 >
                     <DialogTitle id="alert-dialog-title">
                         Токен заметки:
-                        {id}
+                        {note.id}
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
@@ -219,12 +228,12 @@ function Note() {
                 </Dialog>
             </Box>
 
-            <Paper elevation={0} dangerouslySetInnerHTML={{__html: sum || ''}} />
+            <Paper elevation={0} dangerouslySetInnerHTML={{ __html: sum || '' }} />
 
             <MDXEditor
                 ref={ref}
                 placeholder="Введите текст сюда"
-                markdown={note?.plain_text || ''}
+                markdown={doc.text}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[
                     headingsPlugin(),

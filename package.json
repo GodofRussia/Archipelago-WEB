@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@automerge/automerge": "^2.1.13",
+    "@automerge/automerge-repo-network-websocket": "^1.1.5",
+    "@automerge/automerge-repo-react-hooks": "^1.1.5",
+    "@automerge/automerge-repo-storage-indexeddb": "^1.1.5",
     "@babel/cli": "^7.24.1",
     "@babel/core": "^7.24.3",
     "@emotion/react": "^11.11.4",

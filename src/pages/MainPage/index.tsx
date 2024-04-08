@@ -1,10 +1,12 @@
 import React from 'react';
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import {useNavigate} from 'react-router-dom';
-import {createNote, listNotes} from '../../api/notes';
-import {Note} from '../../types/notes';
+import { useNavigate } from 'react-router-dom';
+import { createNote, listNotes } from '../../api/notes';
+import { Note } from '../../types/notes';
 import NoteCard from '../../components/NoteCard';
+
+import { useRepo } from '@automerge/automerge-repo-react-hooks';
 
 function MainPage() {
     // const d3Container = React.useRef(null);
@@ -13,6 +15,8 @@ function MainPage() {
     const [title, setTitle] = React.useState<string>('');
     const [isCreateNoteDialogOpen, setCreateNoteDialogIsOpen] = React.useState(false);
     const [notes, setNotes] = React.useState<Note[]>([]);
+
+    const repo = useRepo();
 
     // const audioConverter = new AudioSummarizer(
     //     'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general',
@@ -151,8 +155,10 @@ function MainPage() {
     // }, [chunk]);
 
     const handleCreateNote = React.useCallback(async () => {
-        const note = await createNote({title});
-        navigate(`/notes/${note.data.id}`);
+        const note = await createNote({ title }, repo);
+        navigate(`/notes/${note.data.id}`, {
+            note: note.data,
+        });
     }, [navigate, title]);
 
     React.useEffect(() => {
@@ -186,7 +192,7 @@ function MainPage() {
         //     {summarize}
         //     {/*<svg style={{height: '1000px'}} ref={d3Container}></svg>*/}
         // </div>
-        <Box sx={{p: 2}}>
+        <Box sx={{ p: 2 }}>
             <Box
                 display="flex"
                 sx={{
@@ -202,7 +208,7 @@ function MainPage() {
                     startIcon={<AddIcon />}
                     className="glow-on-hover"
                     onClick={() => setCreateNoteDialogIsOpen(true)}
-                    sx={{height: '160px'}}
+                    sx={{ height: '160px' }}
                 >
                     Создать заметку
                 </Button>
