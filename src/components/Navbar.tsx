@@ -1,4 +1,3 @@
-import React from 'react';
 import {alpha, AppBar, Box, styled, Toolbar, Typography} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
 import {Note} from '../types/notes';
