@@ -2,7 +2,7 @@ import axios from 'axios';
 import {Note} from '../types/notes';
 
 const api = axios.create({
-    baseURL: 'http://185.241.194.125:8888/api',
+    baseURL: `${import.meta.env.VITE_NOTES_URL}/api`,
 });
 
 export function getNote(requestData: {id: string}) {
