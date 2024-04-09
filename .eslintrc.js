@@ -19,10 +19,13 @@ module.exports = {
             version: 'detect', // Автоматически определяет версию React для использования правил eslint-plugin-react
         },
     },
+    plugins: ['react', '@typescript-eslint', 'react-hooks'],
     rules: {
         // Здесь можно добавить или переопределить правила eslint
         'react/react-in-jsx-scope': 'off', // Для новых версий React import React не нужен
         '@typescript-eslint/explicit-module-boundary-types': 'off', // Отключает предупреждение для функций без явного возвращаемого типа
+        '@typescript-eslint/no-unused-vars': 'warn',
+        'no-unused-vars': 'off',
         'react/prop-types': 'off', // Отключает правило проп-тайпс, так как в TypeScript используется статическая типизация.
     },
     overrides: [
