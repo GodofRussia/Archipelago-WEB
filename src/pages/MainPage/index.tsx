@@ -201,6 +201,7 @@ function MainPage() {
                 <Button
                     startIcon={<AddIcon />}
                     className="glow-on-hover"
+                    color={'secondary'}
                     onClick={() => setCreateNoteDialogIsOpen(true)}
                     sx={{height: '160px'}}
                 >
