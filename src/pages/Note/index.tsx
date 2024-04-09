@@ -19,6 +19,8 @@ import {
     diffSourcePlugin,
     DiffSourceToggleWrapper,
     headingsPlugin,
+    imagePlugin,
+    InsertImage,
     listsPlugin,
     ListsToggle,
     markdownShortcutPlugin,
@@ -246,6 +248,11 @@ function Note() {
                 markdown={doc?.text || ''}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[
+                    imagePlugin({
+                        imageUploadHandler: (image) => {
+                            return Promise.resolve(image.name);
+                        },
+                    }),
                     headingsPlugin(),
                     listsPlugin(),
                     quotePlugin(),
@@ -260,6 +267,7 @@ function Note() {
                                 <BoldItalicUnderlineToggles />
                                 <BlockTypeSelect />
                                 <ListsToggle />
+                                <InsertImage />
                             </DiffSourceToggleWrapper>
                         ),
                     }),
