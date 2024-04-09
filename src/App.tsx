@@ -11,7 +11,7 @@ import {ColorMode} from './types/color-mode';
 import Navbar from './components/Navbar';
 
 function App() {
-    const [colorMode] = React.useState<ColorMode>(ColorMode.LIGHT);
+    const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
 
     const theme = React.useMemo(
         () =>
@@ -25,20 +25,10 @@ function App() {
                                 },
                             },
                         },
-                        MuiCssBaseline: {
-                            styleOverrides: {
-                                body: {
-                                    backgroundColor: '#9ACEEB',
-                                },
-                            },
-                        },
                     },
                     palette: {
-                        background: {
-                            default: '#344756',
-                        },
                         mode: colorMode,
-                        primary: {...blue, contrastText: '#ffffff'},
+                        primary: {main: '#270025', dark: '#040221', contrastText: '#ffffff'},
                         secondary: {...blue, contrastText: '#ffffff'},
                         error: {
                             main: '#f44336',

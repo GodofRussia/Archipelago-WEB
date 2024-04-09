@@ -14,13 +14,21 @@ import {
 } from '@mui/material';
 import {useParams} from 'react-router-dom';
 import {
+    BlockTypeSelect,
+    BoldItalicUnderlineToggles,
+    diffSourcePlugin,
+    DiffSourceToggleWrapper,
     headingsPlugin,
     listsPlugin,
+    ListsToggle,
     markdownShortcutPlugin,
     MDXEditor,
     MDXEditorMethods,
     quotePlugin,
+    tablePlugin,
     thematicBreakPlugin,
+    toolbarPlugin,
+    UndoRedo,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
@@ -105,7 +113,7 @@ function Note() {
             console.error('Error fetching data:', error);
             return undefined;
         }
-    }, [id]);
+    }, []);
 
     const handleFormSubmit = React.useCallback(async () => {
         console.log(userId, zoomUrl);
@@ -113,7 +121,7 @@ function Note() {
             await fetchZoomJoin(zoomUrl, userId);
             setFormModalIsOpen(false);
         }
-    }, [userId, zoomUrl]);
+    }, [fetchZoomJoin, userId, zoomUrl]);
 
     const handleChangeMd = debounce((value: string) => {
         updateNote({
@@ -139,7 +147,7 @@ function Note() {
         }, 20000);
 
         return () => clearInterval(intervalId);
-    }, [userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, userId, zoomUrl]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>
@@ -171,7 +179,9 @@ function Note() {
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setInfoModalIsOpen(false)}>Закрыть</Button>
+                        <Button color={'secondary'} onClick={() => setInfoModalIsOpen(false)}>
+                            Закрыть
+                        </Button>
                     </DialogActions>
                 </Dialog>
 
@@ -213,8 +223,12 @@ function Note() {
                         </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setFormModalIsOpen(false)}>Закрыть</Button>
-                        <Button onClick={handleFormSubmit}>Подтвердить</Button>
+                        <Button color={'secondary'} onClick={() => setFormModalIsOpen(false)}>
+                            Закрыть
+                        </Button>
+                        <Button color={'secondary'} onClick={handleFormSubmit}>
+                            Подтвердить
+                        </Button>
                     </DialogActions>
                 </Dialog>
             </Box>
@@ -223,6 +237,7 @@ function Note() {
 
             <MDXEditor
                 ref={ref}
+                className="dark-theme dark-editor"
                 placeholder="Введите текст сюда"
                 markdown={note?.plain_text || ''}
                 onChange={(md) => handleChangeMd(md)}
@@ -230,8 +245,20 @@ function Note() {
                     headingsPlugin(),
                     listsPlugin(),
                     quotePlugin(),
+                    tablePlugin(),
                     thematicBreakPlugin(),
                     markdownShortcutPlugin(),
+                    diffSourcePlugin({diffMarkdown: note?.plain_text, viewMode: 'rich-text'}),
+                    toolbarPlugin({
+                        toolbarContents: () => (
+                            <DiffSourceToggleWrapper>
+                                <UndoRedo />
+                                <BoldItalicUnderlineToggles />
+                                <BlockTypeSelect />
+                                <ListsToggle />
+                            </DiffSourceToggleWrapper>
+                        ),
+                    }),
                 ]}
             />
         </Stack>
