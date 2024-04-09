@@ -33,8 +33,10 @@ import {
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
-import {Note as NoteType} from '../../types/notes';
+import {Note as NoteType, NoteDoc} from '../../types/notes';
 import {getNote, updateNote} from '../../api/notes';
+import {useDocument} from '@automerge/automerge-repo-react-hooks';
+import {AnyDocumentId} from '@automerge/automerge-repo';
 
 function Note() {
     const {id = ''} = useParams();
@@ -42,6 +44,7 @@ function Note() {
     const ref = React.useRef<MDXEditorMethods>(null);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
+    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automerge_url as AnyDocumentId);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
@@ -128,6 +131,7 @@ function Note() {
             ...(note as NoteType),
             plain_text: value,
         });
+        changeDoc((doc: NoteDoc) => (doc.text = value));
     }, 5000);
 
     React.useEffect(() => {
@@ -239,7 +243,7 @@ function Note() {
                 ref={ref}
                 className="dark-theme dark-editor"
                 placeholder="Введите текст сюда"
-                markdown={note?.plain_text || ''}
+                markdown={doc?.text || ''}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[
                     headingsPlugin(),

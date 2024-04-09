@@ -5,10 +5,12 @@ import {useNavigate} from 'react-router-dom';
 import {createNote, listNotes} from '../../api/notes';
 import {Note} from '../../types/notes';
 import NoteCard from '../../components/NoteCard';
+import {useRepo} from '@automerge/automerge-repo-react-hooks';
 
 function MainPage() {
     // const d3Container = React.useRef(null);
     const navigate = useNavigate();
+    const repo = useRepo();
 
     const [title, setTitle] = React.useState<string>('');
     const [isCreateNoteDialogOpen, setCreateNoteDialogIsOpen] = React.useState(false);
@@ -151,7 +153,7 @@ function MainPage() {
     // }, [chunk]);
 
     const handleCreateNote = React.useCallback(async () => {
-        const note = await createNote({title});
+        const note = await createNote({title}, repo);
         navigate(`/notes/${note.data.id}`);
     }, [navigate, title]);
 
