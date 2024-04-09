@@ -38,7 +38,7 @@ export const produceZoomLeave = (user_id: string) => {
 // }
 
 export const getZoomSum = (user_id: string) => {
-    return zoomBase.post('/get_zoom_sum', {
+    return zoomBase.post('/get_sum', {
         user_id,
         token: zoomToken,
     });
