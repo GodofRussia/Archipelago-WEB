@@ -28,7 +28,7 @@ function App() {
                     },
                     palette: {
                         mode: colorMode,
-                        primary: {main: '#270025', dark: '#040221', contrastText: '#ffffff'},
+                        primary: {main: '#0288d1', dark: '#040221', contrastText: '#ffffff'},
                         secondary: {...blue, contrastText: '#ffffff'},
                         error: {
                             main: '#f44336',
