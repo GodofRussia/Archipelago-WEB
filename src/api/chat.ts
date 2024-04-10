@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const chatBase = axios.create({
-    baseURL: import.meta.env.VITE_PUBLIC_URL,
+    baseURL: import.meta.env.VITE_CHAT_URL,
     headers: {
         'Content-Type': 'application/json',
     },

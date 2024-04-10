@@ -7,3 +7,5 @@ export interface Note {
 export interface NoteDoc {
     text: string;
 }
+
+export const Role = ['обычный', 'пират', 'гопник'];
