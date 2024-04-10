@@ -89,9 +89,9 @@ function Note() {
     //     }
     // }, []);
 
-    const fetchZoomGetSum = React.useCallback(async (user_id: string): Promise<string | undefined> => {
+    const fetchZoomGetSum = React.useCallback(async (user_id: string, role: string): Promise<string | undefined> => {
         try {
-            const response = await getZoomSum(user_id);
+            const response = await getZoomSum(user_id, role);
             console.log(response);
 
             if (response.data.has_sum) {
@@ -107,7 +107,7 @@ function Note() {
 
     const fetchChatSum = React.useCallback(async () => {
         try {
-            const response = await getChatSum(115);
+            const response = await getChatSum(id);
             console.log(response);
 
             if (response.data.summ_text) {
@@ -147,7 +147,7 @@ function Note() {
     React.useEffect(() => {
         const intervalId = setInterval(() => {
             if (userId && zoomUrl && !!note) {
-                fetchZoomGetSum(userId).then((text) => {
+                fetchZoomGetSum(userId, role || 'обычный').then((text) => {
                     if (text) {
                         setSum(text);
                     }
@@ -169,7 +169,7 @@ function Note() {
     React.useEffect(() => {
         getZoomSum(userId).then(() => {
             const intervalId = setInterval(() => {
-                fetchZoomGetSum(userId).then((text) => {
+                fetchZoomGetSum(userId, role || 'обычный').then((text) => {
                     if (text) {
                         setSum(text);
                     }
@@ -215,7 +215,7 @@ function Note() {
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
                             Добавьте бота @ArchipelagoSummarizer_bot в ваш tg.
-                            <br /> Затем напишите `/config 115`
+                            <br /> Затем напишите `/config {id}`
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
@@ -265,7 +265,9 @@ function Note() {
                     className="dark-theme dark-editor"
                     placeholder="Здесь будет текст с суммаризацией"
                     markdown={sum || ''}
-                    onChange={(md) => handleChangeMd(md)}
+                    onChange={(val) => {
+                        setSum(val);
+                    }}
                     plugins={[
                         imagePlugin({
                             imageUploadHandler: (image) => {
