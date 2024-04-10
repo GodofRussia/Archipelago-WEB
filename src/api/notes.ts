@@ -1,11 +1,13 @@
 import axios from 'axios';
-import {Note} from '../types/notes';
+import {Note, NoteDoc} from '../types/notes';
 import {Repo} from '@automerge/automerge-repo';
 import {from} from '@automerge/automerge/next';
 
 function createAutomergeUrl(repo: Repo) {
     const nextDoc = from({text: ''}); // TODO
-    return repo.create(nextDoc).url;
+    const handle = repo.create<NoteDoc>(nextDoc);
+
+    return handle.url;
 }
 
 const api = axios.create({
