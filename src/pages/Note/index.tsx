@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Autocomplete,
     Box,
     Button,
     debounce,
@@ -8,7 +9,6 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    Paper,
     Stack,
     TextField,
 } from '@mui/material';
@@ -35,29 +35,24 @@ import {
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
-import {Note as NoteType, NoteDoc} from '../../types/notes';
+import {Note as NoteType, NoteDoc, Role} from '../../types/notes';
 import {getNote} from '../../api/notes';
-import {useDocument, useRepo} from '@automerge/automerge-repo-react-hooks';
+import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import {AnyDocumentId} from '@automerge/automerge-repo';
+import {getRandomNumber} from '../../utils/generate-numbers';
 
 function Note() {
     const {id = ''} = useParams();
 
-    const repo = useRepo();
-
     const ref = React.useRef<MDXEditorMethods>(null);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
-    // let handle;
-    // if (note?.automerge_url !== undefined) {
-    //     handle = repo.find(note.automerge_url as AnyDocumentId);
-    // }
+    const [role, setRole] = React.useState<string | null>('обычный');
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automerge_url as AnyDocumentId);
-    console.log('doc', doc);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
-    const [userId, setUserId] = React.useState<string>('');
+    const [userId] = React.useState<string>(String(getRandomNumber(1, 100)));
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
 
     const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
@@ -81,7 +76,7 @@ function Note() {
     //         console.error('Error fetching data:', error);
     //     }
     // }, []);
-    //
+
     // const fetchZoomLeave = React.useCallback(async (userId: string): Promise<boolean> => {
     //     try {
     //         const response = await produceZoomLeave(userId);
@@ -135,8 +130,6 @@ function Note() {
         }
     }, [fetchZoomJoin, userId, zoomUrl]);
 
-    console.log(note?.automerge_url);
-
     const handleChangeMd = debounce((value: string) => {
         changeDoc((doc: NoteDoc) => {
             console.log(doc.text);
@@ -149,13 +142,15 @@ function Note() {
             setNote(noteData.data);
             // ref.current?.setMarkdown(noteData.data.plain_text || '');
         });
-    }, [id]);
+    }, [id, setNote]);
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
             if (userId && zoomUrl && !!note) {
                 fetchZoomGetSum(userId).then((text) => {
-                    setSum(text || '');
+                    if (text) {
+                        setSum(text);
+                    }
                 });
             }
         }, 20000);
@@ -165,11 +160,29 @@ function Note() {
 
     React.useEffect(() => {
         ref.current?.setMarkdown(doc?.text || '');
-    }, [doc]);
+    }, [doc, note?.title]);
+
+    React.useEffect(() => {
+        ref.current?.setMarkdown(`${note?.title || ''}<br></br>${doc?.text || ''}`);
+    }, [note?.title]);
+
+    React.useEffect(() => {
+        getZoomSum(userId).then(() => {
+            const intervalId = setInterval(() => {
+                fetchZoomGetSum(userId).then((text) => {
+                    if (text) {
+                        setSum(text);
+                    }
+                });
+            }, 20000);
+
+            return () => clearInterval(intervalId);
+        });
+    }, [fetchZoomGetSum, note, userId, zoomUrl]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>
-            <Box gap={2} display="flex">
+            <Box gap={2} display="flex" alignItems={'center'}>
                 <Button variant="outlined" color="secondary" onClick={fetchChatSum}>
                     Получить суммаризацию чата
                 </Button>
@@ -179,6 +192,15 @@ function Note() {
                 <Button variant="outlined" color="secondary" onClick={() => setFormModalIsOpen(true)}>
                     Привязать звонок к заметке
                 </Button>
+                <Autocomplete
+                    defaultValue={'обычный'}
+                    options={Role}
+                    value={role}
+                    onChange={(_, newValue) => {
+                        setRole(newValue);
+                    }}
+                    renderInput={(params) => <TextField {...params} label="Роль" size="small" />}
+                />
 
                 <Dialog
                     open={infoModalIsOpen}
@@ -225,19 +247,6 @@ function Note() {
                                     setZoomUrl(e.target.value);
                                 }}
                             />
-                            <TextField
-                                type="text"
-                                margin="dense"
-                                id="zoom-url"
-                                label="User id"
-                                size="small"
-                                variant="outlined"
-                                fullWidth
-                                value={userId}
-                                onChange={(e) => {
-                                    setUserId(e.target.value);
-                                }}
-                            />
                         </Stack>
                     </DialogContent>
                     <DialogActions>
@@ -251,7 +260,27 @@ function Note() {
                 </Dialog>
             </Box>
 
-            <Paper elevation={0} dangerouslySetInnerHTML={{__html: sum || ''}} />
+            {sum && (
+                <MDXEditor
+                    className="dark-theme dark-editor"
+                    placeholder="Здесь будет текст с суммаризацией"
+                    markdown={sum || ''}
+                    onChange={(md) => handleChangeMd(md)}
+                    plugins={[
+                        imagePlugin({
+                            imageUploadHandler: (image) => {
+                                return Promise.resolve(image.name);
+                            },
+                        }),
+                        headingsPlugin(),
+                        listsPlugin(),
+                        quotePlugin(),
+                        tablePlugin(),
+                        thematicBreakPlugin(),
+                        markdownShortcutPlugin(),
+                    ]}
+                />
+            )}
 
             <MDXEditor
                 ref={ref}

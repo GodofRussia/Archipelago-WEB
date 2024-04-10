@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const zoomBase = axios.create({
-    baseURL: import.meta.env.VITE_PUBLIC_URL,
+    baseURL: import.meta.env.VITE_ZOOM_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -37,9 +37,10 @@ export const produceZoomLeave = (user_id: string) => {
 //     summ_text?: string;
 // }
 
-export const getZoomSum = (user_id: string) => {
+export const getZoomSum = (user_id: string, role: string | undefined = undefined) => {
     return zoomBase.post('/get_sum', {
         user_id,
+        role,
         token: zoomToken,
     });
 };
