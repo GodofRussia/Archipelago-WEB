@@ -36,7 +36,7 @@ import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
 import {Note as NoteType, NoteDoc} from '../../types/notes';
-import {getNote, updateNote} from '../../api/notes';
+import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import {AnyDocumentId} from '@automerge/automerge-repo';
 
@@ -129,17 +129,13 @@ function Note() {
     }, [fetchZoomJoin, userId, zoomUrl]);
 
     const handleChangeMd = debounce((value: string) => {
-        updateNote({
-            ...(note as NoteType),
-            plain_text: value,
-        });
         changeDoc((doc: NoteDoc) => (doc.text = value));
     }, 5000);
 
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
             setNote(noteData.data);
-            ref.current?.setMarkdown(noteData.data.plain_text || '');
+            // ref.current?.setMarkdown(noteData.data.plain_text || '');
         });
     }, [id]);
 
@@ -259,7 +255,7 @@ function Note() {
                     tablePlugin(),
                     thematicBreakPlugin(),
                     markdownShortcutPlugin(),
-                    diffSourcePlugin({diffMarkdown: note?.plain_text, viewMode: 'rich-text'}),
+                    diffSourcePlugin({viewMode: 'rich-text'}),
                     toolbarPlugin({
                         toolbarContents: () => (
                             <DiffSourceToggleWrapper>
