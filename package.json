@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@automerge/automerge": "^2.2.0-rc1",
+    "@automerge/automerge-repo-network-broadcastchannel": "^1.1.5",
     "@automerge/automerge-repo-network-websocket": "^1.1.5",
     "@automerge/automerge-repo-react-hooks": "^1.1.5",
     "@automerge/automerge-repo-storage-indexeddb": "^1.1.5",
