@@ -6,12 +6,13 @@ import reportWebVitals from './reportWebVitals';
 import {Repo} from '@automerge/automerge-repo';
 import {BrowserWebSocketClientAdapter} from '@automerge/automerge-repo-network-websocket';
 import {IndexedDBStorageAdapter} from '@automerge/automerge-repo-storage-indexeddb';
+import {BroadcastChannelNetworkAdapter} from '@automerge/automerge-repo-network-broadcastchannel';
 import {RepoContext} from '@automerge/automerge-repo-react-hooks';
 
-const ws_url = 'wss://sync.automerge.org';
+const ws_url = import.meta.env.VITE_AUTOMERGE_URL;
 
 const repo = new Repo({
-    network: [new BrowserWebSocketClientAdapter(ws_url)],
+    network: [new BroadcastChannelNetworkAdapter(), new BrowserWebSocketClientAdapter(ws_url)],
     storage: new IndexedDBStorageAdapter(),
 });
 
