@@ -2,6 +2,7 @@ import React from 'react';
 import {
     Box,
     Button,
+    debounce,
     Dialog,
     DialogActions,
     DialogContent,
@@ -136,12 +137,12 @@ function Note() {
 
     console.log(note?.automerge_url);
 
-    const handleChangeMd = (value: string) => {
+    const handleChangeMd = debounce((value: string) => {
         changeDoc((doc: NoteDoc) => {
             console.log(doc.text);
             return (doc.text = value);
         });
-    };
+    }, 1000);
 
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
