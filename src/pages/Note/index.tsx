@@ -2,7 +2,6 @@ import React from 'react';
 import {
     Box,
     Button,
-    debounce,
     Dialog,
     DialogActions,
     DialogContent,
@@ -37,16 +36,23 @@ import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
 import {Note as NoteType, NoteDoc} from '../../types/notes';
 import {getNote} from '../../api/notes';
-import {useDocument} from '@automerge/automerge-repo-react-hooks';
+import {useDocument, useRepo} from '@automerge/automerge-repo-react-hooks';
 import {AnyDocumentId} from '@automerge/automerge-repo';
 
 function Note() {
     const {id = ''} = useParams();
 
+    const repo = useRepo();
+
     const ref = React.useRef<MDXEditorMethods>(null);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
+    // let handle;
+    // if (note?.automerge_url !== undefined) {
+    //     handle = repo.find(note.automerge_url as AnyDocumentId);
+    // }
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automerge_url as AnyDocumentId);
+    console.log('doc', doc);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
@@ -128,9 +134,14 @@ function Note() {
         }
     }, [fetchZoomJoin, userId, zoomUrl]);
 
-    const handleChangeMd = debounce((value: string) => {
-        changeDoc((doc: NoteDoc) => (doc.text = value));
-    }, 5000);
+    console.log(note?.automerge_url);
+
+    const handleChangeMd = (value: string) => {
+        changeDoc((doc: NoteDoc) => {
+            console.log(doc.text);
+            return (doc.text = value);
+        });
+    };
 
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
@@ -150,6 +161,10 @@ function Note() {
 
         return () => clearInterval(intervalId);
     }, [fetchZoomGetSum, note, userId, zoomUrl]);
+
+    React.useEffect(() => {
+        ref.current?.setMarkdown(doc?.text || '');
+    }, [doc]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>
