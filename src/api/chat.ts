@@ -18,7 +18,7 @@ interface ResponseChatGetSum {
     summ_text: string;
 }
 
-export function getChatSum(id: number) {
+export function getChatSum(id: string) {
     return chatBase.post<ResponseChatGetSum>('/get-chat-summarize', {
         token_note: id,
         token: serviceToken,
