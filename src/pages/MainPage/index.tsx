@@ -205,7 +205,7 @@ function MainPage() {
                     className="glow-on-hover"
                     color={'secondary'}
                     onClick={() => setCreateNoteDialogIsOpen(true)}
-                    sx={{height: '160px'}}
+                    sx={{height: '80px'}}
                 >
                     Создать заметку
                 </Button>
