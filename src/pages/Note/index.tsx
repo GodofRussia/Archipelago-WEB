@@ -39,6 +39,7 @@ import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import {AnyDocumentId} from '@automerge/automerge-repo';
 import {getRandomNumber} from '../../utils/generate-numbers';
+import * as A from '@automerge/automerge/next';
 
 function Note() {
     const {id = ''} = useParams();
@@ -124,22 +125,24 @@ function Note() {
     }, [id]);
 
     const handleFormSubmit = React.useCallback(async () => {
-        console.log(userId, zoomUrl);
         if (!!userId && !!zoomUrl) {
             await fetchZoomJoin(zoomUrl, userId);
             setFormModalIsOpen(false);
         }
     }, [fetchZoomJoin, userId, zoomUrl]);
 
-    const handleChangeMd = (value: string) => {
-        changeDoc((doc: NoteDoc) => {
-            return (doc.text = value.split(''));
-        });
-    };
+    const handleChangeMd = React.useCallback(
+        (value: string) => {
+            changeDoc((doc: NoteDoc) => {
+                A.updateText(doc, ['text'], value);
+            });
+        },
+        [changeDoc],
+    );
+
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
             setNote(noteData.data);
-            // ref.current?.setMarkdown(noteData.data.plain_text || '');
         });
     }, [id, setNote]);
 
@@ -158,12 +161,12 @@ function Note() {
     }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     React.useEffect(() => {
-        ref.current?.setMarkdown(doc?.text ? doc?.text.join('') : '');
-    }, [doc, note?.title]);
+        ref.current?.setMarkdown(doc?.text || '');
+    }, [doc?.text]);
 
-    React.useEffect(() => {
-        ref.current?.setMarkdown(`${note?.title || ''}<br></br>${doc?.text ? doc?.text.join('') : ''}`);
-    }, [note?.title]);
+    // React.useEffect(() => {
+    //     ref.current?.setMarkdown(`${note?.title || ''}<br></br>${doc?.text ? doc?.text.join('') : ''}`);
+    // }, [note?.title]);
 
     React.useEffect(() => {
         getZoomSum(userId).then(() => {
@@ -287,7 +290,7 @@ function Note() {
                 ref={ref}
                 className="dark-theme dark-editor"
                 placeholder="Введите текст сюда"
-                markdown={doc?.text ? doc?.text.join('') : ''}
+                markdown={doc?.text || ''}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[
                     imagePlugin({
