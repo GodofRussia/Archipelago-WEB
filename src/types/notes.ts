@@ -1,3 +1,5 @@
+import * as A from '@automerge/automerge';
+
 export interface Note {
     id: string;
     title: string;
@@ -5,7 +7,7 @@ export interface Note {
 }
 
 export interface NoteDoc {
-    text: string[];
+    text: A.Text;
 }
 
 export const Role = ['обычный', 'пират', 'гопник'];
