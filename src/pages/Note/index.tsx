@@ -161,7 +161,7 @@ function Note() {
     }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     React.useEffect(() => {
-        ref.current?.setMarkdown(doc?.text || '');
+        ref.current?.setMarkdown(doc?.text?.length ? doc?.text.join('') : doc?.text || '');
     }, [doc?.text]);
 
     // React.useEffect(() => {
@@ -290,7 +290,7 @@ function Note() {
                 ref={ref}
                 className="dark-theme dark-editor"
                 placeholder="Введите текст сюда"
-                markdown={doc?.text || ''}
+                markdown={doc?.text?.length ? doc?.text.join('') : doc?.text || ''}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[
                     imagePlugin({
