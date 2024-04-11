@@ -3,7 +3,6 @@ import {
     Autocomplete,
     Box,
     Button,
-    debounce,
     Dialog,
     DialogActions,
     DialogContent,
@@ -132,12 +131,11 @@ function Note() {
         }
     }, [fetchZoomJoin, userId, zoomUrl]);
 
-    const handleChangeMd = debounce((value: string) => {
+    const handleChangeMd = (value: string) => {
         changeDoc((doc: NoteDoc) => {
             return (doc.text = value.split(''));
         });
-    }, 1000);
-
+    };
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
             setNote(noteData.data);
