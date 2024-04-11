@@ -55,6 +55,8 @@ function Note() {
     const [userId] = React.useState<string>(String(getRandomNumber(1, 100)));
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
 
+    console.log(doc);
+
     const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
         try {
             const response = await produceZoomJoin(url, userId);
@@ -120,7 +122,7 @@ function Note() {
             console.error('Error fetching data:', error);
             return undefined;
         }
-    }, []);
+    }, [id]);
 
     const handleFormSubmit = React.useCallback(async () => {
         console.log(userId, zoomUrl);
@@ -132,8 +134,7 @@ function Note() {
 
     const handleChangeMd = debounce((value: string) => {
         changeDoc((doc: NoteDoc) => {
-            console.log(doc.text);
-            return (doc.text = value);
+            return (doc.text = value.split(''));
         });
     }, 1000);
 
@@ -156,14 +157,14 @@ function Note() {
         }, 20000);
 
         return () => clearInterval(intervalId);
-    }, [fetchZoomGetSum, note, userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     React.useEffect(() => {
-        ref.current?.setMarkdown(doc?.text || '');
+        ref.current?.setMarkdown(doc?.text ? doc?.text.join('') : '');
     }, [doc, note?.title]);
 
     React.useEffect(() => {
-        ref.current?.setMarkdown(`${note?.title || ''}<br></br>${doc?.text || ''}`);
+        ref.current?.setMarkdown(`${note?.title || ''}<br></br>${doc?.text ? doc?.text.join('') : ''}`);
     }, [note?.title]);
 
     React.useEffect(() => {
@@ -178,7 +179,7 @@ function Note() {
 
             return () => clearInterval(intervalId);
         });
-    }, [fetchZoomGetSum, note, userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>
@@ -288,7 +289,7 @@ function Note() {
                 ref={ref}
                 className="dark-theme dark-editor"
                 placeholder="Введите текст сюда"
-                markdown={doc?.text || ''}
+                markdown={doc?.text ? doc?.text.join('') : ''}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[
                     imagePlugin({
