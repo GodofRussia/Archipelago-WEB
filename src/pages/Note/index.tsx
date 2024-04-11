@@ -161,6 +161,7 @@ function Note() {
     }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     React.useEffect(() => {
+        console.log(doc);
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
     }, [doc?.text]);
 
