@@ -5,7 +5,7 @@ export interface Note {
 }
 
 export interface NoteDoc {
-    text: string;
+    text: string[];
 }
 
 export const Role = ['обычный', 'пират', 'гопник'];
