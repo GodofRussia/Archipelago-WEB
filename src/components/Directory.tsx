@@ -10,8 +10,8 @@ interface FolderProps {
     folder: DirTreeDto;
     active: number;
     onDirCreateClick: () => void;
+    handleCreateNote: () => void;
     refetchDirTree: () => void;
-    handleCreateNote: (dirId: number) => void;
     setDirIdForCreate: (dirId: number) => void;
 }
 
@@ -86,7 +86,8 @@ function Folder({folder, active, onDirCreateClick, refetchDirTree, handleCreateN
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        handleCreateNote(folder.id);
+                        handleCreateNote();
+                        setDirIdForCreate(folder.id);
                         handleClose();
                     }}
                 >
