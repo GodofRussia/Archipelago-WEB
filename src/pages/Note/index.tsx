@@ -11,40 +11,185 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import {useParams} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     BlockTypeSelect,
     BoldItalicUnderlineToggles,
+    Cell,
+    createRootEditorSubscription$,
+    currentSelection$,
     diffSourcePlugin,
     DiffSourceToggleWrapper,
+    editorInFocus$,
     headingsPlugin,
     imagePlugin,
     InsertImage,
+    insertMarkdown$,
     listsPlugin,
     ListsToggle,
     markdownShortcutPlugin,
     MDXEditor,
     MDXEditorMethods,
     quotePlugin,
+    Realm,
+    realmPlugin,
+    rootEditor$,
+    setMarkdown$,
+    Signal,
     tablePlugin,
     thematicBreakPlugin,
     toolbarPlugin,
     UndoRedo,
+    useCellValue,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
-import {getZoomSum, produceZoomJoin} from '../../api/zoom';
-import {getChatSum} from '../../api/chat';
-import {Note as NoteType, NoteDoc, Role} from '../../types/notes';
-import {getNote} from '../../api/notes';
-import {useDocument} from '@automerge/automerge-repo-react-hooks';
-import {AnyDocumentId} from '@automerge/automerge-repo';
-import {getRandomNumber} from '../../utils/generate-numbers';
+import { getZoomSum, produceZoomJoin } from '../../api/zoom';
+import { getChatSum } from '../../api/chat';
+import { Note as NoteType, NoteDoc, Role } from '../../types/notes';
+import { getNote } from '../../api/notes';
+import { useDocument } from '@automerge/automerge-repo-react-hooks';
+import { AnyDocumentId } from '@automerge/automerge-repo';
+import { getRandomNumber } from '../../utils/generate-numbers';
 import * as A from '@automerge/automerge/next';
+import {
+    $getSelection,
+    $isRangeSelection,
+    EditorState,
+    RootNode,
+    createCommand,
+    $setSelection,
+    BaseSelection,
+    LexicalCommand,
+} from 'lexical';
+
+const position$ = Cell<BaseSelection | undefined | 5>(undefined);
+// const SET_POSITION_COMMAND: LexicalCommand<BaseSelection> = createCommand();
+const set_postition_signal$ = Signal<BaseSelection | undefined>();
+
+/*const PostitionPlugin = realmPlugin<BaseSelection | undefined>({
+    init: (realm, selection) => {
+        realm.pub(createRootEditorSubscription$, (editor) => {
+            return editor.registerUpdateListener((e) => {
+                const selection = editor.getEditorState()._selection?.clone();
+
+                console.log(selection);
+
+                realm.pubIn({
+                    [position$]: selection,
+                });
+
+                console.log('position$');
+                console.log('position$ aaa', realm.getValue(position$), 'aaa');
+            });
+        });
+        realm.pub(createRootEditorSubscription$, (editor) => {
+            return editor.registerCommand(
+                SET_POSITION_COMMAND,
+                (pos, editor) => {
+                    editor.update(() => {
+                        if (pos) {
+                            $setSelection(pos);
+                        }
+                    });
+                    return true;
+                },
+                4,
+            );
+        });
+
+        realm.pub(createRootEditorSubscription$, (editor) => {
+            return realm.sub(set_postition_signal$, (pos) => {
+                editor.update(() => {
+                    if (pos) {
+                        $setSelection(pos);
+                    }
+                });
+            });
+        });
+    },
+    update: (realm, pos) => {
+        realm.pub(set_postition_signal$, pos);
+    },
+});*/
+
+const PosPlugin = (
+    pos: BaseSelection | undefined,
+    setPos: React.Dispatch<React.SetStateAction<BaseSelection | undefined>>,
+) => {
+    //let set_postition_signal$: typeof Signal<BaseSelection | undefined>;
+    //const r = new Realm();
+    return realmPlugin<BaseSelection | undefined>({
+        init: (realm, selection) => {
+            // set_postition_signal$ = Signal<BaseSelection | undefined>();
+            realm.pub(createRootEditorSubscription$, (editor) => {
+                return editor.registerUpdateListener((e) => {
+                    const selection = editor.getEditorState()._selection?.clone();
+
+                    console.log(selection);
+
+                    realm.pubIn({
+                        [position$]: selection,
+                        [set_postition_signal$]: Signal<BaseSelection | undefined>(),
+                    });
+                    setPos(selection);
+
+                    console.log('position$');
+                    console.log('position$ aaa', realm.getValue(position$), 'aaa');
+                });
+            });
+            /*realm.pub(createRootEditorSubscription$, (editor) => {
+                return editor.registerCommand(
+                    SET_POSITION_COMMAND,
+                    (pos, editor) => {
+                        editor.update(() => {
+                            if (pos) {
+                                $setSelection(pos);
+                            }
+                        });
+                        return true;
+                    },
+                    4,
+                );
+            });*/
+            realm.sub(set_postition_signal$, console.log);
+
+            realm.pub(createRootEditorSubscription$, (editor) => {
+                return realm.sub(set_postition_signal$, (pos) => {
+                    console.log('EDITOR update1', pos);
+                    editor.update(() => {
+                        console.log('EDITOR update');
+                        if (pos) {
+                            $setSelection(pos);
+                        }
+                    });
+                });
+            });
+        },
+        update: (realm, pos) => {
+            console.log('update pos', pos);
+            //r.sub(set_postition_signal$, console.log);
+            realm.pub(set_postition_signal$, pos);
+            //r.sub(set_postition_signal$, console.log);
+            console.log('set_postition_signal$', realm.getValue(set_postition_signal$));
+        },
+    })(pos);
+};
 
 function Note() {
-    const {id = ''} = useParams();
+    const { id = '' } = useParams();
 
     const ref = React.useRef<MDXEditorMethods>(null);
+
+    //const rootEditor = useCellValue(rootEditor$);
+    // const editor = rootEditor$;
+    const [pos, setPos] = React.useState<BaseSelection | undefined>();
+    console.log('Pos', pos);
+
+    //const posCell = useCellValue(position$);
+    //console.log('posCell', posCell);
+
+    //const curSel = useCellValue(currentSelection$);
+    //console.log('currentSelection$', curSel);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
@@ -141,7 +286,7 @@ function Note() {
     );
 
     React.useEffect(() => {
-        getNote({id}).then((noteData) => {
+        getNote({ id }).then((noteData) => {
             setNote(noteData.data);
         });
     }, [id, setNote]);
@@ -162,7 +307,11 @@ function Note() {
 
     React.useEffect(() => {
         console.log(doc);
+        const oldPos = pos;
+        console.log('oldPos', oldPos);
+        // console.log('posCell', posCell);
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
+        setPos(oldPos);
     }, [doc?.text]);
 
     // React.useEffect(() => {
@@ -183,8 +332,11 @@ function Note() {
         });
     }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
+    // console.log('editor:', rootEditor);
+    // console.log('selection: ', $getSelection());
+
     return (
-        <Stack gap={2} sx={{p: 2}}>
+        <Stack gap={2} sx={{ p: 2 }}>
             <Box gap={2} display="flex" alignItems={'center'}>
                 <Button variant="outlined" color="secondary" onClick={fetchChatSum}>
                     Получить суммаризацию чата
@@ -305,7 +457,8 @@ function Note() {
                     tablePlugin(),
                     thematicBreakPlugin(),
                     markdownShortcutPlugin(),
-                    diffSourcePlugin({viewMode: 'rich-text'}),
+                    PosPlugin(pos, setPos),
+                    diffSourcePlugin({ viewMode: 'rich-text' }),
                     toolbarPlugin({
                         toolbarContents: () => (
                             <DiffSourceToggleWrapper>

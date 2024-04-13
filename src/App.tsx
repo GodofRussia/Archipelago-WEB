@@ -1,14 +1,15 @@
 import React from 'react';
 import './App.css';
 import '@fontsource/inter';
-import {BrowserRouter, Route, Routes} from 'react-router-dom';
-import {createTheme, CssBaseline, ThemeProvider} from '@mui/material';
-import {ruRU} from '@mui/material/locale';
-import {blue} from '@mui/material/colors';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { ruRU } from '@mui/material/locale';
+import { blue } from '@mui/material/colors';
 import MainPage from './pages/MainPage';
 import Note from './pages/Note';
-import {ColorMode} from './types/color-mode';
+import { ColorMode } from './types/color-mode';
 import Navbar from './components/Navbar';
+import { RealmProvider } from '@mdxeditor/editor';
 
 function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
@@ -28,8 +29,8 @@ function App() {
                     },
                     palette: {
                         mode: colorMode,
-                        primary: {main: '#0288d1', dark: '#040221', contrastText: '#ffffff'},
-                        secondary: {...blue, contrastText: '#ffffff'},
+                        primary: { main: '#0288d1', dark: '#040221', contrastText: '#ffffff' },
+                        secondary: { ...blue, contrastText: '#ffffff' },
                         error: {
                             main: '#f44336',
                             dark: '#e53935',
