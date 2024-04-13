@@ -1,12 +1,12 @@
 export interface User {
-    id: number;
+    id: string;
     login: string;
     name: string;
     rootDirId: number;
 }
 
 export interface UserDto {
-    id: number;
+    id: string;
     login: string;
     name: string;
     root_dir_id: number;

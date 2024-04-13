@@ -1,5 +1,5 @@
 import React from 'react';
-import {ListItem, Typography} from '@mui/material';
+import {ListItem, Typography, useTheme} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
 import {Note} from '../types/notes';
 import {deleteNote} from '../api/notes';
@@ -8,9 +8,10 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
 interface NoteCardProps extends Note {
     refetchNotes?: () => void;
+    isActive?: boolean;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({id, title, refetchNotes, automergeUrl, dirId}) => {
+const NoteCard: React.FC<NoteCardProps> = ({id, title, refetchNotes, automergeUrl, dirId, isActive}) => {
     const navigate = useNavigate();
 
     const handleClickOnCard = React.useCallback(() => {
@@ -18,6 +19,12 @@ const NoteCard: React.FC<NoteCardProps> = ({id, title, refetchNotes, automergeUr
     }, [id, navigate]);
 
     const repo = useRepo();
+    const theme = useTheme();
+
+    const activeStyle = {
+        backgroundColor: isActive ? theme.palette.action.hover : 'auto',
+        cursor: 'pointer',
+    };
 
     const handleDeleteClick = React.useCallback(
         async (ev: React.MouseEvent, note: Note) => {
@@ -34,6 +41,7 @@ const NoteCard: React.FC<NoteCardProps> = ({id, title, refetchNotes, automergeUr
         <ListItem
             onClick={handleClickOnCard}
             sx={{cursor: 'pointer', px: 1, display: 'flex', justifyContent: 'space-between', gap: 2}}
+            style={activeStyle}
         >
             <Typography variant="body2">{title}</Typography>
             <RemoveCircleIcon
