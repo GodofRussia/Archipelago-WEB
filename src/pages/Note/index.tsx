@@ -37,8 +37,6 @@ import {getChatSum} from '../../api/chat';
 import {Note as NoteType, NoteDoc, Role} from '../../types/notes';
 import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
-import {AnyDocumentId} from '@automerge/automerge-repo';
-import {getRandomNumber} from '../../utils/generate-numbers';
 import * as A from '@automerge/automerge/next';
 
 function Note() {
@@ -48,11 +46,11 @@ function Note() {
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
-    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automerge_url as AnyDocumentId);
+    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
-    const [userId] = React.useState<string>(String(getRandomNumber(1, 100)));
+    const [userId] = React.useState<string>(JSON.parse(sessionStorage.getItem('user') || '{}')?.id);
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
 
     console.log(doc);
@@ -142,7 +140,7 @@ function Note() {
 
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
-            setNote(noteData.data);
+            setNote(noteData);
         });
     }, [id, setNote]);
 
@@ -161,7 +159,6 @@ function Note() {
     }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     React.useEffect(() => {
-        console.log(doc);
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
     }, [doc?.text]);
 
@@ -202,6 +199,7 @@ function Note() {
                     onChange={(_, newValue) => {
                         setRole(newValue);
                     }}
+                    sx={{minWidth: 200}}
                     renderInput={(params) => <TextField {...params} label="Роль" size="small" />}
                 />
 
