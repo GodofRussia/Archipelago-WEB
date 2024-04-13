@@ -2,20 +2,21 @@ import React from 'react';
 import './App.css';
 import '@fontsource/inter';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
-import {createTheme, CssBaseline, ThemeProvider} from '@mui/material';
+import {createTheme as createMuiTheme, ThemeProvider as MuiThemeProvider} from '@mui/material/styles';
+// import {extendTheme as createJoyTheme, ThemeProvider as JoyThemeProvider} from '@mui/joy/styles';
 import {ruRU} from '@mui/material/locale';
 import {blue} from '@mui/material/colors';
 import MainPage from './pages/MainPage';
 import Note from './pages/Note';
 import {ColorMode} from './types/color-mode';
-import Navbar from './components/Navbar';
+import Layout from './components/ Layout';
 
 function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
 
     const theme = React.useMemo(
         () =>
-            createTheme(
+            createMuiTheme(
                 {
                     components: {
                         MuiButton: {
@@ -61,32 +62,21 @@ function App() {
         [colorMode],
     );
 
+    // const joyTheme = React.useMemo(() => createJoyTheme({}), []);
+
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
+        <MuiThemeProvider theme={theme}>
+            {/* <JoyThemeProvider theme={joyTheme}> */}
             <BrowserRouter>
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <>
-                                <Navbar itemsList={[]} />
-                                <MainPage />
-                            </>
-                        }
-                    />
-                    <Route
-                        path="/notes/:id"
-                        element={
-                            <>
-                                <Navbar itemsList={[]} />
-                                <Note />
-                            </>
-                        }
-                    />
-                </Routes>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<MainPage />} />
+                        <Route path="/notes/:id" element={<Note />} />
+                    </Routes>
+                </Layout>
             </BrowserRouter>
-        </ThemeProvider>
+            {/* </JoyThemeProvider> */}
+        </MuiThemeProvider>
     );
 }
 
