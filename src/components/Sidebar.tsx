@@ -51,7 +51,10 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const [user, setUser] = React.useState<User | null>({id: 1, rootDirId: 1, login: 'moch', name: 'ilya'});
     const [collapsed, setCollapsed] = React.useState<boolean>(true);
     const [isOpenCreateDialog, setIsOpenCreateDialog] = React.useState(false);
+
+    const [isOpenCreateNoteDialog, setIsOpenCreateNoteDialog] = React.useState(false);
     const [dirName, setDirName] = React.useState<string>('');
+    const [noteTitle, setNoteTitle] = React.useState<string>('');
     const [dirIdForCreate, setDirIdForCreate] = React.useState<number>(1);
 
     // const [notes, setNotes] = React.useState<Note[]>([]);
@@ -64,8 +67,8 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     }, [user]);
 
     const handleCreateNote = React.useCallback(
-        async (dirId: number) => {
-            const note = await createNote({title: 'Untitled', dirId}, repo);
+        async (dirId: number, title: string) => {
+            const note = await createNote({title, dirId}, repo);
             await refetchDirsTree();
             navigate(`/notes/${note.id}`);
         },
@@ -127,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                 </Tooltip>
 
                 <Tooltip title={'Создать заметку'}>
-                    <IconButton onClick={() => handleCreateNote(user?.id || 1)}>
+                    <IconButton onClick={() => setIsOpenCreateNoteDialog(true)}>
                         <NoteAddIcon />
                     </IconButton>
                 </Tooltip>
@@ -144,7 +147,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                     <Folder
                         active={1}
                         onDirCreateClick={() => setIsOpenCreateDialog(true)}
-                        handleCreateNote={handleCreateNote}
+                        handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
                         refetchDirTree={refetchDirsTree}
                         folder={dirTree}
                         setDirIdForCreate={setDirIdForCreate}
@@ -152,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                 </Box>
             )}
 
-            <Dialog open={isOpenCreateDialog}>
+            <Dialog open={isOpenCreateDialog} onClose={() => setIsOpenCreateDialog(false)}>
                 <DialogTitle id="alert-dialog-title">Создать директорию</DialogTitle>
                 <DialogContent>
                     <Stack gap={3}>
@@ -178,8 +181,43 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                     <Button
                         color={'secondary'}
                         onClick={() => {
-                            handleCreateDir(dirIdForCreate, dirName);
+                            handleCreateDir(dirIdForCreate, noteTitle);
                             setIsOpenCreateDialog(false);
+                        }}
+                    >
+                        Подтвердить
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={isOpenCreateNoteDialog} onClose={() => setIsOpenCreateNoteDialog(false)}>
+                <DialogTitle id="alert-dialog-title">Создать директорию</DialogTitle>
+                <DialogContent>
+                    <Stack gap={3}>
+                        <TextField
+                            type="text"
+                            margin="dense"
+                            id="zoom-url"
+                            label="Название заметки"
+                            size="small"
+                            variant="outlined"
+                            fullWidth
+                            value={noteTitle}
+                            onChange={(e) => {
+                                setNoteTitle(e.target.value);
+                            }}
+                        />
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button color={'secondary'} onClick={() => setIsOpenCreateNoteDialog(false)}>
+                        Закрыть
+                    </Button>
+                    <Button
+                        color={'secondary'}
+                        onClick={() => {
+                            handleCreateNote(dirIdForCreate, noteTitle);
+                            setIsOpenCreateNoteDialog(false);
                         }}
                     >
                         Подтвердить
