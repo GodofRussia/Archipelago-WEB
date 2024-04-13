@@ -43,6 +43,7 @@ function Note() {
     const {id = ''} = useParams();
 
     const ref = React.useRef<MDXEditorMethods>(null);
+    const summRef = React.useRef<MDXEditorMethods>(null);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
@@ -147,6 +148,7 @@ function Note() {
         const intervalId = setInterval(() => {
             if (userId && zoomUrl && !!note) {
                 fetchZoomGetSum(userId, role || 'обычный').then((text) => {
+                    console.log(text);
                     if (text) {
                         setSum(text);
                     }
@@ -161,9 +163,9 @@ function Note() {
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
     }, [doc?.text]);
 
-    // React.useEffect(() => {
-    //     ref.current?.setMarkdown(`${note?.title || ''}<br></br>${doc?.text ? doc?.text.join('') : ''}`);
-    // }, [note?.title]);
+    React.useEffect(() => {
+        summRef.current?.setMarkdown(sum);
+    }, [sum]);
 
     React.useEffect(() => {
         getZoomSum(userId).then(() => {
@@ -262,6 +264,7 @@ function Note() {
 
             {sum && (
                 <MDXEditor
+                    ref={summRef}
                     className="dark-theme dark-editor"
                     placeholder="Здесь будет текст с суммаризацией"
                     markdown={sum || ''}
