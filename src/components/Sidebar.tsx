@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const repo = useRepo();
     const navigate = useNavigate();
 
-    const [user, setUser] = React.useState<User | null>({id: 1, rootDirId: 1, login: 'moch', name: 'ilya'});
+    const [user, setUser] = React.useState<User | null>({id: '1', rootDirId: 1, login: 'moch', name: 'ilya'});
     const [collapsed, setCollapsed] = React.useState<boolean>(true);
     const [isOpenCreateDialog, setIsOpenCreateDialog] = React.useState(false);
 

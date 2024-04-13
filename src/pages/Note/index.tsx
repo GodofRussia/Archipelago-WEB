@@ -50,10 +50,9 @@ function Note() {
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
-    const [userId] = React.useState<string>(JSON.parse(sessionStorage.getItem('user') || '{}')?.id);
+    // const [userId] = React.useState<string>(JSON.parse(sessionStorage.getItem('user') || '{}')?.id);
+    const [userId] = React.useState<string>('a25addc2-ec6b-4960-9779-05a846dc94fd');
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
-
-    console.log(doc);
 
     const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
         try {
