@@ -33,7 +33,7 @@ const NoteCard: React.FC<NoteCardProps> = ({id, title, refetchNotes, automergeUr
     return (
         <ListItem
             onClick={handleClickOnCard}
-            sx={{cursor: 'pointer', px: 1, display: 'flex', justifyContent: 'space-between'}}
+            sx={{cursor: 'pointer', px: 1, display: 'flex', justifyContent: 'space-between', gap: 2}}
         >
             <Typography variant="body2">{title}</Typography>
             <RemoveCircleIcon
