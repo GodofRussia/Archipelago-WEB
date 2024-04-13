@@ -191,7 +191,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             </Dialog>
 
             <Dialog open={isOpenCreateNoteDialog} onClose={() => setIsOpenCreateNoteDialog(false)}>
-                <DialogTitle id="alert-dialog-title">Создать директорию</DialogTitle>
+                <DialogTitle id="alert-dialog-title">Создать заметку</DialogTitle>
                 <DialogContent>
                     <Stack gap={3}>
                         <TextField
