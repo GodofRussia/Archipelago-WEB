@@ -181,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                     <Button
                         color={'secondary'}
                         onClick={() => {
-                            handleCreateDir(dirIdForCreate, noteTitle);
+                            handleCreateDir(dirIdForCreate, dirName);
                             setIsOpenCreateDialog(false);
                         }}
                     >
