@@ -40,7 +40,7 @@ function Navbar(props: NavbarProps) {
     console.log(open);
 
     return (
-        <AppBar position={'fixed'} open={open} width={width}>
+        <AppBar position={'fixed'} open={open} width={width} sx={{backgroundColor: '#000000'}}>
             <Toolbar>
                 <IconButton
                     color="inherit"
