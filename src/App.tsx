@@ -8,8 +8,11 @@ import {ruRU} from '@mui/material/locale';
 import {blue} from '@mui/material/colors';
 import MainPage from './pages/MainPage';
 import Note from './pages/Note';
+import Login from './pages/Login';
 import {ColorMode} from './types/color-mode';
-import Layout from './components/ Layout';
+import Layout from './components/Layout';
+import LoginLayout from './components/LoginLayout';
+import Registartion from './pages/Registration';
 
 function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
@@ -68,12 +71,40 @@ function App() {
         <MuiThemeProvider theme={theme}>
             {/* <JoyThemeProvider theme={joyTheme}> */}
             <BrowserRouter>
-                <Layout>
-                    <Routes>
-                        <Route path="/" element={<MainPage />} />
-                        <Route path="/notes/:id" element={<Note />} />
-                    </Routes>
-                </Layout>
+                <Routes>
+                    <Route
+                        path="/"
+                        element={
+                            <Layout>
+                                <MainPage />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/notes/:id"
+                        element={
+                            <Layout>
+                                <Note />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/login/"
+                        element={
+                            <LoginLayout>
+                                <Login />
+                            </LoginLayout>
+                        }
+                    />
+                    <Route
+                        path="/registration/"
+                        element={
+                            <LoginLayout>
+                                <Registartion />
+                            </LoginLayout>
+                        }
+                    />
+                </Routes>
             </BrowserRouter>
             {/* </JoyThemeProvider> */}
         </MuiThemeProvider>
