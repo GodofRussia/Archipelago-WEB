@@ -12,7 +12,7 @@ function createAutomergeUrl(repo: Repo) {
 }
 
 const api = axios.create({
-    baseURL: `${import.meta.env.VITE_NOTES_URL}/api`,
+    baseURL: import.meta.env.VITE_NOTES_URL,
 });
 
 export function getNote(requestData: {id: string}) {

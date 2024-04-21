@@ -3,7 +3,7 @@ import {convertFromUserDto} from '../utils/convert';
 import {UserDto} from '../types/user';
 
 const api = axios.create({
-    baseURL: `${import.meta.env.VITE_NOTES_URL}/api`,
+    baseURL: import.meta.env.VITE_NOTES_URL,
 });
 
 export function getUser(requestData: {id: string}) {

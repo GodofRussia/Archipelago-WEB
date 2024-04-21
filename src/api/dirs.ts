@@ -2,7 +2,7 @@ import axios from 'axios';
 import {Dir, DirTreeDto} from '../types/dirs';
 
 const api = axios.create({
-    baseURL: `${import.meta.env.VITE_NOTES_URL}/api`,
+    baseURL: import.meta.env.VITE_NOTES_URL,
 });
 
 export function getDir(requestData: {id: string}) {
