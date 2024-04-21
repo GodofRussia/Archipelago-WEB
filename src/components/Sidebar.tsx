@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import {createNote} from '../api/notes';
@@ -38,9 +38,9 @@ const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
 }));
 
 interface SidebarProps {
-    setWidth: (width: number) => Promise<void>;
+    setWidth: Dispatch<SetStateAction<number>>;
     open: boolean;
-    setOpen: (val: boolean) => Promise<void>;
+    setOpen: Dispatch<SetStateAction<boolean>>;
     width: number;
 }
 
