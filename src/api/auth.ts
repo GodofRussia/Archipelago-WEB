@@ -14,14 +14,14 @@ interface ResponseUser {
 }
 
 export function loginRequest(login: string, password: string) {
-    return chatBase.post<ResponseUser>('/auth-service/login', {
+    return chatBase.post<ResponseUser>('/login', {
         login,
         password,
     });
 }
 
 export function registrationRequest(login: string, username: string, password: string) {
-    return chatBase.post<ResponseUser>('/auth-service/regisrtation', {
+    return chatBase.post<ResponseUser>('/regisrtation', {
         login,
         username,
         password,
@@ -29,5 +29,5 @@ export function registrationRequest(login: string, username: string, password: s
 }
 
 export function logoutRequest() {
-    return chatBase.post<ResponseUser>('/auth-service/logout', {});
+    return chatBase.post<ResponseUser>('/logout', {});
 }
