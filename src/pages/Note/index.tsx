@@ -269,7 +269,6 @@ function Note() {
                     <DialogContent>
                         <Stack gap={3} marginTop={0.5}>
                             <Autocomplete
-                                disablePortal
                                 defaultValue={'Zoom'}
                                 options={CallsType}
                                 value={callsType}
@@ -278,7 +277,6 @@ function Note() {
                                 }}
                                 sx={{width: 300}}
                                 renderInput={(params) => <TextField {...params} label="Конференция" size="small" />}
-                                clearIcon={false}
                             />
                             <TextField
                                 type="text"
@@ -294,7 +292,6 @@ function Note() {
                                 }}
                             />
                             <Autocomplete
-                                disablePortal
                                 defaultValue={'Средняя'}
                                 options={CallsDetail}
                                 value={callsDetail}
@@ -305,7 +302,6 @@ function Note() {
                                 renderInput={(params) => (
                                     <TextField {...params} label="Степень детализации звонка" size="small" />
                                 )}
-                                clearIcon={false}
                             />
                         </Stack>
                     </DialogContent>
