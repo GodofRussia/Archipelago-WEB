@@ -6,7 +6,9 @@ import {createTheme as createMuiTheme, ThemeProvider as MuiThemeProvider} from '
 import {ruRU} from '@mui/material/locale';
 import {blue} from '@mui/material/colors';
 import MainPage from './pages/MainPage';
+
 import Note from './pages/Note';
+
 import Login from './pages/Login';
 import {ColorMode} from './types/color-mode';
 import Layout from './components/Layout';
