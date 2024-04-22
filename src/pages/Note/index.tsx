@@ -34,7 +34,7 @@ import {
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
-import {Note as NoteType, NoteDoc, Role} from '../../types/notes';
+import {Note as NoteType, NoteDoc, Role, CallsType, CallsDetail} from '../../types/notes';
 import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import * as A from '@automerge/automerge/next';
@@ -47,6 +47,8 @@ function Note() {
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
+    const [callsType, setCallsType] = React.useState<string | null>('Zoom');
+    const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
@@ -236,11 +238,21 @@ function Note() {
                     <DialogTitle id="alert-dialog-title">Привязать звонок ZOOM к заметке</DialogTitle>
                     <DialogContent>
                         <Stack gap={3}>
+                            <Autocomplete
+                                defaultValue={'Zoom'}
+                                options={CallsType}
+                                value={callsType}
+                                onChange={(_, newValue) => {
+                                    setCallsType(newValue);
+                                }}
+                                sx={{width: 300}}
+                                renderInput={(params) => <TextField {...params} label="Конференция" size="small" />}
+                            />
                             <TextField
                                 type="text"
                                 margin="dense"
                                 id="zoom-url"
-                                label="Ссылка на ZOOM конференцию"
+                                label="Ссылка на конференцию"
                                 size="small"
                                 variant="outlined"
                                 fullWidth
@@ -248,6 +260,18 @@ function Note() {
                                 onChange={(e) => {
                                     setZoomUrl(e.target.value);
                                 }}
+                            />
+                            <Autocomplete
+                                defaultValue={'Средняя'}
+                                options={CallsDetail}
+                                value={callsDetail}
+                                onChange={(_, newValue) => {
+                                    setCallsDetail(newValue);
+                                }}
+                                sx={{width: 300}}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Степень детализации звонка" size="small" />
+                                )}
                             />
                         </Stack>
                     </DialogContent>
