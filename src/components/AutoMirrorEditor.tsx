@@ -4,7 +4,7 @@ import {Command, EditorState, Transaction} from 'prosemirror-state';
 import {MarkType, Schema} from 'prosemirror-model';
 import {EditorView} from 'prosemirror-view';
 // import 'prosemirror-view/style/prosemirror.css';
-import 'prosemirror-example-setup';
+// import 'prosemirror-example-setup';
 import {Prop} from '@automerge/automerge';
 
 import {AutoMirror} from '@automerge/prosemirror';
@@ -32,6 +32,7 @@ export type EditorProps = {
 };
 
 export function Editor({handle, path}: EditorProps) {
+    console.log('url:', handle.url);
     const editorRoot = useRef<HTMLDivElement>(null);
     // const [view, setView] = useState<EditorView | null>(null);
     const handleReady = useHandleReady(handle);
@@ -49,7 +50,7 @@ export function Editor({handle, path}: EditorProps) {
         const editorConfig = {
             schema: autoMirror.schema,
             history,
-            plugins: exampleSetup({schema: autoMirror.schema}),
+            // plugins: exampleSetup({schema: autoMirror.schema}),
             /*[
                 ,
                 keymap({
