@@ -6,6 +6,8 @@ export interface Note {
     automergeUrl: AnyDocumentId;
     title: string;
     dirId: number; // int value
+    defaultAccess: string;
+    allowedMethods: Array<string>;
 }
 
 export interface NoteDto {
@@ -13,6 +15,8 @@ export interface NoteDto {
     automerge_url: AnyDocumentId;
     title: string;
     dir_id: number; // int value
+    default_access: string;
+    allowed_methods: Array<string>;
 }
 
 export interface NoteDoc {

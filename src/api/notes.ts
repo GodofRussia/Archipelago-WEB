@@ -1,6 +1,8 @@
 import axios from 'axios';
 import {Note, NoteDoc, NoteDto} from '../types/notes';
 import {Repo} from '@automerge/automerge-repo';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import {from} from '@automerge/automerge/next';
 import {convertFromNoteDto} from '../utils/convert';
 

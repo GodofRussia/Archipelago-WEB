@@ -8,6 +8,8 @@ import {BrowserWebSocketClientAdapter} from '@automerge/automerge-repo-network-w
 import {IndexedDBStorageAdapter} from '@automerge/automerge-repo-storage-indexeddb';
 import {BroadcastChannelNetworkAdapter} from '@automerge/automerge-repo-network-broadcastchannel';
 import {RepoContext} from '@automerge/automerge-repo-react-hooks';
+import {Provider} from 'react-redux';
+import {setupStore} from './store/store';
 
 const ws_url = import.meta.env.VITE_AUTOMERGE_URL;
 
@@ -19,9 +21,11 @@ const repo = new Repo({
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
     <React.StrictMode>
-        <RepoContext.Provider value={repo}>
-            <App />
-        </RepoContext.Provider>
+        <Provider store={setupStore()}>
+            <RepoContext.Provider value={repo}>
+                <App />
+            </RepoContext.Provider>
+        </Provider>
     </React.StrictMode>,
 );
 
