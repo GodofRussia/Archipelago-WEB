@@ -37,6 +37,7 @@
     "path": "^0.12.7",
     "prosemirror": "^0.11.1",
     "prosemirror-example-setup": "^1.2.2",
+    "prosemirror-state": "^1.4.3",
     "prosemirror-view": "^1.33.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
