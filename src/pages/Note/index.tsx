@@ -49,7 +49,7 @@ function Note() {
     const [role, setRole] = React.useState<string | null>('обычный');
     const [callsType, setCallsType] = React.useState<string | null>('Zoom');
     const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
-    // const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
+    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
