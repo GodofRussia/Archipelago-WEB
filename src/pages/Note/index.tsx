@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
     Autocomplete,
     Box,
@@ -36,26 +36,42 @@ import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
 import {Note as NoteType, NoteDoc, Role, CallsType, CallsDetail} from '../../types/notes';
 import {getNote} from '../../api/notes';
-import {useDocument} from '@automerge/automerge-repo-react-hooks';
+import {useDocument, useRepo, useHandle} from '@automerge/automerge-repo-react-hooks';
 import * as A from '@automerge/automerge/next';
+
+import {Editor} from '../../components/AutoMirrorEditor';
 
 function Note() {
     const {id = ''} = useParams();
-
-    const ref = React.useRef<MDXEditorMethods>(null);
-    const summRef = React.useRef<MDXEditorMethods>(null);
+    console.log(id);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
     const [callsType, setCallsType] = React.useState<string | null>('Zoom');
     const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
-    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
+    // const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
     // const [userId] = React.useState<string>(JSON.parse(sessionStorage.getItem('user') || '{}')?.id);
     const [userId] = React.useState<string>('a25addc2-ec6b-4960-9779-05a846dc94fd');
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
+
+    // const repo = useRepo();
+
+    console.log('url:', note?.automergeUrl);
+    const handle = useHandle(note?.automergeUrl);
+
+    //const [handle, setHandle] = React.useState<A.DocHandle<NoteDoc> | undefined>(undefined);
+
+    /*React.useEffect(() => {
+        if (note?.automergeUrl) {
+            console.log();
+            const _handle = repo.find<NoteDoc>(note?.automergeUrl);
+            console.log(_handle);
+            setHandle(_handle);
+        }
+    }, [note?.automergeUrl, repo, handle]);*/
 
     const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
         try {
@@ -131,22 +147,13 @@ function Note() {
         }
     }, [fetchZoomJoin, userId, zoomUrl]);
 
-    const handleChangeMd = React.useCallback(
-        (value: string) => {
-            changeDoc((doc: NoteDoc) => {
-                A.updateText(doc, ['text'], value);
-            });
-        },
-        [changeDoc],
-    );
-
     React.useEffect(() => {
         getNote({id}).then((noteData) => {
             setNote(noteData);
         });
     }, [id, setNote]);
 
-    React.useEffect(() => {
+    /*React.useEffect(() => {
         const intervalId = setInterval(() => {
             if (userId && zoomUrl && !!note) {
                 fetchZoomGetSum(userId, role || 'обычный').then((text) => {
@@ -159,17 +166,17 @@ function Note() {
         }, 20000);
 
         return () => clearInterval(intervalId);
-    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);*/
 
-    React.useEffect(() => {
+    /*React.useEffect(() => {
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
     }, [doc?.text]);
 
     React.useEffect(() => {
         summRef.current?.setMarkdown(sum);
-    }, [sum]);
+    }, [sum]);*/
 
-    React.useEffect(() => {
+    /*React.useEffect(() => {
         getZoomSum(userId).then(() => {
             const intervalId = setInterval(() => {
                 fetchZoomGetSum(userId, role || 'обычный').then((text) => {
@@ -181,7 +188,7 @@ function Note() {
 
             return () => clearInterval(intervalId);
         });
-    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);*/
 
     return (
         <Stack gap={2} sx={{p: 2}}>
@@ -286,63 +293,7 @@ function Note() {
                 </Dialog>
             </Box>
 
-            {sum && (
-                <MDXEditor
-                    ref={summRef}
-                    className="dark-theme dark-editor"
-                    placeholder="Здесь будет текст с суммаризацией"
-                    markdown={sum || ''}
-                    onChange={(val) => {
-                        setSum(val);
-                    }}
-                    plugins={[
-                        imagePlugin({
-                            imageUploadHandler: (image) => {
-                                return Promise.resolve(image.name);
-                            },
-                        }),
-                        headingsPlugin(),
-                        listsPlugin(),
-                        quotePlugin(),
-                        tablePlugin(),
-                        thematicBreakPlugin(),
-                        markdownShortcutPlugin(),
-                    ]}
-                />
-            )}
-
-            <MDXEditor
-                ref={ref}
-                className="dark-theme dark-editor"
-                placeholder="Введите текст сюда"
-                markdown={typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || ''}
-                onChange={(md) => handleChangeMd(md)}
-                plugins={[
-                    imagePlugin({
-                        imageUploadHandler: (image) => {
-                            return Promise.resolve(image.name);
-                        },
-                    }),
-                    headingsPlugin(),
-                    listsPlugin(),
-                    quotePlugin(),
-                    tablePlugin(),
-                    thematicBreakPlugin(),
-                    markdownShortcutPlugin(),
-                    diffSourcePlugin({viewMode: 'rich-text'}),
-                    toolbarPlugin({
-                        toolbarContents: () => (
-                            <DiffSourceToggleWrapper>
-                                <UndoRedo />
-                                <BoldItalicUnderlineToggles />
-                                <BlockTypeSelect />
-                                <ListsToggle />
-                                <InsertImage />
-                            </DiffSourceToggleWrapper>
-                        ),
-                    }),
-                ]}
-            />
+            {handle ? <Editor handle={handle} path={['text']} /> : <div>Loading...</div>}
         </Stack>
     );
 }
