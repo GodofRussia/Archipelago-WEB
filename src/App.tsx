@@ -12,6 +12,7 @@ import {ColorMode} from './types/color-mode';
 import Layout from './components/Layout';
 import LoginLayout from './components/LoginLayout';
 import Registration from './pages/Registration';
+import {ProtectedRoute} from './components/ProtectedRoute';
 
 function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
@@ -80,9 +81,11 @@ function App() {
                     <Route
                         path="/notes/:id"
                         element={
-                            <Layout>
-                                <Note />
-                            </Layout>
+                            <ProtectedRoute>
+                                <Layout>
+                                    <Note />
+                                </Layout>
+                            </ProtectedRoute>
                         }
                     />
                     <Route

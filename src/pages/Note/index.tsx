@@ -37,6 +37,8 @@ import {getChatSum} from '../../api/chat';
 import {Note as NoteType, NoteDoc, Role} from '../../types/notes';
 import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import * as A from '@automerge/automerge/next';
 
 function Note() {
@@ -51,7 +53,6 @@ function Note() {
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
-    // const [userId] = React.useState<string>(JSON.parse(sessionStorage.getItem('user') || '{}')?.id);
     const [userId] = React.useState<string>('a25addc2-ec6b-4960-9779-05a846dc94fd');
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
 
