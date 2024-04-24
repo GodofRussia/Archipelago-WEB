@@ -14,6 +14,9 @@ import CollapseIcon from '../icons/CollapseIcon';
 import MuiAppBar from '@mui/material/AppBar';
 import LoginIcon from '@mui/icons-material/Login';
 import React from 'react';
+import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
+import {logoutUser} from '../store/reducers/UserSlice';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 interface NavbarProps {
     itemsList: Note[];
@@ -47,6 +50,9 @@ const AppBar = styled(MuiAppBar, {
 
 function Navbar(props: NavbarProps) {
     const {open, setOpen, width, isAuthenticationPage = false} = props;
+    const {user} = useAppSelector((state) => state.userReducer);
+    const dispatch = useAppDispatch();
+
     const navigate = useNavigate();
     const handleLoginClicked = React.useCallback(() => {
         navigate('/login');
@@ -55,6 +61,10 @@ function Navbar(props: NavbarProps) {
     const handleRegisterClicked = React.useCallback(() => {
         navigate('/registration');
     }, [navigate]);
+
+    const handleLogoutClicked = React.useCallback(() => {
+        dispatch(logoutUser());
+    }, [dispatch]);
 
     return (
         <AppBar position={'fixed'} open={open} width={width} sx={{backgroundColor: '#000000'}}>
@@ -76,14 +86,21 @@ function Navbar(props: NavbarProps) {
                     </Box>
                 </Box>
 
-                {!isAuthenticationPage && (
+                {!isAuthenticationPage && !user && (
                     <ButtonGroup>
                         <Button onClick={handleLoginClicked} startIcon={<LoginIcon fontSize={'medium'} />}>
                             Логин
                         </Button>
                         <Button onClick={handleRegisterClicked}>Зарегистрироваться</Button>
-                        {/* <Button startIcon={<LogoutIcon fontSize={'medium'} />}>Выйти</Button> */}
                     </ButtonGroup>
+                )}
+                {!isAuthenticationPage && user && (
+                    <>
+                        <Typography variant={'body1'}>{user.name}</Typography>
+                        <Button onClick={handleLogoutClicked} startIcon={<LogoutIcon fontSize={'medium'} />}>
+                            Выйти
+                        </Button>
+                    </>
                 )}
             </Toolbar>
         </AppBar>
