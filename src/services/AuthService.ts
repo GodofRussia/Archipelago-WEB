@@ -27,7 +27,7 @@ export const authApi = createApi({
         }),
         registration: build.mutation<AuthResponse, RegistrationRequest>({
             query: ({password, name, email}) => ({
-                url: '/regisrtation',
+                url: '/registration',
                 method: 'POST',
                 body: {name, email, password},
             }),

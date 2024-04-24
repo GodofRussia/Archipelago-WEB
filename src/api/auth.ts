@@ -21,7 +21,7 @@ export function loginRequest(login: string, password: string) {
 }
 
 export function registrationRequest(login: string, username: string, password: string) {
-    return chatBase.post<ResponseUser>('/regisrtation', {
+    return chatBase.post<ResponseUser>('/registration', {
         login,
         username,
         password,
