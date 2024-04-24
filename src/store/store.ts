@@ -2,14 +2,16 @@ import {combineReducers} from 'redux';
 import {configureStore} from '@reduxjs/toolkit';
 
 import userReducer from './reducers/UserSlice';
-import {userApi} from '../services/UserService';
+import dirsReducer from './reducers/DirsSlice';
+import {userAPI} from '../services/UserService';
 import {authApi} from '../services/AuthService';
 import {notesApi} from '../services/NotesService';
 import {dirsApi} from '../services/DirsService';
 
 const rootReducer = combineReducers({
     userReducer,
-    [userApi.reducerPath]: userApi.reducer,
+    dirsReducer,
+    [userAPI.reducerPath]: userAPI.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [notesApi.reducerPath]: notesApi.reducer,
     [dirsApi.reducerPath]: dirsApi.reducer,
@@ -21,7 +23,7 @@ export const setupStore = () => {
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware().concat(
                 authApi.middleware,
-                userApi.middleware,
+                userAPI.middleware,
                 notesApi.middleware,
                 dirsApi.middleware,
             ),

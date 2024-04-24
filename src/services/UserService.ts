@@ -1,13 +1,13 @@
-import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {User} from '../types/user';
 
-export const userApi = createApi({
+export const userAPI = createApi({
     reducerPath: 'user-queries',
     baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_NOTES_URL}),
     tagTypes: ['User', 'SearchedUsers'],
     endpoints: (build) => ({
-        getUser: build.query<User, number>({
-            query: (userId: number) => ({
+        getUser: build.query<User, string>({
+            query: (userId: string) => ({
                 url: `/users/${userId}`,
             }),
             providesTags: () => ['User'],
