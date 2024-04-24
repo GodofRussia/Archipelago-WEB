@@ -94,6 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const handleCreateNote = React.useCallback(
         (title: string, dirId?: number) => {
             if (user) {
+                console.log('here');
                 createNoteApi({title: title, dirId: dirId || user?.rootDirId || 0, repo, userId: user.id});
             }
         },
