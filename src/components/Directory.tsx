@@ -1,5 +1,5 @@
 import React from 'react';
-import {Collapse, ListItem, ListItemText, Menu, MenuItem, Skeleton} from '@mui/material';
+import {Collapse, ListItem, ListItemText, Menu, MenuItem, Skeleton, Typography} from '@mui/material';
 import {ExpandLess, ExpandMore} from '@mui/icons-material';
 import {FullDirTreeWithNotes} from '../types/dirs';
 import NoteCard from './NoteCard';
@@ -34,65 +34,78 @@ function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDi
         setContextMenu(null);
     };
 
-    return !isLoading && folder ? (
+    return !isLoading ? (
         <List sx={{m: 0, p: 0}}>
-            <ListItem
-                button
-                sx={{display: 'flex', gap: 1, px: 1, cursor: 'pointer'}}
-                onClick={handleClick}
-                onContextMenu={handleContextMenu}
-            >
-                {isOpen ? <ExpandLess /> : <ExpandMore />}
-                <ListItemText sx={{m: 0, p: 0}} primary={folder.name} />
-            </ListItem>
+            {!folder || !folder.notes ? (
+                <Typography>Ещё нет заметок</Typography>
+            ) : (
+                <>
+                    <ListItem
+                        button
+                        sx={{display: 'flex', gap: 1, px: 1, cursor: 'pointer'}}
+                        onClick={handleClick}
+                        onContextMenu={handleContextMenu}
+                    >
+                        {isOpen ? <ExpandLess /> : <ExpandMore />}
+                        <ListItemText sx={{m: 0, p: 0}} primary={folder.name} />
+                    </ListItem>
 
-            <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                <List sx={{p: 0, pl: 4}}>
-                    {folder.children.map((subFolder, idx) => (
-                        <ListItem button key={`folder-${idx}`} sx={{p: 0}}>
-                            <Folder
-                                key={subFolder.id}
-                                folder={subFolder}
-                                handleCreateNote={handleCreateNote}
-                                onDirCreateClick={onDirCreateClick}
-                                refetchNotes={refetchNotes}
-                                setDirIdForCreate={setDirIdForCreate}
-                                isLoading={isLoading}
-                            />
-                        </ListItem>
-                    ))}
-                    {folder.notes.map((note, idx) => (
-                        <ListItem button key={`note-${idx}`} sx={{p: 0}}>
-                            <NoteCard key={note.id} {...note} refetchNotes={refetchNotes} />
-                        </ListItem>
-                    ))}
-                </List>
-            </Collapse>
-            <Menu
-                open={contextMenu !== null}
-                onClose={handleClose}
-                anchorReference="anchorPosition"
-                anchorPosition={contextMenu !== null ? {top: contextMenu.mouseY, left: contextMenu.mouseX} : undefined}
-            >
-                <MenuItem
-                    onClick={() => {
-                        onDirCreateClick();
-                        setDirIdForCreate(folder.id);
-                        handleClose();
-                    }}
-                >
-                    Создать папку
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleCreateNote();
-                        setDirIdForCreate(folder.id);
-                        handleClose();
-                    }}
-                >
-                    Создать заметку
-                </MenuItem>
-            </Menu>
+                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                        <List sx={{p: 0, pl: 4}}>
+                            {folder.children.map((subFolder, idx) => (
+                                <ListItem button key={`folder-${idx}`} sx={{p: 0}}>
+                                    <Folder
+                                        key={subFolder.id}
+                                        folder={subFolder}
+                                        handleCreateNote={handleCreateNote}
+                                        onDirCreateClick={onDirCreateClick}
+                                        refetchNotes={refetchNotes}
+                                        setDirIdForCreate={setDirIdForCreate}
+                                        isLoading={isLoading}
+                                    />
+                                </ListItem>
+                            ))}
+                            {folder.notes.map((note, idx) => (
+                                <ListItem button key={`note-${idx}`} sx={{p: 0}}>
+                                    <NoteCard key={note.id} {...note} refetchNotes={refetchNotes} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                    <Menu
+                        open={contextMenu !== null}
+                        onClose={handleClose}
+                        anchorReference="anchorPosition"
+                        anchorPosition={
+                            contextMenu !== null
+                                ? {
+                                      top: contextMenu.mouseY,
+                                      left: contextMenu.mouseX,
+                                  }
+                                : undefined
+                        }
+                    >
+                        <MenuItem
+                            onClick={() => {
+                                onDirCreateClick();
+                                setDirIdForCreate(folder.id);
+                                handleClose();
+                            }}
+                        >
+                            Создать папку
+                        </MenuItem>
+                        <MenuItem
+                            onClick={() => {
+                                handleCreateNote();
+                                setDirIdForCreate(folder.id);
+                                handleClose();
+                            }}
+                        >
+                            Создать заметку
+                        </MenuItem>
+                    </Menu>
+                </>
+            )}
         </List>
     ) : (
         <Skeleton width={200} />

@@ -1,7 +1,6 @@
 import React, {Dispatch, SetStateAction} from 'react';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import {createNote} from '../api/notes';
 import {useRepo} from '@automerge/automerge-repo-react-hooks';
 import {useNavigate} from 'react-router-dom';
 import {
@@ -25,7 +24,6 @@ import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import {createDir} from '../api/dirs';
 import Folder from './Directory';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {dirsApi} from '../services/DirsService';
@@ -56,7 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
         data: dirTree,
         isLoading: isLoadingDirTree,
         isError: isErrorDirTree,
-        refetch: refetchDirTree,
     } = dirsApi.useGetDirTreeQuery(
         {
             userId: user?.id || '',
@@ -77,6 +74,12 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
         {skip: !user},
     );
 
+    const [createNoteApi, {data: createdNote, isLoading: isLoadingNoteCreation, isError: isErrorNoteCreation}] =
+        notesApi.useCreateNoteMutation();
+
+    const [createDirApi, {isLoading: isLoadingDirCreation, isError: isErrorDirCreation}] =
+        dirsApi.useCreateDirMutation();
+
     const {dirTree: fullDirTree} = useAppSelector((state) => state.dirsReducer);
     const dispatch = useAppDispatch();
 
@@ -89,20 +92,27 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const [dirIdForCreate, setDirIdForCreate] = React.useState<number>(1);
 
     const handleCreateNote = React.useCallback(
-        async (dirId: number, title: string) => {
-            const note = await createNote({title, dirId}, repo);
-            await refetchNotes();
-            navigate(`/notes/${note.id}`);
+        (dirId: number, title: string) => {
+            if (user) {
+                createNoteApi({title, dirId, repo, userId: user.id});
+            }
         },
-        [navigate, refetchNotes, repo],
+        [createNoteApi, repo, user],
     );
+
+    React.useEffect(() => {
+        if (createdNote) {
+            navigate(`/notes/${createdNote.id}`);
+        }
+    }, [createdNote, navigate]);
 
     const handleCreateDir = React.useCallback(
         async (parentDirId: number, name: string) => {
-            await createDir({name, parentDirId});
-            refetchDirTree();
+            if (user) {
+                createDirApi({parentDirId, name, userId: user.id});
+            }
         },
-        [refetchDirTree],
+        [createDirApi, user],
     );
 
     React.useEffect(() => {
@@ -160,9 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             </ButtonGroup>
 
             <Divider />
-            {(isErrorNotes || isErrorDirTree) && (
+            {(isErrorNotes || isErrorDirTree || isErrorDirCreation || isErrorNoteCreation) && (
                 <Box sx={{p: 2}}>
-                    <Typography variant={'body1'}>Технические проблемы</Typography>{' '}
+                    <Typography variant={'body1'}>Технические проблемы</Typography>
                 </Box>
             )}
             {!(isErrorNotes || isErrorDirTree) && (
@@ -174,7 +184,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                             refetchNotes={refetchNotes}
                             folder={fullDirTree}
                             setDirIdForCreate={setDirIdForCreate}
-                            isLoading={isLoadingDirTree || isLoadingNotes}
+                            isLoading={
+                                isLoadingDirTree || isLoadingNotes || isLoadingDirCreation || isLoadingNoteCreation
+                            }
                         />
                     ) : (
                         <Typography>Войдите для доступа к заметкам</Typography>
