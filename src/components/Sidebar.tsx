@@ -55,6 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const {
         data: dirTree,
         isLoading: isLoadingDirTree,
+        isError: isErrorDirTree,
         refetch: refetchDirTree,
     } = dirsApi.useGetDirTreeQuery(
         {
@@ -67,6 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const {
         data: notes,
         isLoading: isLoadingNotes,
+        isError: isErrorNotes,
         refetch: refetchNotes,
     } = notesApi.useListNotesQuery(
         {
@@ -158,20 +160,27 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             </ButtonGroup>
 
             <Divider />
-            <Box sx={{p: 2}}>
-                {!!user ? (
-                    <Folder
-                        onDirCreateClick={() => setIsOpenCreateDialog(true)}
-                        handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
-                        refetchNotes={refetchNotes}
-                        folder={fullDirTree}
-                        setDirIdForCreate={setDirIdForCreate}
-                        isLoading={isLoadingDirTree || isLoadingNotes}
-                    />
-                ) : (
-                    <Typography>Войдите для доступа к заметкам</Typography>
-                )}
-            </Box>
+            {(isErrorNotes || isErrorDirTree) && (
+                <Box sx={{p: 2}}>
+                    <Typography variant={'body1'}>Технические проблемы</Typography>{' '}
+                </Box>
+            )}
+            {!(isErrorNotes || isErrorDirTree) && (
+                <Box sx={{p: 2}}>
+                    {!!user ? (
+                        <Folder
+                            onDirCreateClick={() => setIsOpenCreateDialog(true)}
+                            handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
+                            refetchNotes={refetchNotes}
+                            folder={fullDirTree}
+                            setDirIdForCreate={setDirIdForCreate}
+                            isLoading={isLoadingDirTree || isLoadingNotes}
+                        />
+                    ) : (
+                        <Typography>Войдите для доступа к заметкам</Typography>
+                    )}
+                </Box>
+            )}
 
             <Dialog open={isOpenCreateDialog} onClose={() => setIsOpenCreateDialog(false)}>
                 <DialogTitle id="alert-dialog-title">Создать директорию</DialogTitle>
