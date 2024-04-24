@@ -137,8 +137,11 @@ export function Editor({autoMergeUrl, path}: EditorProps) {
             },
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const onPatch: (args: DocHandleChangePayload<NoteDoc>) => void = ({doc, patches, patchInfo}) => {
-            console.log(`${name}: patch received`);
+        const onPatch: (args: DocHandleChangePayload<NoteDoc>) => void = async ({doc, patches, patchInfo}) => {
+            //console.log(`patch received`);
+            //console.log(doc);
+            // console.log(handle.docSync());
+            handle.docSync();
             const newState = autoMirror.reconcilePatch(patchInfo.before, doc, patches, view.state);
             view.updateState(newState);
         };
