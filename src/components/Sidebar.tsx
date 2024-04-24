@@ -109,6 +109,8 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
         }
     }, [dirTree, dispatch, notes, user]);
 
+    console.log(user);
+
     return (
         <Drawer
             sx={{
@@ -137,19 +139,19 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             </DrawerHeader>
 
             <ButtonGroup sx={{display: 'flex', justifyContent: 'flex-end'}}>
-                <Tooltip title={collapsed ? 'Свернуть все' : 'Развернуть все'}>
-                    <IconButton onClick={() => setCollapsed((prevState) => !prevState)}>
+                <Tooltip disableFocusListener={!user} title={collapsed ? 'Свернуть все' : 'Развернуть все'}>
+                    <IconButton disabled={!user} onClick={() => setCollapsed((prevState) => !prevState)}>
                         {collapsed ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip title={'Создать заметку'}>
-                    <IconButton onClick={() => setIsOpenCreateNoteDialog(true)}>
+                <Tooltip disableFocusListener={!user} title={'Создать заметку'}>
+                    <IconButton disabled={!user} onClick={() => setIsOpenCreateNoteDialog(true)}>
                         <NoteAddIcon />
                     </IconButton>
                 </Tooltip>
-                <Tooltip title={'Создать папку'}>
-                    <IconButton onClick={() => setIsOpenCreateDialog(true)}>
+                <Tooltip disableFocusListener={!user} title={'Создать папку'}>
+                    <IconButton disabled={!user} onClick={() => setIsOpenCreateDialog(true)}>
                         <CreateNewFolderIcon />
                     </IconButton>
                 </Tooltip>
