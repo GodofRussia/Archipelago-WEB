@@ -91,9 +91,14 @@ function Registration() {
     React.useEffect(() => {
         if (rootDir && !isLoadingSetting && userData?.userId) {
             setUserId(userData.userId);
-            navigate('/');
         }
     }, [isLoadingSetting, navigate, rootDir, userData]);
+
+    React.useEffect(() => {
+        if (user) {
+            navigate('/');
+        }
+    }, [isLoadingSetting, navigate, rootDir, user, userData]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
