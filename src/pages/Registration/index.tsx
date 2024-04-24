@@ -100,7 +100,7 @@ function Registration() {
             dispatch(setUser(user));
             navigate('/');
         }
-    }, [isLoadingSetting, navigate, rootDir, user, userData]);
+    }, [dispatch, isLoadingSetting, navigate, rootDir, user, userData]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
