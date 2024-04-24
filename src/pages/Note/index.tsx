@@ -40,12 +40,15 @@ import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as A from '@automerge/automerge/next';
+import {useAppSelector} from '../../hooks/useRedux';
 
 function Note() {
     const {id = ''} = useParams();
 
     const ref = React.useRef<MDXEditorMethods>(null);
     const summRef = React.useRef<MDXEditorMethods>(null);
+
+    const {user} = useAppSelector((store) => store.userReducer);
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
@@ -55,9 +58,9 @@ function Note() {
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
-    const [userId] = React.useState<string>('a25addc2-ec6b-4960-9779-05a846dc94fd');
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
-    const [canSummarizeChar, setCanSummarizeChar] = React.useState<boolean>(false);
+    // TODO: ручка добавится для short polling
+    // const [canSummarizeChar, setCanSummarizeChar] = React.useState<boolean>(false);
 
     const fetchZoomJoin = React.useCallback(
         async (url: string, userId: string) => {
@@ -130,11 +133,11 @@ function Note() {
     }, [id]);
 
     const handleFormSubmit = React.useCallback(async () => {
-        if (!!userId && !!zoomUrl) {
-            await fetchZoomJoin(zoomUrl, userId);
+        if (!!user?.id && !!zoomUrl) {
+            await fetchZoomJoin(zoomUrl, user.id);
             setFormModalIsOpen(false);
         }
-    }, [fetchZoomJoin, userId, zoomUrl]);
+    }, [fetchZoomJoin, user?.id, zoomUrl]);
 
     const handleChangeMd = React.useCallback(
         (value: string) => {
@@ -153,8 +156,8 @@ function Note() {
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
-            if (userId && zoomUrl && !!note) {
-                fetchZoomGetSum(userId, role || 'обычный').then((text) => {
+            if (user?.id && zoomUrl && !!note) {
+                fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
                     console.log(text);
                     if (text) {
                         setSum(text);
@@ -164,12 +167,12 @@ function Note() {
         }, 20000);
 
         return () => clearInterval(intervalId);
-    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, role, user?.id, zoomUrl]);
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
-            if (userId && zoomUrl && !!note) {
-                fetchZoomGetSum(userId, role || 'обычный').then((text) => {
+            if (user?.id && zoomUrl && !!note) {
+                fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
                     console.log(text);
                     if (text) {
                         setSum(text);
@@ -179,7 +182,7 @@ function Note() {
         }, 20000);
 
         return () => clearInterval(intervalId);
-    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
+    }, [fetchZoomGetSum, note, role, user?.id, zoomUrl]);
 
     React.useEffect(() => {
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
@@ -190,18 +193,20 @@ function Note() {
     }, [sum]);
 
     React.useEffect(() => {
-        getZoomSum(userId).then(() => {
-            const intervalId = setInterval(() => {
-                fetchZoomGetSum(userId, role || 'обычный').then((text) => {
-                    if (text) {
-                        setSum(text);
-                    }
-                });
-            }, 20000);
+        if (user) {
+            getZoomSum(user.id).then(() => {
+                const intervalId = setInterval(() => {
+                    fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
+                        if (text) {
+                            setSum(text);
+                        }
+                    });
+                }, 20000);
 
-            return () => clearInterval(intervalId);
-        });
-    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
+                return () => clearInterval(intervalId);
+            });
+        }
+    }, [fetchZoomGetSum, note, role, user, user?.id, zoomUrl]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>

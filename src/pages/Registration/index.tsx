@@ -17,23 +17,26 @@ import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {dirsApi} from '../../services/DirsService';
 import {setUser} from '../../store/reducers/UserSlice';
 
-const StyledTextField = styled(TextField)(() => ({
+const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
-            borderColor: 'rgba(0, 0, 0, 0.87)',
+            borderColor: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
         },
         '&:hover fieldset': {
-            borderColor: 'rgba(0, 0, 0, 0.87)',
+            borderColor: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: theme.palette.primary.main,
         },
     },
     '& .MuiInputBase-input': {
-        color: 'rgba(0, 0, 0, 0.87)',
-    },
-    '& label.Mui-focused': {
-        color: 'rgba(0, 0, 0, 0.87)',
+        color: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
     },
     '& .MuiFormLabel-root': {
-        color: 'rgba(0, 0, 0, 0.87)',
+        color: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
+        '&.Mui-focused': {
+            color: theme.palette.primary.main,
+        },
     },
 }));
 
