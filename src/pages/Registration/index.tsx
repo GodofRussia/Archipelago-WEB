@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import {authApi} from '../../services/AuthService';
 import {userAPI} from '../../services/UserService';
-import {useAppDispatch} from '../../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {dirsApi} from '../../services/DirsService';
 import {setUser} from '../../store/reducers/UserSlice';
 
@@ -46,6 +46,7 @@ function Registration() {
     const [isPasswordError, setError] = React.useState<boolean>(false);
 
     const dispatch = useAppDispatch();
+    const {user: currUser} = useAppSelector((store) => store.userReducer);
     const navigate = useNavigate();
 
     const [register, {data: userData, isLoading: isLoadingRegistration, isError: isErrorRegistration}] =
@@ -93,14 +94,19 @@ function Registration() {
         if (rootDir && !isLoadingSetting && userData?.userId) {
             setUserId(userData.userId);
         }
-    }, [isLoadingSetting, navigate, rootDir, userData]);
+    }, [isLoadingSetting, rootDir, userData]);
 
     React.useEffect(() => {
         if (user) {
             dispatch(setUser(user));
+        }
+    }, [dispatch, user]);
+
+    React.useEffect(() => {
+        if (currUser) {
             navigate('/');
         }
-    }, [dispatch, isLoadingSetting, navigate, rootDir, user, userData]);
+    }, [currUser, navigate]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
