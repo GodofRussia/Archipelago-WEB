@@ -1,61 +1,178 @@
-import {useState} from 'react';
-import {Link} from 'react-router-dom';
-import {Box, Button, Card, CardContent, CardHeader, TextField} from '@mui/material';
-import {registrationRequest} from '../../api/auth';
+import React from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    CircularProgress,
+    styled,
+    TextField,
+    Typography,
+} from '@mui/material';
+import {authApi} from '../../services/AuthService';
+import {userAPI} from '../../services/UserService';
+import {setUser} from '../../store/reducers/UserSlice';
+import {useAppDispatch} from '../../hooks/useRedux';
+import {dirsApi} from '../../services/DirsService';
+
+const StyledTextField = styled(TextField)(() => ({
+    '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+            borderColor: 'rgba(0, 0, 0, 0.87)',
+        },
+        '&:hover fieldset': {
+            borderColor: 'rgba(0, 0, 0, 0.87)',
+        },
+    },
+    '& .MuiInputBase-input': {
+        color: 'rgba(0, 0, 0, 0.87)',
+    },
+    '& label.Mui-focused': {
+        color: 'rgba(0, 0, 0, 0.87)',
+    },
+    '& .MuiFormLabel-root': {
+        color: 'rgba(0, 0, 0, 0.87)',
+    },
+}));
 
 function Registration() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [email, setEmail] = React.useState('');
+    const [name, setName] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [userId, setUserId] = React.useState<string | null>(null);
+    const [isPasswordError, setError] = React.useState<boolean>(false);
 
-    const handleRegistration = async () => {
-        try {
-            const response = await registrationRequest(email, email, password);
-            console.log('Registration response:', response.data);
-        } catch (error) {
-            console.error('Registration request error:', error);
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    const [register, {data: userData, isLoading: isLoadingRegistration, isError: isErrorRegistration}] =
+        authApi.useRegistrationMutation();
+    const {
+        data: user,
+        isLoading: isLoadingUser,
+        isError: isErrorUser,
+    } = userAPI.useGetUserQuery(userId || '', {skip: userId === null});
+
+    const [createRootDir, {data: rootDir, isLoading: isLoadingRootDir, isError: isErrorRootDir}] =
+        dirsApi.useCreateDirMutation();
+
+    const [setUserRootDir, {isLoading: isLoadingSetting, isError: isErrorSetting}] =
+        userAPI.useSetUserRootDirMutation();
+
+    const handleRegistration = React.useCallback(() => {
+        if (confirmPassword !== password) {
+            setError(true);
+            return;
         }
-    };
+        register({email, password, name});
+    }, [confirmPassword, email, name, password, register]);
+
+    React.useEffect(() => {
+        if (userData?.userId) {
+            setUserId(userData.userId);
+        }
+    }, [userData]);
+
+    React.useEffect(() => {
+        if (user) {
+            dispatch(setUser(user));
+            createRootDir({
+                name: 'root_dir',
+                userId: user.id,
+            });
+        }
+    }, [createRootDir, dispatch, user]);
+
+    React.useEffect(() => {
+        if (rootDir && user) {
+            setUserRootDir({
+                rootDirID: rootDir.id,
+                userId: user.id,
+            });
+            navigate('/');
+        }
+    }, [createRootDir, dispatch, rootDir, setUserRootDir, user]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
-            <Card sx={{height: '60vh', width: '33vw'}}>
-                <CardHeader sx={{marginTop: '5%'}} title="Регистрация" />
+            <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
+                <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
                 <CardContent>
                     <Box
                         sx={{
                             display: 'flex',
                             justifyContent: 'center',
                             flexDirection: 'column',
-                            gap: 4,
+                            gap: 2,
+                            textDecoration: 'none',
                         }}
                     >
-                        <TextField
+                        <StyledTextField
                             label="Почта"
                             variant="outlined"
                             value={email}
+                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
                             onChange={(e) => setEmail(e.target.value)}
                         />
-                        <TextField
+                        <StyledTextField
+                            label="Имя пользователя"
+                            variant="outlined"
+                            value={name}
+                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
+                            onChange={(e) => {
+                                setName(e.target.value);
+                                setError(false);
+                            }}
+                        />
+                        <StyledTextField
                             label="Пароль"
                             type="password"
                             variant="outlined"
+                            error={
+                                isErrorRegistration ||
+                                isErrorUser ||
+                                isPasswordError ||
+                                isErrorRootDir ||
+                                isErrorSetting
+                            }
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setPassword(e.target.value);
+                                setError(false);
+                            }}
                         />
-                        <TextField
+                        <StyledTextField
                             label="Подтверждение пароля"
                             type="password"
                             variant="outlined"
+                            error={
+                                isErrorRegistration ||
+                                isErrorUser ||
+                                isPasswordError ||
+                                isErrorRootDir ||
+                                isErrorSetting
+                            }
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
-                        <Button variant="contained" color="primary" onClick={handleRegistration}>
-                            Зарегистрироваться
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleRegistration}
+                            sx={{minWidth: '343px'}}
+                        >
+                            {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
+                                <CircularProgress />
+                            ) : (
+                                'Зарегистрироваться'
+                            )}
                         </Button>
-                        <Button sx={{marginTop: '-5%'}} component={Link} to="/login">
-                            Войти
-                        </Button>
+                        <Typography component={Link} to="/login" sx={{textDecoration: 'none', color: 'black'}}>
+                            Войти в аккаунт
+                        </Typography>
                     </Box>
                 </CardContent>
             </Card>

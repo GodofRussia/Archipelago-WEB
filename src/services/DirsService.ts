@@ -1,4 +1,4 @@
-import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {Dir, DirTree} from '../types/dirs';
 
 export const dirsApi = createApi({
@@ -19,10 +19,10 @@ export const dirsApi = createApi({
             }),
             providesTags: () => ['DirsTree'],
         }),
-        createDir: build.mutation<Dir, {dir: Omit<Dir, 'subpath'>; userId: string}>({
-            query: ({dir, userId}) => ({
+        createDir: build.mutation<Dir, {parentDirId?: number; name: string; userId: string}>({
+            query: ({parentDirId, name, userId}) => ({
                 url: `/dirs`,
-                body: dir,
+                body: {parent_dir_id: parentDirId, name},
                 method: 'POST',
                 headers: {'X-User-Id': userId},
             }),

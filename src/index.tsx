@@ -10,6 +10,7 @@ import {BroadcastChannelNetworkAdapter} from '@automerge/automerge-repo-network-
 import {RepoContext} from '@automerge/automerge-repo-react-hooks';
 import {Provider} from 'react-redux';
 import {setupStore} from './store/store';
+import {setupListeners} from '@reduxjs/toolkit/query';
 
 const ws_url = import.meta.env.VITE_AUTOMERGE_URL;
 
@@ -19,9 +20,13 @@ const repo = new Repo({
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+
+const store = setupStore();
+setupListeners(store.dispatch);
+
 root.render(
     <React.StrictMode>
-        <Provider store={setupStore()}>
+        <Provider store={store}>
             <RepoContext.Provider value={repo}>
                 <App />
             </RepoContext.Provider>
