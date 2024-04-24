@@ -81,19 +81,19 @@ function Registration() {
 
     React.useEffect(() => {
         if (rootDir && userData?.userId) {
-            setUserId(userData.userId);
-        }
-    }, [rootDir, userData]);
-
-    React.useEffect(() => {
-        if (rootDir && user) {
             setUserRootDir({
                 rootDirID: rootDir.id,
-                userId: user.id,
+                userId: userData?.userId,
             });
+        }
+    }, [createRootDir, dispatch, navigate, rootDir, setUserRootDir, user, userData?.userId]);
+
+    React.useEffect(() => {
+        if (rootDir && !isLoadingSetting && userData?.userId) {
+            setUserId(userData.userId);
             navigate('/');
         }
-    }, [createRootDir, dispatch, navigate, rootDir, setUserRootDir, user]);
+    }, [isLoadingSetting, navigate, rootDir, userData]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
