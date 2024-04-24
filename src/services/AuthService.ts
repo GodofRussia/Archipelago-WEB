@@ -23,9 +23,8 @@ export const authApi = createApi({
                 method: 'POST',
                 body: {email, password},
             }),
-            transformResponse: (response: {data: AuthResponseDto}) => {
-                console.log(response);
-                return convertFromAuthDto(response.data);
+            transformResponse: (response) => {
+                return convertFromAuthDto(response as AuthResponseDto);
             },
         }),
         registration: build.mutation<AuthResponse, RegistrationRequest>({
@@ -34,7 +33,7 @@ export const authApi = createApi({
                 method: 'POST',
                 body: {name, email, password},
             }),
-            transformResponse: (response: {data: AuthResponseDto}) => convertFromAuthDto(response.data),
+            transformResponse: (response) => convertFromAuthDto(response as AuthResponseDto),
         }),
     }),
 });

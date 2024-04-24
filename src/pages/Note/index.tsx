@@ -34,7 +34,7 @@ import {
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
-import {Note as NoteType, NoteDoc, Role} from '../../types/notes';
+import {CallsDetail, CallsType, Note as NoteType, NoteDoc, Role} from '../../types/notes';
 import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -49,6 +49,8 @@ function Note() {
 
     const [note, setNote] = React.useState<NoteType | undefined>(undefined);
     const [role, setRole] = React.useState<string | null>('обычный');
+    const [callsType, setCallsType] = React.useState<string | null>('Zoom');
+    const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
@@ -58,7 +60,7 @@ function Note() {
 
     const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
         try {
-            const response = await produceZoomJoin(url, userId);
+            const response = await produceZoomJoin(url, userId, callsDetail);
             console.log(response);
             return true;
         } catch (error) {
@@ -189,10 +191,10 @@ function Note() {
                     Получить суммаризацию чата
                 </Button>
                 <Button variant="outlined" color="secondary" onClick={() => setInfoModalIsOpen(true)}>
-                    Получить токен заметки
+                    Привязать чат
                 </Button>
                 <Button variant="outlined" color="secondary" onClick={() => setFormModalIsOpen(true)}>
-                    Привязать звонок к заметке
+                    Привязать звонок
                 </Button>
                 <Autocomplete
                     defaultValue={'обычный'}
@@ -211,14 +213,13 @@ function Note() {
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                 >
-                    <DialogTitle id="alert-dialog-title">
-                        Токен заметки:
-                        {id}
-                    </DialogTitle>
+                    <DialogTitle id="alert-dialog-title">Привязать телеграм-чат</DialogTitle>
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
-                            Добавьте бота @ArchipelagoSummarizer_bot в ваш tg.
-                            <br /> Затем напишите `/config {id}`
+                            1. Добавьте бота @ArchipelagoSummarizer_bot в Ваш телеграм-чат
+                            <br /> &#09; Нажмите на название чата, затем на кнопку &quot;Добавить&quot; и вставьте имя
+                            бота
+                            <br /> 2. Введите в чат /config {id}
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
@@ -234,14 +235,26 @@ function Note() {
                     aria-labelledby="zoom-alert-dialog-title"
                     aria-describedby="zoom-alert-dialog-description"
                 >
-                    <DialogTitle id="alert-dialog-title">Привязать звонок ZOOM к заметке</DialogTitle>
+                    <DialogTitle id="alert-dialog-title">Привязать звонок к заметке</DialogTitle>
                     <DialogContent>
-                        <Stack gap={3}>
+                        <Stack gap={3} marginTop={0.5}>
+                            <Autocomplete
+                                disablePortal
+                                defaultValue={'Zoom'}
+                                options={CallsType}
+                                value={callsType}
+                                onChange={(_, newValue) => {
+                                    setCallsType(newValue);
+                                }}
+                                sx={{width: 300}}
+                                renderInput={(params) => <TextField {...params} label="Конференция" size="small" />}
+                                clearIcon={false}
+                            />
                             <TextField
                                 type="text"
                                 margin="dense"
                                 id="zoom-url"
-                                label="Ссылка на ZOOM конференцию"
+                                label="Ссылка на конференцию"
                                 size="small"
                                 variant="outlined"
                                 fullWidth
@@ -249,6 +262,20 @@ function Note() {
                                 onChange={(e) => {
                                     setZoomUrl(e.target.value);
                                 }}
+                            />
+                            <Autocomplete
+                                disablePortal
+                                defaultValue={'Средняя'}
+                                options={CallsDetail}
+                                value={callsDetail}
+                                onChange={(_, newValue) => {
+                                    setCallsDetail(newValue);
+                                }}
+                                sx={{width: 300}}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Степень детализации звонка" size="small" />
+                                )}
+                                clearIcon={false}
                             />
                         </Stack>
                     </DialogContent>

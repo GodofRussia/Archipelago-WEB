@@ -9,11 +9,12 @@ const zoomBase = axios.create({
 
 const zoomToken = 'skoro_v_scolku_123';
 
-export const produceZoomJoin = (url: string, user_id: string) => {
+export const produceZoomJoin = (url: string, user_id: string, detalization: string | null) => {
     return zoomBase.post('/start_recording', {
         url,
         user_id,
         token: zoomToken,
+        agree_detail: detalization || undefined,
     });
 };
 
