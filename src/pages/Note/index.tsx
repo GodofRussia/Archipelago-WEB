@@ -38,8 +38,9 @@ import {Note as NoteType, NoteDoc, Role, CallsType, CallsDetail} from '../../typ
 import {getNote} from '../../api/notes';
 import {useDocument, useRepo, useHandle} from '@automerge/automerge-repo-react-hooks';
 import * as A from '@automerge/automerge/next';
+import {isValidAutomergeUrl} from '@automerge/automerge-repo';
 
-import {Editor} from '../../components/AutoMirrorEditor';
+import {Editor, useHandleReady} from '../../components/AutoMirrorEditor';
 
 function Note() {
     const {id = ''} = useParams();
@@ -49,7 +50,7 @@ function Note() {
     const [role, setRole] = React.useState<string | null>('обычный');
     const [callsType, setCallsType] = React.useState<string | null>('Zoom');
     const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
-    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
+    // const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
@@ -60,18 +61,11 @@ function Note() {
     // const repo = useRepo();
 
     console.log('url:', note?.automergeUrl);
-    const handle = useHandle(note?.automergeUrl);
+    //const handle = useHandle<NoteDoc>(note?.automergeUrl);
 
-    //const [handle, setHandle] = React.useState<A.DocHandle<NoteDoc> | undefined>(undefined);
+    //const handleReady = useHandleReady(handle);
 
-    /*React.useEffect(() => {
-        if (note?.automergeUrl) {
-            console.log();
-            const _handle = repo.find<NoteDoc>(note?.automergeUrl);
-            console.log(_handle);
-            setHandle(_handle);
-        }
-    }, [note?.automergeUrl, repo, handle]);*/
+    // const [handle, setHandle] = React.useState<A.DocHandle<NoteDoc> | undefined>(undefined);
 
     const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
         try {
@@ -293,7 +287,11 @@ function Note() {
                 </Dialog>
             </Box>
 
-            {handle ? <Editor handle={handle} path={['text']} /> : <div>Loading...</div>}
+            {isValidAutomergeUrl(note?.automergeUrl) ? (
+                <Editor autoMergeUrl={note.automergeUrl} path={['text']} />
+            ) : (
+                <div>Loading...</div>
+            )}
         </Stack>
     );
 }
