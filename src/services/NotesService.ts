@@ -1,32 +1,22 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
-import {Note, NoteDoc, NoteDto} from '../types/notes';
+import {Note, NoteDto} from '../types/notes';
 import {convertFromAccessToDto, convertFromNoteDto, convertFromNoteToNoteDto} from '../utils/convert';
-import {Repo} from '@automerge/automerge-repo';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import {from} from '@automerge/automerge/next';
-import * as A from '@automerge/automerge';
 import {Access} from '../types/access';
 
 interface CreateNoteRequest {
     title: string;
     dirId: number;
     userId: string;
-    repo: Repo;
+    automergeUrl: string;
 }
 
 interface SetAccessRequest {
     noteID: string;
     userID: string;
     access: Access;
-}
-
-function createAutomergeUrl(repo: Repo) {
-    const nextDoc = from({text: new A.Text()});
-    const handle = repo.create<NoteDoc>(nextDoc);
-
-    console.log(handle);
-    return handle.url;
 }
 
 export const notesApi = createApi({
@@ -59,7 +49,7 @@ export const notesApi = createApi({
                 body: {
                     title: requestData.title,
                     dir_id: requestData.dirId,
-                    automerge_url: createAutomergeUrl(requestData.repo),
+                    automerge_url: requestData.automergeUrl,
                 },
                 method: 'POST',
                 headers: {'X-User-Id': requestData.userId},
