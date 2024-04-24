@@ -65,7 +65,7 @@ function Note() {
     const fetchZoomJoin = React.useCallback(
         async (url: string, userId: string) => {
             try {
-                const response = await produceZoomJoin(url, userId, callsDetail);
+                await produceZoomJoin(url, userId, callsDetail);
                 return true;
             } catch (error) {
                 console.error('Error fetching data:', error);
