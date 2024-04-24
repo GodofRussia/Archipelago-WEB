@@ -28,6 +28,7 @@ export const setupStore = () => {
                 notesApi.middleware,
                 dirsApi.middleware,
             ),
+        devTools: true,
     });
 };
 
