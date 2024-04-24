@@ -1,22 +1,22 @@
 import * as A from '@automerge/automerge';
-import {AnyDocumentId} from '@automerge/automerge-repo';
+import {AutomergeUrl} from '@automerge/automerge-repo';
 
 export interface Note {
     id: string;
-    automergeUrl: AnyDocumentId;
+    automergeUrl: AutomergeUrl;
     title: string;
     dirId: number; // int value
 }
 
 export interface NoteDto {
     id: string;
-    automerge_url: AnyDocumentId;
+    automerge_url: AutomergeUrl;
     title: string;
     dir_id: number; // int value
 }
 
 export interface NoteDoc {
-    text: A.Text;
+    text: string;
 }
 
 export const Role = ['обычный', 'пират', 'гопник'];
