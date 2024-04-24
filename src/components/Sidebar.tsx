@@ -101,6 +101,12 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     );
 
     React.useEffect(() => {
+        if (user) {
+            setDirIdForCreate(user.rootDirId);
+        }
+    }, [createdNote, navigate, user]);
+
+    React.useEffect(() => {
         if (createdNote) {
             navigate(`/notes/${createdNote.id}`);
         }
