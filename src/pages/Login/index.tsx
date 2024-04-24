@@ -68,14 +68,12 @@ function Login() {
 
     React.useEffect(() => {
         if (user) {
-            console.log(user);
             dispatch(setUser(user));
         }
     }, [dispatch, navigate, user]);
 
     React.useEffect(() => {
         if (currUser) {
-            console.log(currUser);
             navigate('/');
         }
     }, [currUser, navigate]);
