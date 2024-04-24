@@ -15,7 +15,7 @@ interface RegistrationRequest {
 
 export const authApi = createApi({
     reducerPath: 'auth-queries',
-    baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_AUTH_URL}), // credentials: 'include'
+    baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_AUTH_URL, credentials: 'include'}),
     endpoints: (build) => ({
         login: build.mutation<AuthResponse, LoginRequest>({
             query: ({password, email}) => ({
