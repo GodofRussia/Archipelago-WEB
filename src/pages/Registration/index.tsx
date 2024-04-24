@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import {authApi} from '../../services/AuthService';
 import {userAPI} from '../../services/UserService';
-import {setUser} from '../../store/reducers/UserSlice';
 import {useAppDispatch} from '../../hooks/useRedux';
 import {dirsApi} from '../../services/DirsService';
 
@@ -72,19 +71,18 @@ function Registration() {
 
     React.useEffect(() => {
         if (userData?.userId) {
-            setUserId(userData.userId);
-        }
-    }, [userData]);
-
-    React.useEffect(() => {
-        if (user) {
-            dispatch(setUser(user));
             createRootDir({
                 name: 'root_dir',
-                userId: user.id,
+                userId: userData?.userId,
             });
         }
-    }, [createRootDir, dispatch, user]);
+    }, [createRootDir, dispatch, user, userData?.userId]);
+
+    React.useEffect(() => {
+        if (rootDir && userData?.userId) {
+            setUserId(userData.userId);
+        }
+    }, [rootDir, userData]);
 
     React.useEffect(() => {
         if (rootDir && user) {
