@@ -8,7 +8,7 @@ import {AutoMirror} from '@automerge/prosemirror';
 import {NoteDoc} from '../types/notes';
 import {exampleSetup} from 'prosemirror-example-setup';
 import './Editor.css';
-import {useHandle, useRepo} from '@automerge/automerge-repo-react-hooks';
+import {useDocument, useHandle, useRepo} from '@automerge/automerge-repo-react-hooks';
 import {keymap} from 'prosemirror-keymap';
 import {baseKeymap, chainCommands, setBlockType, toggleMark, wrapIn} from 'prosemirror-commands';
 import {wrapInList, splitListItem, sinkListItem, liftListItem} from 'prosemirror-schema-list';
@@ -82,6 +82,10 @@ export function Editor({autoMergeUrl, path}: EditorProps) {
 
     const [isReady, setIsReady] = useState(false);
     const handle = repo.find<NoteDoc>(autoMergeUrl);
+
+    useEffect(() => {
+        handle.docSync();
+    }, [handle]);
 
     useEffect(() => {
         setIsReady(false);
