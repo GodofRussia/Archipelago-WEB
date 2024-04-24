@@ -32,7 +32,7 @@ export function convertFromNoteToNoteDto(note: Note): NoteDto {
 
 export function convertFromAuthDto(authData: AuthResponseDto): AuthResponse {
     return {
-        userData: authData.user_data,
+        ...authData,
         userId: authData.user_id,
     };
 }
