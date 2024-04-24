@@ -7,6 +7,7 @@ import {userAPI} from '../services/UserService';
 import {authApi} from '../services/AuthService';
 import {notesApi} from '../services/NotesService';
 import {dirsApi} from '../services/DirsService';
+import {setupListeners} from '@reduxjs/toolkit/query';
 
 const rootReducer = combineReducers({
     userReducer,
@@ -29,6 +30,9 @@ export const setupStore = () => {
             ),
     });
 };
+
+export const store = setupStore();
+setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof rootReducer>;
 export type AppState = ReturnType<typeof setupStore>;
