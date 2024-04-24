@@ -66,7 +66,7 @@ function Login() {
             dispatch(setUser(user));
             navigate('/');
         }
-    }, [dispatch, user]);
+    }, [dispatch, navigate, user]);
 
     return (
         <Box
