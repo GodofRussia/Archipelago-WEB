@@ -23,7 +23,10 @@ export const authApi = createApi({
                 method: 'POST',
                 body: {email, password},
             }),
-            transformResponse: (response: {data: AuthResponseDto}) => convertFromAuthDto(response.data),
+            transformResponse: (response: {data: AuthResponseDto}) => {
+                console.log(response.data);
+                return convertFromAuthDto(response.data);
+            },
         }),
         registration: build.mutation<AuthResponse, RegistrationRequest>({
             query: ({password, name, email}) => ({
