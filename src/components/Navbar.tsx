@@ -48,7 +48,6 @@ const AppBar = styled(MuiAppBar, {
 function Navbar(props: NavbarProps) {
     const {open, setOpen, width, isAuthenticationPage = false} = props;
     const navigate = useNavigate();
-
     const handleLoginClicked = React.useCallback(() => {
         navigate('/login');
     }, [navigate]);

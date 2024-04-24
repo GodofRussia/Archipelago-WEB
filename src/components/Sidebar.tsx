@@ -17,6 +17,7 @@ import {
     styled,
     TextField,
     Tooltip,
+    Typography,
 } from '@mui/material';
 import CollapseIcon from '../icons/CollapseIcon';
 import HomeIcon from '@mui/icons-material/Home';
@@ -24,10 +25,12 @@ import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import {createDir, getDirTree} from '../api/dirs';
-import {User} from '../types/user';
-import {DirTreeDto} from '../types/dirs';
+import {createDir} from '../api/dirs';
 import Folder from './Directory';
+import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
+import {dirsApi} from '../services/DirsService';
+import {notesApi} from '../services/NotesService';
+import {mergeDirTreeWithNotes} from '../store/reducers/DirsSlice';
 
 const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
     display: 'flex',
@@ -48,7 +51,33 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const repo = useRepo();
     const navigate = useNavigate();
 
-    const [user, setUser] = React.useState<User | null>({id: '1', rootDirId: 1, login: 'moch', name: 'ilya'});
+    const {user} = useAppSelector((state) => state.userReducer);
+    const {
+        data: dirTree,
+        isLoading: isLoadingDirTree,
+        refetch: refetchDirTree,
+    } = dirsApi.useGetDirTreeQuery(
+        {
+            userId: user?.id || '',
+            dirId: user?.rootDirId || 0,
+        },
+        {skip: !user},
+    );
+
+    const {
+        data: notes,
+        isLoading: isLoadingNotes,
+        refetch: refetchNotes,
+    } = notesApi.useListNotesQuery(
+        {
+            userId: user?.id || '',
+        },
+        {skip: !user},
+    );
+
+    const {dirTree: fullDirTree} = useAppSelector((state) => state.dirsReducer);
+    const dispatch = useAppDispatch();
+
     const [collapsed, setCollapsed] = React.useState<boolean>(true);
     const [isOpenCreateDialog, setIsOpenCreateDialog] = React.useState(false);
 
@@ -57,44 +86,28 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const [noteTitle, setNoteTitle] = React.useState<string>('');
     const [dirIdForCreate, setDirIdForCreate] = React.useState<number>(1);
 
-    // const [notes, setNotes] = React.useState<Note[]>([]);
-    const [dirTree, setDirTree] = React.useState<DirTreeDto | null>(null);
-
-    const refetchDirsTree = React.useCallback(() => {
-        if (user) {
-            getDirTree({id: user.rootDirId}).then((treeData) => setDirTree(treeData.data));
-        }
-    }, [user]);
-
     const handleCreateNote = React.useCallback(
         async (dirId: number, title: string) => {
             const note = await createNote({title, dirId}, repo);
-            await refetchDirsTree();
+            await refetchNotes();
             navigate(`/notes/${note.id}`);
         },
-        [navigate, refetchDirsTree, repo],
+        [navigate, refetchNotes, repo],
     );
 
     const handleCreateDir = React.useCallback(
         async (parentDirId: number, name: string) => {
             await createDir({name, parentDirId});
-            refetchDirsTree();
+            refetchDirTree();
         },
-        [refetchDirsTree],
+        [refetchDirTree],
     );
 
     React.useEffect(() => {
-        const currentUser = sessionStorage.getItem('user');
-        if (currentUser && !user) {
-            setUser(JSON.parse(currentUser));
+        if (user && notes && dirTree) {
+            dispatch(mergeDirTreeWithNotes({dirTree, notes}));
         }
-    }, [user]);
-
-    React.useEffect(() => {
-        if (user) {
-            getDirTree({id: user.rootDirId}).then((treeData) => setDirTree(treeData.data));
-        }
-    }, [user]);
+    }, [dirTree, dispatch, notes, user]);
 
     return (
         <Drawer
@@ -114,6 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                 <IconButton onClick={() => navigate('/')}>
                     <HomeIcon />
                 </IconButton>
+                {/* // TODO: Реализовать список доступных заметок */}
                 {/* <IconButton> */}
                 {/*     <ListIcon /> */}
                 {/* </IconButton> */}
@@ -142,18 +156,20 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             </ButtonGroup>
 
             <Divider />
-            {dirTree && (
-                <Box sx={{p: 2}}>
+            <Box sx={{p: 2}}>
+                {!!user ? (
                     <Folder
-                        active={1}
                         onDirCreateClick={() => setIsOpenCreateDialog(true)}
                         handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
-                        refetchDirTree={refetchDirsTree}
-                        folder={dirTree}
+                        refetchNotes={refetchNotes}
+                        folder={fullDirTree}
                         setDirIdForCreate={setDirIdForCreate}
+                        isLoading={isLoadingDirTree || isLoadingNotes}
                     />
-                </Box>
-            )}
+                ) : (
+                    <Typography>Войдите для доступа к заметкам</Typography>
+                )}
+            </Box>
 
             <Dialog open={isOpenCreateDialog} onClose={() => setIsOpenCreateDialog(false)}>
                 <DialogTitle id="alert-dialog-title">Создать директорию</DialogTitle>

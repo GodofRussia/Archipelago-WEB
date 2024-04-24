@@ -1,8 +1,10 @@
-import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {Note, NoteDoc, NoteDto} from '../types/notes';
 import {convertFromAccessToDto, convertFromNoteDto, convertFromNoteToNoteDto} from '../utils/convert';
 import {Repo} from '@automerge/automerge-repo';
-import {from} from '@automerge/automerge/dist/next';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import {from} from '@automerge/automerge/next';
 import * as A from '@automerge/automerge';
 import {Access} from '../types/access';
 

@@ -1,21 +1,20 @@
 import React from 'react';
-import {Collapse, ListItem, ListItemText, Menu, MenuItem} from '@mui/material';
+import {Collapse, ListItem, ListItemText, Menu, MenuItem, Skeleton} from '@mui/material';
 import {ExpandLess, ExpandMore} from '@mui/icons-material';
-import {DirTreeDto} from '../types/dirs';
+import {FullDirTreeWithNotes} from '../types/dirs';
 import NoteCard from './NoteCard';
-import {convertFromNoteDto} from '../utils/convert';
 import List from '@mui/material/List';
 
 interface FolderProps {
-    folder: DirTreeDto;
-    active: number;
+    folder?: FullDirTreeWithNotes;
     onDirCreateClick: () => void;
     handleCreateNote: () => void;
-    refetchDirTree: () => void;
+    refetchNotes: () => void;
     setDirIdForCreate: (dirId: number) => void;
+    isLoading: boolean;
 }
 
-function Folder({folder, active, onDirCreateClick, refetchDirTree, handleCreateNote, setDirIdForCreate}: FolderProps) {
+function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDirIdForCreate, isLoading}: FolderProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [contextMenu, setContextMenu] = React.useState<{mouseX: number; mouseY: number} | null>(null);
 
@@ -35,7 +34,7 @@ function Folder({folder, active, onDirCreateClick, refetchDirTree, handleCreateN
         setContextMenu(null);
     };
 
-    return (
+    return !isLoading && folder ? (
         <List sx={{m: 0, p: 0}}>
             <ListItem
                 button
@@ -52,19 +51,19 @@ function Folder({folder, active, onDirCreateClick, refetchDirTree, handleCreateN
                     {folder.children.map((subFolder, idx) => (
                         <ListItem button key={`folder-${idx}`} sx={{p: 0}}>
                             <Folder
-                                active={active}
                                 key={subFolder.id}
                                 folder={subFolder}
                                 handleCreateNote={handleCreateNote}
                                 onDirCreateClick={onDirCreateClick}
-                                refetchDirTree={refetchDirTree}
+                                refetchNotes={refetchNotes}
                                 setDirIdForCreate={setDirIdForCreate}
+                                isLoading={isLoading}
                             />
                         </ListItem>
                     ))}
                     {folder.notes.map((note, idx) => (
                         <ListItem button key={`note-${idx}`} sx={{p: 0}}>
-                            <NoteCard key={note.id} {...convertFromNoteDto(note)} refetchNotes={refetchDirTree} />
+                            <NoteCard key={note.id} {...note} refetchNotes={refetchNotes} />
                         </ListItem>
                     ))}
                 </List>
@@ -95,6 +94,8 @@ function Folder({folder, active, onDirCreateClick, refetchDirTree, handleCreateN
                 </MenuItem>
             </Menu>
         </List>
+    ) : (
+        <Skeleton width={200} />
     );
 }
 

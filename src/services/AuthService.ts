@@ -1,15 +1,15 @@
-import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query';
+import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {convertFromAuthDto} from '../utils/convert';
 import {AuthResponse, AuthResponseDto} from '../types/auth';
 
 interface LoginRequest {
-    login: string;
+    email: string;
     password: string;
 }
 
 interface RegistrationRequest {
     email: string;
-    username: string;
+    name: string;
     password: string;
 }
 
@@ -18,18 +18,18 @@ export const authApi = createApi({
     baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_AUTH_URL, credentials: 'include'}),
     endpoints: (build) => ({
         login: build.mutation<AuthResponse, LoginRequest>({
-            query: ({password, login}) => ({
+            query: ({password, email}) => ({
                 url: '/login',
                 method: 'POST',
-                body: {login, password},
+                body: {email, password},
             }),
             transformResponse: (response: {data: AuthResponseDto}) => convertFromAuthDto(response.data),
         }),
         registration: build.mutation<AuthResponse, RegistrationRequest>({
-            query: ({password, username, email}) => ({
+            query: ({password, name, email}) => ({
                 url: '/regisrtation',
                 method: 'POST',
-                body: {username, email, password},
+                body: {name, email, password},
             }),
             transformResponse: (response: {data: AuthResponseDto}) => convertFromAuthDto(response.data),
         }),
