@@ -24,7 +24,7 @@ export const authApi = createApi({
                 body: {email, password},
             }),
             transformResponse: (response: {data: AuthResponseDto}) => {
-                console.log(response.data);
+                console.log(response);
                 return convertFromAuthDto(response.data);
             },
         }),
