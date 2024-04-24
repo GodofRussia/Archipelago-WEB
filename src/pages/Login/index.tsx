@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import {userAPI} from '../../services/UserService';
 import {authApi} from '../../services/AuthService';
-import {useAppDispatch} from '../../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {setUser} from '../../store/reducers/UserSlice';
 
 const StyledTextField = styled(TextField)(() => ({
@@ -42,6 +42,8 @@ function Login() {
     const [userId, setUserId] = React.useState<string | null>(null);
 
     const dispatch = useAppDispatch();
+    const currUser = useAppSelector((store) => store.userReducer.user);
+    // const currUser = currUserFunc();
     const navigate = useNavigate();
 
     const [login, {data: userData, isLoading: isLoadingLogin, isError: isErrorLogin}] = authApi.useLoginMutation();
@@ -63,10 +65,17 @@ function Login() {
 
     React.useEffect(() => {
         if (user) {
+            console.log(user);
             dispatch(setUser(user));
-            navigate('/');
         }
     }, [dispatch, navigate, user]);
+
+    React.useEffect(() => {
+        if (currUser) {
+            console.log(currUser);
+            navigate('/');
+        }
+    }, [currUser, navigate]);
 
     return (
         <Box
