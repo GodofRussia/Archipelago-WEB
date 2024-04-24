@@ -15,6 +15,7 @@ import {authApi} from '../../services/AuthService';
 import {userAPI} from '../../services/UserService';
 import {useAppDispatch} from '../../hooks/useRedux';
 import {dirsApi} from '../../services/DirsService';
+import {setUser} from '../../store/reducers/UserSlice';
 
 const StyledTextField = styled(TextField)(() => ({
     '& .MuiOutlinedInput-root': {
@@ -96,6 +97,7 @@ function Registration() {
 
     React.useEffect(() => {
         if (user) {
+            dispatch(setUser(user));
             navigate('/');
         }
     }, [isLoadingSetting, navigate, rootDir, user, userData]);
