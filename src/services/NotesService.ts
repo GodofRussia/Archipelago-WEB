@@ -47,8 +47,10 @@ export const notesApi = createApi({
                 url: '/notes',
                 headers: {'X-User-Id': userId},
             }),
-            transformResponse: (response: {data: {notes: NoteDto[]}}) =>
-                response.data.notes.map((note) => convertFromNoteDto(note)),
+            transformResponse: (response: {notes: NoteDto[]}) => {
+                console.log(response);
+                return response.notes.map((note) => convertFromNoteDto(note));
+            },
             providesTags: () => ['Notes'],
         }),
         createNote: build.mutation<Note, CreateNoteRequest>({
@@ -62,7 +64,10 @@ export const notesApi = createApi({
                 method: 'POST',
                 headers: {'X-User-Id': requestData.userId},
             }),
-            transformResponse: (response: {data: NoteDto}) => convertFromNoteDto(response.data),
+            transformResponse: (response: NoteDto) => {
+                console.log(response);
+                return convertFromNoteDto(response);
+            },
             invalidatesTags: ['Notes'],
         }),
         updateNote: build.mutation<Note, {note: Note; userId: string}>({
@@ -74,7 +79,10 @@ export const notesApi = createApi({
                 method: 'POST',
                 headers: {'X-User-Id': requestData.userId},
             }),
-            transformResponse: (response: {data: NoteDto}) => convertFromNoteDto(response.data),
+            transformResponse: (response: NoteDto) => {
+                console.log(response);
+                return convertFromNoteDto(response);
+            },
         }),
         deleteNote: build.mutation<Note, {note: Note; userId: string}>({
             query: (requestData) => ({
@@ -85,7 +93,10 @@ export const notesApi = createApi({
                 method: 'DELETE',
                 headers: {'X-User-Id': requestData.userId},
             }),
-            transformResponse: (response: {data: NoteDto}) => convertFromNoteDto(response.data),
+            transformResponse: (response: NoteDto) => {
+                console.log(response);
+                return convertFromNoteDto(response);
+            },
             invalidatesTags: ['Notes'],
         }),
         setAccess: build.mutation<string, SetAccessRequest>({
