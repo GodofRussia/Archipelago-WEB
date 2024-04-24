@@ -98,6 +98,7 @@ function Registration() {
 
     React.useEffect(() => {
         if (user) {
+            console.log(user);
             dispatch(setUser(user));
         }
     }, [dispatch, user]);
