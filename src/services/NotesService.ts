@@ -25,6 +25,7 @@ function createAutomergeUrl(repo: Repo) {
     const nextDoc = from({text: new A.Text()});
     const handle = repo.create<NoteDoc>(nextDoc);
 
+    console.log(handle);
     return handle.url;
 }
 
@@ -64,6 +65,7 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': requestData.userId},
             }),
             transformResponse: (response: NoteDto) => {
+                console.log(response);
                 return convertFromNoteDto(response);
             },
             invalidatesTags: ['Notes'],
