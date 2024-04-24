@@ -92,9 +92,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const [dirIdForCreate, setDirIdForCreate] = React.useState<number>(1);
 
     const handleCreateNote = React.useCallback(
-        (dirId: number, title: string) => {
+        (title: string, dirId?: number) => {
             if (user) {
-                createNoteApi({title, dirId, repo, userId: user.id});
+                createNoteApi({title: title, dirId: dirId || user?.rootDirId || 0, repo, userId: user.id});
             }
         },
         [createNoteApi, repo, user],
@@ -255,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
                     <Button
                         color={'secondary'}
                         onClick={() => {
-                            handleCreateNote(dirIdForCreate, noteTitle);
+                            handleCreateNote(noteTitle, dirIdForCreate);
                             setIsOpenCreateNoteDialog(false);
                         }}
                     >
