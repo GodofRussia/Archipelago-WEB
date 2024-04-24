@@ -57,17 +57,21 @@ function Note() {
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
     const [userId] = React.useState<string>('a25addc2-ec6b-4960-9779-05a846dc94fd');
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
+    const [canSummarizeChar, setCanSummarizeChar] = React.useState<boolean>(false);
 
-    const fetchZoomJoin = React.useCallback(async (url: string, userId: string) => {
-        try {
-            const response = await produceZoomJoin(url, userId, callsDetail);
-            console.log(response);
-            return true;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return false;
-        }
-    }, []);
+    const fetchZoomJoin = React.useCallback(
+        async (url: string, userId: string) => {
+            try {
+                const response = await produceZoomJoin(url, userId, callsDetail);
+                console.log(response);
+                return true;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return false;
+            }
+        },
+        [callsDetail],
+    );
 
     // const fetchZoomState = React.useCallback(async (userId: string): Promise<string | void> => {
     //     try {
@@ -146,6 +150,21 @@ function Note() {
             setNote(noteData);
         });
     }, [id, setNote]);
+
+    React.useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (userId && zoomUrl && !!note) {
+                fetchZoomGetSum(userId, role || 'обычный').then((text) => {
+                    console.log(text);
+                    if (text) {
+                        setSum(text);
+                    }
+                });
+            }
+        }, 20000);
+
+        return () => clearInterval(intervalId);
+    }, [fetchZoomGetSum, note, role, userId, zoomUrl]);
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
