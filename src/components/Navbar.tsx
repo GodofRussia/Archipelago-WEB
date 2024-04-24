@@ -95,12 +95,12 @@ function Navbar(props: NavbarProps) {
                     </ButtonGroup>
                 )}
                 {!isAuthenticationPage && user && (
-                    <>
+                    <Box display={'flex'}>
                         <Typography variant={'body1'}>{user.name}</Typography>
                         <Button onClick={handleLogoutClicked} startIcon={<LogoutIcon fontSize={'medium'} />}>
                             Выйти
                         </Button>
-                    </>
+                    </Box>
                 )}
             </Toolbar>
         </AppBar>
