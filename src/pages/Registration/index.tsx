@@ -94,7 +94,7 @@ function Registration() {
             });
             navigate('/');
         }
-    }, [createRootDir, dispatch, rootDir, setUserRootDir, user]);
+    }, [createRootDir, dispatch, navigate, rootDir, setUserRootDir, user]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>

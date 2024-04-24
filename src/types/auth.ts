@@ -1,9 +1,11 @@
 export interface AuthResponseDto {
     user_id: string;
-    user_data: Array<Array<string>>;
+    name: string;
+    email: string;
 }
 
 export interface AuthResponse {
     userId: string;
-    userData: Array<Array<string>>;
+    name: string;
+    email: string;
 }
