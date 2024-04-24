@@ -73,6 +73,7 @@ function Registration() {
         if (userData?.userId) {
             createRootDir({
                 name: 'root_dir',
+                parentDirId: 0,
                 userId: userData?.userId,
             });
         }
