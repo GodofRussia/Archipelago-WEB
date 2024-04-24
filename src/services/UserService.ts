@@ -1,5 +1,6 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
-import {User} from '../types/user';
+import {User, UserDto} from '../types/user';
+import {convertFromUserDto} from '../utils/convert';
 
 export const userAPI = createApi({
     reducerPath: 'user-queries',
@@ -11,6 +12,9 @@ export const userAPI = createApi({
                 url: `/users/${userId}`,
             }),
             providesTags: () => ['User'],
+            transformResponse: (user: UserDto) => {
+                return convertFromUserDto(user);
+            },
         }),
         searchUsers: build.query<User[], string>({
             query: (query: string) => ({
@@ -19,6 +23,9 @@ export const userAPI = createApi({
                     q: query,
                 },
             }),
+            transformResponse: (response: {users: UserDto[]}) => {
+                return response.users.map((user) => convertFromUserDto(user));
+            },
             providesTags: () => ['SearchedUsers'],
         }),
         setUserRootDir: build.mutation<string, {userId: string; rootDirID: number}>({

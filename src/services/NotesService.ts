@@ -48,7 +48,6 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': userId},
             }),
             transformResponse: (response: {notes: NoteDto[]}) => {
-                console.log(response);
                 return response.notes.map((note) => convertFromNoteDto(note));
             },
             providesTags: () => ['Notes'],
@@ -65,7 +64,6 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': requestData.userId},
             }),
             transformResponse: (response: NoteDto) => {
-                console.log(response);
                 return convertFromNoteDto(response);
             },
             invalidatesTags: ['Notes'],
@@ -80,7 +78,6 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': requestData.userId},
             }),
             transformResponse: (response: NoteDto) => {
-                console.log(response);
                 return convertFromNoteDto(response);
             },
         }),
@@ -94,7 +91,6 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': requestData.userId},
             }),
             transformResponse: (response: NoteDto) => {
-                console.log(response);
                 return convertFromNoteDto(response);
             },
             invalidatesTags: ['Notes'],
