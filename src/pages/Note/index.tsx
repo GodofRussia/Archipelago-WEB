@@ -66,7 +66,6 @@ function Note() {
         async (url: string, userId: string) => {
             try {
                 const response = await produceZoomJoin(url, userId, callsDetail);
-                console.log(response);
                 return true;
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -158,7 +157,6 @@ function Note() {
         const intervalId = setInterval(() => {
             if (user?.id && zoomUrl && !!note) {
                 fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
-                    console.log(text);
                     if (text) {
                         setSum(text);
                     }
@@ -173,7 +171,6 @@ function Note() {
         const intervalId = setInterval(() => {
             if (user?.id && zoomUrl && !!note) {
                 fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
-                    console.log(text);
                     if (text) {
                         setSum(text);
                     }

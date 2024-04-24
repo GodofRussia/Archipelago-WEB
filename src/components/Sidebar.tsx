@@ -94,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const handleCreateNote = React.useCallback(
         (title: string, dirId?: number) => {
             if (user) {
-                console.log('here');
+                console.log(user?.rootDirId, dirId, title, user);
                 createNoteApi({title: title, dirId: dirId || user?.rootDirId || 0, repo, userId: user.id});
             }
         },
@@ -127,8 +127,6 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             dispatch(mergeDirTreeWithNotes({dirTree, notes}));
         }
     }, [dirTree, dispatch, notes, user]);
-
-    console.log(user);
 
     return (
         <Drawer
