@@ -29,6 +29,17 @@ function recursiveDFSWithNotes(dirTree: DirTree | undefined, notes: Note[]): Ful
     );
 }
 
+function recursiveDFSBuildDirsArray(dirTree: DirTree | undefined): Array<number> | undefined {
+    return (
+        dirTree && [
+            dirTree.id,
+            ...(dirTree?.children.flatMap((subDirTree) =>
+                subDirTree ? [...(recursiveDFSBuildDirsArray(subDirTree) as Array<number>)] : [],
+            ) || []),
+        ]
+    );
+}
+
 export const dirsSlice = createSlice({
     name: 'user',
     initialState: initialState,
@@ -55,10 +66,25 @@ export const dirsSlice = createSlice({
             store.collapsedDirIds = store.collapsedDirIds.filter((id) => id !== action.payload);
             setCollapsedDirIds(store.collapsedDirIds);
         },
+        changeCollapsedStateForAllDirs(store, action: PayloadAction<boolean>) {
+            if (action.payload) {
+                store.collapsedDirIds = recursiveDFSBuildDirsArray(store.dirTree) || [];
+            } else {
+                store.collapsedDirIds = [];
+            }
+            setCollapsedDirIds(store.collapsedDirIds);
+        },
     },
 });
 
-export const {setDirTree, setActiveDir, setActiveNote, mergeDirTreeWithNotes, removeCollapsedDirId, addCollapsedDirId} =
-    dirsSlice.actions;
+export const {
+    setDirTree,
+    setActiveDir,
+    setActiveNote,
+    mergeDirTreeWithNotes,
+    removeCollapsedDirId,
+    addCollapsedDirId,
+    changeCollapsedStateForAllDirs,
+} = dirsSlice.actions;
 
 export default dirsSlice.reducer;
