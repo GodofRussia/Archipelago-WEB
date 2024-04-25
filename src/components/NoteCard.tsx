@@ -45,7 +45,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
     const theme = useTheme();
 
     const activeStyle = {
-        backgroundColor: activeNote ? theme.palette.action.hover : 'transparent',
+        backgroundColor: activeNote?.id === id ? theme.palette.action.hover : 'transparent',
         cursor: 'pointer',
     };
 
