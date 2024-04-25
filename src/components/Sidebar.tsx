@@ -29,7 +29,7 @@ import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {dirsApi} from '../services/DirsService';
 import {notesApi} from '../services/NotesService';
 import {mergeDirTreeWithNotes} from '../store/reducers/DirsSlice';
-import {createAutomergeUrl} from '../utils/automerge';
+import {createAutomergeUrl} from '../api/notes';
 
 const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
     display: 'flex',
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const handleCreateNote = React.useCallback(
         (title: string, dirId?: number) => {
             if (user) {
-                console.log(user?.rootDirId, dirId, title, user);
+                console.log(user?.rootDirId, dirId, title, user, createAutomergeUrl(repo));
                 createNoteApi({
                     title: title,
                     dirId: dirId || user?.rootDirId || 0,
