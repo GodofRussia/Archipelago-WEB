@@ -1,17 +1,20 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Dir, DirTree, FullDirTreeWithNotes} from '../../types/dirs';
 import {Note} from '../../types/notes';
+import {loadCollapsedDirIds} from '../../utils/localStorage';
 
 interface DirsState {
     activeDir: Dir | undefined;
     activeNote: Note | undefined;
     dirTree: FullDirTreeWithNotes | undefined;
+    collapsedDirIds: number[];
 }
 
 const initialState: DirsState = {
     activeDir: undefined,
     activeNote: undefined,
     dirTree: undefined,
+    collapsedDirIds: loadCollapsedDirIds() || [],
 };
 
 function recursiveDFSWithNotes(dirTree: DirTree | undefined, notes: Note[]): FullDirTreeWithNotes | undefined {
@@ -42,9 +45,18 @@ export const dirsSlice = createSlice({
         setActiveNote(store, action: PayloadAction<Note>) {
             store.activeNote = action.payload;
         },
+        addCollapsedDirId(store, action: PayloadAction<number | undefined>) {
+            if (action.payload) {
+                store.collapsedDirIds.push(action.payload);
+            }
+        },
+        removeCollapsedDirId(store, action: PayloadAction<number | undefined>) {
+            store.collapsedDirIds.filter((id) => id !== action.payload);
+        },
     },
 });
 
-export const {setDirTree, setActiveDir, setActiveNote, mergeDirTreeWithNotes} = dirsSlice.actions;
+export const {setDirTree, setActiveDir, setActiveNote, mergeDirTreeWithNotes, removeCollapsedDirId, addCollapsedDirId} =
+    dirsSlice.actions;
 
 export default dirsSlice.reducer;

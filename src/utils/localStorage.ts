@@ -27,3 +27,23 @@ export const removeUser = () => {
         console.error('Remove user failed', err);
     }
 };
+
+export const loadCollapsedDirIds = (): number[] | undefined => {
+    try {
+        const serialized = localStorage.getItem('collapsedDirIds');
+        if (serialized === null) return undefined;
+        return JSON.parse(serialized);
+    } catch (err) {
+        console.error('Load collapsedDirIds failed', err);
+        return undefined;
+    }
+};
+
+export const setCollapsedDirIds = (dirIds: number[]) => {
+    try {
+        const serialized = JSON.stringify(dirIds);
+        localStorage.setItem('collapsedDirIds', serialized);
+    } catch (err) {
+        console.error('Save collapsedDirIds failed', err);
+    }
+};
