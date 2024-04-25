@@ -4,7 +4,8 @@ import {ExpandLess, ExpandMore} from '@mui/icons-material';
 import {FullDirTreeWithNotes} from '../types/dirs';
 import NoteCard from './NoteCard';
 import List from '@mui/material/List';
-import {useAppSelector} from '../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
+import {addCollapsedDirId, removeCollapsedDirId} from '../store/reducers/DirsSlice';
 
 interface FolderProps {
     folder?: FullDirTreeWithNotes;
@@ -16,13 +17,19 @@ interface FolderProps {
 }
 
 function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDirIdForCreate, isLoading}: FolderProps) {
-    const innerFullDirTree = useAppSelector((state) => state.dirsReducer.dirTree);
+    const {dirTree: innerFullDirTree, collapsedDirIds} = useAppSelector((state) => state.dirsReducer);
+    const dispatch = useAppDispatch();
 
-    const [isOpen, setIsOpen] = React.useState(false);
     const [contextMenu, setContextMenu] = React.useState<{mouseX: number; mouseY: number} | null>(null);
 
+    const isOpen = React.useMemo(() => !!folder && collapsedDirIds.includes(folder.id), [collapsedDirIds, folder]);
+
     const handleClick = () => {
-        setIsOpen(!isOpen);
+        if (isOpen) {
+            dispatch(removeCollapsedDirId(folder?.id));
+        } else {
+            dispatch(addCollapsedDirId(folder?.id));
+        }
     };
 
     const handleContextMenu = React.useCallback(
