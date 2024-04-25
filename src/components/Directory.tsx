@@ -55,7 +55,7 @@ function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDi
                         </ListItem>
                     )}
 
-                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                    <Collapse in={isOpen || folder.id === innerFullDirTree?.id} timeout="auto" unmountOnExit>
                         <List sx={{p: 0, pl: folder.id !== innerFullDirTree?.id ? 2 : 0}}>
                             {folder.children.map((subFolder, idx) => (
                                 <ListItem button key={`folder-${idx}`} sx={{p: 0}}>
