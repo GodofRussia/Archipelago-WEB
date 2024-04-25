@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Dir, DirTree, FullDirTreeWithNotes} from '../../types/dirs';
 import {Note} from '../../types/notes';
-import {loadCollapsedDirIds} from '../../utils/localStorage';
+import {loadCollapsedDirIds, setCollapsedDirIds} from '../../utils/localStorage';
 
 interface DirsState {
     activeDir: Dir | undefined;
@@ -48,10 +48,12 @@ export const dirsSlice = createSlice({
         addCollapsedDirId(store, action: PayloadAction<number | undefined>) {
             if (action.payload) {
                 store.collapsedDirIds.push(action.payload);
+                setCollapsedDirIds(store.collapsedDirIds);
             }
         },
         removeCollapsedDirId(store, action: PayloadAction<number | undefined>) {
-            store.collapsedDirIds.filter((id) => id !== action.payload);
+            store.collapsedDirIds = store.collapsedDirIds.filter((id) => id !== action.payload);
+            setCollapsedDirIds(store.collapsedDirIds);
         },
     },
 });
