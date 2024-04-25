@@ -4,6 +4,7 @@ import {ExpandLess, ExpandMore} from '@mui/icons-material';
 import {FullDirTreeWithNotes} from '../types/dirs';
 import NoteCard from './NoteCard';
 import List from '@mui/material/List';
+import {useAppSelector} from '../hooks/useRedux';
 
 interface FolderProps {
     folder?: FullDirTreeWithNotes;
@@ -15,6 +16,8 @@ interface FolderProps {
 }
 
 function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDirIdForCreate, isLoading}: FolderProps) {
+    const innerFullDirTree = useAppSelector((state) => state.dirsReducer.dirTree);
+
     const [isOpen, setIsOpen] = React.useState(false);
     const [contextMenu, setContextMenu] = React.useState<{mouseX: number; mouseY: number} | null>(null);
 
@@ -40,18 +43,20 @@ function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDi
                 <Typography>Ещё нет заметок</Typography>
             ) : (
                 <>
-                    <ListItem
-                        button
-                        sx={{display: 'flex', gap: 1, px: 1, cursor: 'pointer'}}
-                        onClick={handleClick}
-                        onContextMenu={handleContextMenu}
-                    >
-                        {isOpen ? <ExpandLess /> : <ExpandMore />}
-                        <ListItemText sx={{m: 0, p: 0}} primary={folder.name} />
-                    </ListItem>
+                    {folder.id !== innerFullDirTree?.id && (
+                        <ListItem
+                            button
+                            sx={{display: 'flex', gap: 1, px: 1, cursor: 'pointer'}}
+                            onClick={handleClick}
+                            onContextMenu={handleContextMenu}
+                        >
+                            {isOpen ? <ExpandLess /> : <ExpandMore />}
+                            <ListItemText sx={{m: 0, p: 0}} primary={folder.name} />
+                        </ListItem>
+                    )}
 
                     <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                        <List sx={{p: 0, pl: 4}}>
+                        <List sx={{p: 0, pl: folder.id !== innerFullDirTree?.id ? 2 : 0}}>
                             {folder.children.map((subFolder, idx) => (
                                 <ListItem button key={`folder-${idx}`} sx={{p: 0}}>
                                     <Folder

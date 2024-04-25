@@ -50,11 +50,7 @@ function Note() {
 
     const {user} = useAppSelector((store) => store.userReducer);
 
-    const {
-        data: note,
-        isError,
-        isLoading,
-    } = notesApi.useGetNoteQuery(
+    const {data: note} = notesApi.useGetNoteQuery(
         {
             noteId: id,
             userId: user?.id || '',
