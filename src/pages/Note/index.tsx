@@ -34,7 +34,9 @@ import {
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
-import {CallsDetail, CallsType, NoteDoc, Role} from '../../types/notes';
+
+import {Note as NoteType, NoteDoc, Role, CallsType, CallsDetail} from '../../types/notes';
+import {getNote} from '../../api/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -267,6 +269,7 @@ function Note() {
                 >
                     <DialogTitle id="alert-dialog-title">Привязать звонок к заметке</DialogTitle>
                     <DialogContent>
+
                         <Stack gap={3} marginTop={0.5}>
                             <Autocomplete
                                 disablePortal
@@ -278,7 +281,6 @@ function Note() {
                                 }}
                                 sx={{width: 300}}
                                 renderInput={(params) => <TextField {...params} label="Конференция" size="small" />}
-                                clearIcon={false}
                             />
                             <TextField
                                 type="text"
@@ -305,7 +307,6 @@ function Note() {
                                 renderInput={(params) => (
                                     <TextField {...params} label="Степень детализации звонка" size="small" />
                                 )}
-                                clearIcon={false}
                             />
                         </Stack>
                     </DialogContent>

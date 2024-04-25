@@ -24,5 +24,5 @@ export interface NoteDoc {
 }
 
 export const Role = ['обычный', 'пират', 'гопник'];
-export const CallsType = ['Zoom', 'Google Meets', 'Microsoft Teams'];
+export const CallsType = ['Zoom', 'GoogleMeets', 'Microsoft Teams'];
 export const CallsDetail = ['Краткая', 'Средняя', 'Развёрнутая'];
