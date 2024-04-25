@@ -39,8 +39,9 @@ import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as A from '@automerge/automerge/next';
-import {useAppSelector} from '../../hooks/useRedux';
+import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {notesApi} from '../../services/NotesService';
+import {setActiveNote} from '../../store/reducers/DirsSlice';
 
 function Note() {
     const {id = ''} = useParams();
@@ -49,6 +50,7 @@ function Note() {
     const summRef = React.useRef<MDXEditorMethods>(null);
 
     const {user} = useAppSelector((store) => store.userReducer);
+    const dispatch = useAppDispatch();
 
     const {data: note} = notesApi.useGetNoteQuery(
         {
@@ -205,6 +207,12 @@ function Note() {
             });
         }
     }, [fetchZoomGetSum, note, role, user, user?.id, zoomUrl]);
+
+    React.useEffect(() => {
+        if (note) {
+            dispatch(setActiveNote(note));
+        }
+    }, [note]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>
