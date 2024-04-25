@@ -5,6 +5,7 @@ import {NoteDoc} from '../types/notes';
 export function createAutomergeUrl(repo: Repo) {
     const nextDoc = A.from({text: new A.Text()});
     const handle = repo.create<NoteDoc>(nextDoc);
+    console.log(handle);
 
     return handle.url;
 }
