@@ -95,7 +95,7 @@ function Navbar(props: NavbarProps) {
                     </ButtonGroup>
                 )}
                 {!isAuthenticationPage && user && (
-                    <Box display={'flex'}>
+                    <Box display={'flex'} alignItems="center" gap={2}>
                         <Typography variant={'body1'}>{user.name}</Typography>
                         <Button onClick={handleLogoutClicked} startIcon={<LogoutIcon fontSize={'medium'} />}>
                             Выйти
