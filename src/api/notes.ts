@@ -6,12 +6,9 @@ import {Repo} from '@automerge/automerge-repo';
 import {from} from '@automerge/automerge/next';
 import {convertFromNoteDto} from '../utils/convert';
 
-export function createAutomergeUrl(repo: Repo) {
+function createAutomergeUrl(repo: Repo) {
     const nextDoc = from({text: ''}); // TODO
-    console.log(nextDoc);
     const handle = repo.create<NoteDoc>(nextDoc);
-
-    console.log(handle);
 
     return handle.url;
 }

@@ -34,13 +34,13 @@ import {
 import '@mdxeditor/editor/style.css';
 import {getZoomSum, produceZoomJoin} from '../../api/zoom';
 import {getChatSum} from '../../api/chat';
-import {CallsDetail, CallsType, Note as NoteType, NoteDoc, Role} from '../../types/notes';
-import {getNote} from '../../api/notes';
+import {CallsDetail, CallsType, NoteDoc, Role} from '../../types/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as A from '@automerge/automerge/next';
 import {useAppSelector} from '../../hooks/useRedux';
+import {notesApi} from '../../services/NotesService';
 
 function Note() {
     const {id = ''} = useParams();
@@ -50,7 +50,18 @@ function Note() {
 
     const {user} = useAppSelector((store) => store.userReducer);
 
-    const [note, setNote] = React.useState<NoteType | undefined>(undefined);
+    const {
+        data: note,
+        isError,
+        isLoading,
+    } = notesApi.useGetNoteQuery(
+        {
+            noteId: id,
+            userId: user?.id || '',
+        },
+        {skip: !user},
+    );
+
     const [role, setRole] = React.useState<string | null>('обычный');
     const [callsType, setCallsType] = React.useState<string | null>('Zoom');
     const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
@@ -146,12 +157,6 @@ function Note() {
         },
         [changeDoc],
     );
-
-    React.useEffect(() => {
-        getNote({id}).then((noteData) => {
-            setNote(noteData);
-        });
-    }, [id, setNote]);
 
     React.useEffect(() => {
         const intervalId = setInterval(() => {
