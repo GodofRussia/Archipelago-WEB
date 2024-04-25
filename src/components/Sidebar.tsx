@@ -28,7 +28,7 @@ import Folder from './Directory';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {dirsApi} from '../services/DirsService';
 import {notesApi} from '../services/NotesService';
-import {mergeDirTreeWithNotes} from '../store/reducers/DirsSlice';
+import {changeCollapsedStateForAllDirs, mergeDirTreeWithNotes} from '../store/reducers/DirsSlice';
 import {createAutomergeUrl} from '../utils/automerge';
 
 const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
@@ -51,6 +51,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const navigate = useNavigate();
 
     const {user} = useAppSelector((state) => state.userReducer);
+    const {dirTree: fullDirTree} = useAppSelector((state) => state.dirsReducer);
+    const dispatch = useAppDispatch();
+
     const {
         data: dirTree,
         isLoading: isLoadingDirTree,
@@ -81,9 +84,6 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
     const [createDirApi, {isLoading: isLoadingDirCreation, isError: isErrorDirCreation}] =
         dirsApi.useCreateDirMutation();
 
-    const {dirTree: fullDirTree} = useAppSelector((state) => state.dirsReducer);
-    const dispatch = useAppDispatch();
-
     const [collapsed, setCollapsed] = React.useState<boolean>(true);
     const [isOpenCreateDialog, setIsOpenCreateDialog] = React.useState(false);
 
@@ -105,6 +105,11 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
         },
         [createNoteApi, repo, user],
     );
+
+    const handleCollapsedClicked = React.useCallback(() => {
+        dispatch(changeCollapsedStateForAllDirs(!collapsed));
+        setCollapsed((prevState) => !prevState);
+    }, [collapsed, dispatch]);
 
     React.useEffect(() => {
         if (user) {
@@ -162,7 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
 
             <ButtonGroup sx={{display: 'flex', justifyContent: 'flex-end'}}>
                 <Tooltip disableFocusListener={!user} title={collapsed ? 'Свернуть все' : 'Развернуть все'}>
-                    <IconButton disabled={!user} onClick={() => setCollapsed((prevState) => !prevState)}>
+                    <IconButton disabled={!user} onClick={handleCollapsedClicked}>
                         {collapsed ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
                     </IconButton>
                 </Tooltip>
