@@ -31,7 +31,7 @@ export const notesApi = createApi({
                 url: `/notes/${noteId}`,
                 headers: {'X-User-Id': userId},
             }),
-            transformResponse: (response: {data: NoteDto}) => convertFromNoteDto(response.data),
+            transformResponse: (response: NoteDto) => convertFromNoteDto(response),
         }),
         listNotes: build.query<Note[], {userId: string}>({
             query: ({userId}) => ({
