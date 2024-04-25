@@ -26,7 +26,7 @@ export const notesApi = createApi({
     }),
     tagTypes: ['Notes'],
     endpoints: (build) => ({
-        getNote: build.query<Note, {noteId: number; userId: string}>({
+        getNote: build.query<Note, {noteId: string; userId: string}>({
             query: ({noteId, userId}) => ({
                 url: `/notes/${noteId}`,
                 headers: {'X-User-Id': userId},
