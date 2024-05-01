@@ -42,12 +42,10 @@ import * as A from '@automerge/automerge/next';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {notesApi} from '../../services/NotesService';
 import {setActiveNote} from '../../store/reducers/DirsSlice';
+import {callAPI} from '../../services/CallService';
 
 function Note() {
     const {id = ''} = useParams();
-
-    const ref = React.useRef<MDXEditorMethods>(null);
-    const summRef = React.useRef<MDXEditorMethods>(null);
 
     const {user} = useAppSelector((store) => store.userReducer);
     const dispatch = useAppDispatch();
@@ -60,7 +58,20 @@ function Note() {
         {skip: !user},
     );
 
+    const [startRecording, {}] = callAPI.useStartCallRecordingMutation();
+
     const [role, setRole] = React.useState<string | null>('обычный');
+    const {data: callSumData} = callAPI.useGetSummarizationQuery(
+        {user_id: user?.id || '', role: role || undefined},
+        {
+            pollingInterval: 20000,
+            skip: !user,
+        },
+    );
+
+    const ref = React.useRef<MDXEditorMethods>(null);
+    const summRef = React.useRef<MDXEditorMethods>(null);
+
     const [callsType, setCallsType] = React.useState<string | null>('Zoom');
     const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
@@ -69,7 +80,7 @@ function Note() {
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
     const [zoomUrl, setZoomUrl] = React.useState<string>('');
     // TODO: ручка добавится для short polling
-    // const [canSummarizeChar, setCanSummarizeChar] = React.useState<boolean>(false);
+    // const [canSummarizeChat, setCanSummarizeChat] = React.useState<boolean>(false);
 
     const fetchZoomJoin = React.useCallback(
         async (url: string, userId: string) => {
@@ -83,29 +94,6 @@ function Note() {
         },
         [callsDetail],
     );
-
-    // const fetchZoomState = React.useCallback(async (userId: string): Promise<string | void> => {
-    //     try {
-    //         const response = await getZoomState(userId);
-    //         console.log(response);
-    //
-    //         return response.data.state;
-    //     } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //     }
-    // }, []);
-
-    // const fetchZoomLeave = React.useCallback(async (userId: string): Promise<boolean> => {
-    //     try {
-    //         const response = await produceZoomLeave(userId);
-    //         console.log(response);
-    //
-    //         return true;
-    //     } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //         return false;
-    //     }
-    // }, []);
 
     const fetchZoomGetSum = React.useCallback(async (user_id: string, role: string): Promise<string | undefined> => {
         try {
