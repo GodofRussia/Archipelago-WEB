@@ -8,6 +8,8 @@ import {authApi} from '../services/AuthService';
 import {notesApi} from '../services/NotesService';
 import {dirsApi} from '../services/DirsService';
 import {setupListeners} from '@reduxjs/toolkit/query';
+import {callAPI} from '../services/CallService';
+import {chatAPI} from '../services/ChatService';
 
 const rootReducer = combineReducers({
     userReducer,
@@ -16,6 +18,8 @@ const rootReducer = combineReducers({
     [authApi.reducerPath]: authApi.reducer,
     [notesApi.reducerPath]: notesApi.reducer,
     [dirsApi.reducerPath]: dirsApi.reducer,
+    [callAPI.reducerPath]: callAPI.reducer,
+    [chatAPI.reducerPath]: chatAPI.reducer,
 });
 
 export const setupStore = () => {
@@ -27,6 +31,8 @@ export const setupStore = () => {
                 userAPI.middleware,
                 notesApi.middleware,
                 dirsApi.middleware,
+                chatAPI.middleware,
+                callAPI.middleware,
             ),
         devTools: true,
     });
