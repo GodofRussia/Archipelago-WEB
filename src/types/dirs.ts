@@ -1,17 +1,16 @@
-import {Note, NoteDto} from './notes';
+import {Note} from './notes';
 
 export interface DirTree {
     id: number;
     name: string;
     children: DirTree[];
-    notes: Note[];
 }
 
-export interface DirTreeDto {
+export interface FullDirTreeWithNotes {
     id: number;
     name: string;
-    children: DirTreeDto[];
-    notes: NoteDto[];
+    children: FullDirTreeWithNotes[];
+    notes: Note[];
 }
 
 export interface Dir {

@@ -1,61 +1,193 @@
-import {useState} from 'react';
-import {Link} from 'react-router-dom';
-import {Box, Button, Card, CardContent, CardHeader, TextField} from '@mui/material';
-import {registrationRequest} from '../../api/auth';
+import React from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    CircularProgress,
+    styled,
+    TextField,
+    Typography,
+} from '@mui/material';
+import {authApi} from '../../services/AuthService';
+import {userAPI} from '../../services/UserService';
+import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
+import {dirsApi} from '../../services/DirsService';
+import {setUser} from '../../store/reducers/UserSlice';
+
+const StyledTextField = styled(TextField)(({theme}) => ({
+    '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+            borderColor: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
+        },
+        '&:hover fieldset': {
+            borderColor: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: theme.palette.primary.main,
+        },
+    },
+    '& .MuiInputBase-input': {
+        color: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
+    },
+    '& .MuiFormLabel-root': {
+        color: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
+        '&.Mui-focused': {
+            color: theme.palette.primary.main,
+        },
+    },
+}));
 
 function Registration() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [email, setEmail] = React.useState('');
+    const [name, setName] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [userId, setUserId] = React.useState<string | null>(null);
+    const [isPasswordError, setError] = React.useState<boolean>(false);
 
-    const handleRegistration = async () => {
-        try {
-            const response = await registrationRequest(email, email, password);
-            console.log('Registration response:', response.data);
-        } catch (error) {
-            console.error('Registration request error:', error);
+    const dispatch = useAppDispatch();
+    const {user: currUser} = useAppSelector((store) => store.userReducer);
+    const navigate = useNavigate();
+
+    const [register, {data: userData, isLoading: isLoadingRegistration, isError: isErrorRegistration}] =
+        authApi.useRegistrationMutation();
+    const {
+        data: user,
+        isLoading: isLoadingUser,
+        isError: isErrorUser,
+    } = userAPI.useGetUserQuery(userId || '', {skip: userId === null});
+
+    const [createRootDir, {data: rootDir, isLoading: isLoadingRootDir, isError: isErrorRootDir}] =
+        dirsApi.useCreateDirMutation();
+
+    const [setUserRootDir, {isLoading: isLoadingSetting, isError: isErrorSetting}] =
+        userAPI.useSetUserRootDirMutation();
+
+    const handleRegistration = React.useCallback(() => {
+        if (confirmPassword !== password) {
+            setError(true);
+            return;
         }
-    };
+        register({email, password, name});
+    }, [confirmPassword, email, name, password, register]);
+
+    React.useEffect(() => {
+        if (userData?.userId) {
+            createRootDir({
+                name: 'root_dir',
+                parentDirId: 0,
+                userId: userData?.userId,
+            });
+        }
+    }, [createRootDir, dispatch, user, userData?.userId]);
+
+    React.useEffect(() => {
+        if (rootDir && userData?.userId) {
+            setUserRootDir({
+                rootDirID: rootDir.id,
+                userId: userData?.userId,
+            });
+        }
+    }, [createRootDir, dispatch, navigate, rootDir, setUserRootDir, user, userData?.userId]);
+
+    React.useEffect(() => {
+        if (rootDir && !isLoadingSetting && userData?.userId) {
+            setUserId(userData.userId);
+        }
+    }, [isLoadingSetting, rootDir, userData]);
+
+    React.useEffect(() => {
+        if (user) {
+            dispatch(setUser(user));
+        }
+    }, [dispatch, user]);
+
+    React.useEffect(() => {
+        if (currUser) {
+            navigate('/');
+        }
+    }, [currUser, navigate]);
 
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
-            <Card sx={{height: '60vh', width: '33vw'}}>
-                <CardHeader sx={{marginTop: '5%'}} title="Регистрация" />
+            <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
+                <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
                 <CardContent>
                     <Box
                         sx={{
                             display: 'flex',
                             justifyContent: 'center',
                             flexDirection: 'column',
-                            gap: 4,
+                            gap: 2,
+                            textDecoration: 'none',
                         }}
                     >
-                        <TextField
+                        <StyledTextField
                             label="Почта"
                             variant="outlined"
                             value={email}
+                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
                             onChange={(e) => setEmail(e.target.value)}
                         />
-                        <TextField
+                        <StyledTextField
+                            label="Имя пользователя"
+                            variant="outlined"
+                            value={name}
+                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
+                            onChange={(e) => {
+                                setName(e.target.value);
+                                setError(false);
+                            }}
+                        />
+                        <StyledTextField
                             label="Пароль"
                             type="password"
                             variant="outlined"
+                            error={
+                                isErrorRegistration ||
+                                isErrorUser ||
+                                isPasswordError ||
+                                isErrorRootDir ||
+                                isErrorSetting
+                            }
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setPassword(e.target.value);
+                                setError(false);
+                            }}
                         />
-                        <TextField
+                        <StyledTextField
                             label="Подтверждение пароля"
                             type="password"
                             variant="outlined"
+                            error={
+                                isErrorRegistration ||
+                                isErrorUser ||
+                                isPasswordError ||
+                                isErrorRootDir ||
+                                isErrorSetting
+                            }
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
-                        <Button variant="contained" color="primary" onClick={handleRegistration}>
-                            Зарегистрироваться
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleRegistration}
+                            sx={{minWidth: '343px'}}
+                        >
+                            {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
+                                <CircularProgress />
+                            ) : (
+                                'Зарегистрироваться'
+                            )}
                         </Button>
-                        <Button sx={{marginTop: '-5%'}} component={Link} to="/login">
-                            Войти
-                        </Button>
+                        <Typography component={Link} to="/login" sx={{textDecoration: 'none', color: 'black'}}>
+                            Войти в аккаунт
+                        </Typography>
                     </Box>
                 </CardContent>
             </Card>
