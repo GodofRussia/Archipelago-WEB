@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {AuthResponseDto} from '../types/auth';
 
 const chatBase = axios.create({
     baseURL: import.meta.env.VITE_AUTH_URL,
@@ -8,20 +9,15 @@ const chatBase = axios.create({
     withCredentials: true,
 });
 
-interface ResponseUser {
-    user_id: string;
-    user_data: Array<Array<string>>;
-}
-
 export function loginRequest(login: string, password: string) {
-    return chatBase.post<ResponseUser>('/login', {
+    return chatBase.post<AuthResponseDto>('/login', {
         login,
         password,
     });
 }
 
 export function registrationRequest(login: string, username: string, password: string) {
-    return chatBase.post<ResponseUser>('/regisrtation', {
+    return chatBase.post<AuthResponseDto>('/registration', {
         login,
         username,
         password,
@@ -29,5 +25,5 @@ export function registrationRequest(login: string, username: string, password: s
 }
 
 export function logoutRequest() {
-    return chatBase.post<ResponseUser>('/logout', {});
+    return chatBase.post<AuthResponseDto>('/logout', {});
 }

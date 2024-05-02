@@ -5,6 +5,7 @@ interface ImportMetaEnv {
     readonly VITE_NOTES_URL: string;
     readonly VITE_AUTOMERGE_URL: string;
     readonly VITE_AUTH_URL: string;
+    readonly VITE_SERVICE_TOKEN: string;
 }
 
 interface ImportMeta {

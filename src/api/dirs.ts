@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {Dir, DirTreeDto} from '../types/dirs';
+import {Dir, DirTree} from '../types/dirs';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_NOTES_URL,
@@ -10,7 +10,7 @@ export function getDir(requestData: {id: string}) {
 }
 
 export function getDirTree(requestData: {id: number}) {
-    return api.get<DirTreeDto>(`/dirs/${requestData.id}/tree`);
+    return api.get<DirTree>(`/dirs/${requestData.id}/tree`);
 }
 
 export function createDir(requestData: {name: string; parentDirId: number}) {
