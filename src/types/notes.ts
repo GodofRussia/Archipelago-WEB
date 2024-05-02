@@ -24,6 +24,23 @@ export interface NoteDoc {
 }
 
 export const Role = ['обычный', 'пират', 'гопник'];
-
 export const CallsType = ['Zoom', 'GoogleMeets', 'Microsoft Teams'];
 export const CallsDetail = ['Краткая', 'Средняя', 'Развёрнутая'];
+
+export enum CallsDetailEnum {
+    SHORT = 'Краткая',
+    AVERAGE = 'Средняя',
+    FULL = 'Развёрнутая',
+}
+
+export enum CallsTypeEnum {
+    ZOOM = 'Zoom',
+    GOOGLE_MEETS = 'GoogleMeets',
+    MICROSOFT_TEAMS = 'Microsoft Teams',
+}
+
+export enum RoleEnum {
+    DEFAULT = 'обычный',
+    PIRATE = 'пират',
+    YOB = 'гопник',
+}
