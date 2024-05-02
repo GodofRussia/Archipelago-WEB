@@ -20,8 +20,6 @@ interface GetCallSummarizationResponse {
     summ_text?: string;
 }
 
-const serviceToken = import.meta.env.SERVICE_TOKEN;
-
 export const callAPI = createApi({
     reducerPath: 'call',
     baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_ZOOM_URL}),
@@ -34,7 +32,7 @@ export const callAPI = createApi({
                 body: {
                     user_id,
                     role,
-                    token: serviceToken,
+                    token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
         }),
@@ -44,7 +42,7 @@ export const callAPI = createApi({
                 method: 'POST',
                 body: {
                     user_id,
-                    token: serviceToken,
+                    token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
         }),
@@ -55,7 +53,7 @@ export const callAPI = createApi({
                 body: {
                     url,
                     user_id,
-                    token: serviceToken,
+                    token: import.meta.env.VITE_SERVICE_TOKEN,
                     agree_detail: detalization || undefined,
                 },
             }),
@@ -66,7 +64,7 @@ export const callAPI = createApi({
                 method: 'POST',
                 body: {
                     user_id,
-                    token: serviceToken,
+                    token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
         }),

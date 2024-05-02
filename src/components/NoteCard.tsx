@@ -49,7 +49,6 @@ const NoteCard: React.FC<NoteCardProps> = ({
         cursor: 'pointer',
     };
 
-    console.log(activeNote, activeStyle);
     const handleDeleteClick = React.useCallback(
         async (ev: React.MouseEvent, note: Note) => {
             ev.stopPropagation();

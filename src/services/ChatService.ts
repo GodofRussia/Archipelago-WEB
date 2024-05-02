@@ -4,8 +4,6 @@ interface ChatGetSumResponse {
     summ_text: string;
 }
 
-const serviceToken = import.meta.env.SERVICE_TOKEN;
-
 export const chatAPI = createApi({
     reducerPath: 'chat',
     baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_CHAT_URL}),
@@ -17,7 +15,7 @@ export const chatAPI = createApi({
                 method: 'POST',
                 body: {
                     token_note: id,
-                    token: serviceToken,
+                    token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
         }),
