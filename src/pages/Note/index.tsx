@@ -32,9 +32,7 @@ import {
     UndoRedo,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
-import {getZoomSum, produceZoomJoin} from '../../api/zoom';
-import {getChatSum} from '../../api/chat';
-import {CallsDetail, CallsType, NoteDoc, Role} from '../../types/notes';
+import {CallsDetail, CallsDetailEnum, CallsType, CallsTypeEnum, NoteDoc, Role, RoleEnum} from '../../types/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -43,6 +41,7 @@ import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {notesApi} from '../../services/NotesService';
 import {setActiveNote} from '../../store/reducers/DirsSlice';
 import {callAPI} from '../../services/CallService';
+import {chatAPI} from '../../services/ChatService';
 
 function Note() {
     const {id = ''} = useParams();
@@ -60,7 +59,7 @@ function Note() {
 
     const [startRecording, {}] = callAPI.useStartCallRecordingMutation();
 
-    const [role, setRole] = React.useState<string | null>('обычный');
+    const [role, setRole] = React.useState<string | null>(RoleEnum.DEFAULT);
     const {data: callSumData} = callAPI.useGetSummarizationQuery(
         {user_id: user?.id || '', role: role || undefined},
         {
@@ -68,139 +67,58 @@ function Note() {
             skip: !user,
         },
     );
+    const [getChatSum, {data: chatSumData}] = chatAPI.useGetSummarizationMutation();
 
     const ref = React.useRef<MDXEditorMethods>(null);
     const summRef = React.useRef<MDXEditorMethods>(null);
 
-    const [callsType, setCallsType] = React.useState<string | null>('Zoom');
-    const [callsDetail, setCallsDetail] = React.useState<string | null>('Средняя');
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [sum, setSum] = React.useState<string>('');
-    const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
-    const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
-    const [zoomUrl, setZoomUrl] = React.useState<string>('');
+    const [callsType, setCallsType] = React.useState<string | null>(CallsTypeEnum.ZOOM);
+    const [callsDetail, setCallsDetail] = React.useState<string | null>(CallsDetailEnum.AVERAGE);
+    const [callUrl, setCallUrl] = React.useState<string>('');
     // TODO: ручка добавится для short polling
     // const [canSummarizeChat, setCanSummarizeChat] = React.useState<boolean>(false);
 
-    const fetchZoomJoin = React.useCallback(
-        async (url: string, userId: string) => {
-            try {
-                await produceZoomJoin(url, userId, callsDetail);
-                return true;
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                return false;
-            }
-        },
-        [callsDetail],
-    );
+    const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
+    const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
 
-    const fetchZoomGetSum = React.useCallback(async (user_id: string, role: string): Promise<string | undefined> => {
-        try {
-            const response = await getZoomSum(user_id, role);
-            console.log(response);
+    const fetchChatSum = () => {
+        getChatSum({id});
+    };
 
-            if (response.data.has_sum) {
-                return response.data.summ_text;
-            }
-
-            return '';
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return undefined;
-        }
-    }, []);
-
-    const fetchChatSum = React.useCallback(async () => {
-        try {
-            const response = await getChatSum(id);
-            console.log(response);
-
-            if (response.data.summ_text) {
-                setSum(response.data.summ_text);
-                return response.data.summ_text;
-            }
-
-            return '';
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return undefined;
-        }
-    }, [id]);
-
-    const handleFormSubmit = React.useCallback(async () => {
-        if (!!user?.id && !!zoomUrl) {
-            await fetchZoomJoin(zoomUrl, user.id);
+    const handleFormSubmit = () => {
+        if (!!user?.id && !!callUrl) {
+            startRecording({url: callUrl, user_id: user.id, detalization: callsDetail || CallsDetailEnum.AVERAGE});
             setFormModalIsOpen(false);
         }
-    }, [fetchZoomJoin, user?.id, zoomUrl]);
+        // TODO: подумать над провалом условия !!user?.id && !!callUrl
+    };
 
-    const handleChangeMd = React.useCallback(
-        (value: string) => {
-            changeDoc((doc: NoteDoc) => {
-                A.updateText(doc, ['text'], value);
-            });
-        },
-        [changeDoc],
-    );
-
-    React.useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (user?.id && zoomUrl && !!note) {
-                fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
-                    if (text) {
-                        setSum(text);
-                    }
-                });
-            }
-        }, 20000);
-
-        return () => clearInterval(intervalId);
-    }, [fetchZoomGetSum, note, role, user?.id, zoomUrl]);
-
-    React.useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (user?.id && zoomUrl && !!note) {
-                fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
-                    if (text) {
-                        setSum(text);
-                    }
-                });
-            }
-        }, 20000);
-
-        return () => clearInterval(intervalId);
-    }, [fetchZoomGetSum, note, role, user?.id, zoomUrl]);
+    const handleChangeMd = (value: string) => {
+        changeDoc((doc: NoteDoc) => {
+            A.updateText(doc, ['text'], value);
+        });
+    };
 
     React.useEffect(() => {
         ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
     }, [doc?.text]);
 
     React.useEffect(() => {
-        summRef.current?.setMarkdown(sum);
-    }, [sum]);
-
-    React.useEffect(() => {
-        if (user) {
-            getZoomSum(user.id).then(() => {
-                const intervalId = setInterval(() => {
-                    fetchZoomGetSum(user.id, role || 'обычный').then((text) => {
-                        if (text) {
-                            setSum(text);
-                        }
-                    });
-                }, 20000);
-
-                return () => clearInterval(intervalId);
-            });
+        if (callSumData?.summ_text) {
+            summRef.current?.setMarkdown(callSumData.summ_text);
         }
-    }, [fetchZoomGetSum, note, role, user, user?.id, zoomUrl]);
+        if (chatSumData?.summ_text) {
+            summRef.current?.setMarkdown(chatSumData.summ_text);
+        }
+    }, [callSumData?.summ_text, chatSumData?.summ_text]);
 
     React.useEffect(() => {
         if (note) {
             dispatch(setActiveNote(note));
         }
-    }, [note]);
+    }, [dispatch, note]);
 
     return (
         <Stack gap={2} sx={{p: 2}}>
@@ -274,9 +192,9 @@ function Note() {
                                 size="small"
                                 variant="outlined"
                                 fullWidth
-                                value={zoomUrl}
+                                value={callUrl}
                                 onChange={(e) => {
-                                    setZoomUrl(e.target.value);
+                                    setCallUrl(e.target.value);
                                 }}
                             />
                             <Autocomplete
