@@ -210,25 +210,20 @@ function Note() {
         }
 
         if (summaryList) {
-            summaryList.activeSummaryIds.forEach((summ_id: string) => {
-                if (summ_id in summaries) {
-                    const role = summaries[summ_id].role || '';
-                    const loading = summaries[summ_id].loading || false;
-                    fetchAndUpdateSumm({summ_id, role, loading});
-                    console.log('after fetchAndUpdateSumm: %s', Object.entries(summaries).entries());
-                }
-            });
-
-            const interval = setInterval(() => {
-                console.log('summaries in interval:', summaries);
-
+            const foo = (summaryList, summaries) => {
                 summaryList.activeSummaryIds.forEach((summ_id: string) => {
-                    const role = summaries[summ_id].role;
-                    const loading = summaries[summ_id].loading;
-                    fetchAndUpdateSumm({summ_id, role, loading});
-                    console.log('after fetchAndUpdateSumm: %s', Object.entries(summaries).entries());
+                    if (summ_id in summaries) {
+                        const role = summaries[summ_id].role || '';
+                        const loading = summaries[summ_id].loading || false;
+                        fetchAndUpdateSumm({summ_id, role, loading});
+                        console.log('after fetchAndUpdateSumm: %s', Object.entries(summaries).entries());
+                    }
                 });
-            }, 3000); // Polling interval
+            };
+
+            foo(summaryList, summaries);
+
+            const interval = setInterval(foo, 3000, summaryList, summaries); // Polling interval
 
             return () => {
                 clearInterval(interval);
@@ -236,6 +231,8 @@ function Note() {
             };
         }
     }, [summaryList, id]);
+
+    console.log('summaries: ', summaries);
 
     const setRole = (id: string) => (newRole: string) => {
         const oldSum = summaries[id];
