@@ -3,7 +3,6 @@ import {Note, NoteDto} from '../types/notes';
 import {convertFromAccessToDto, convertFromNoteDto, convertFromNoteToNoteDto} from '../utils/convert';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import {from} from '@automerge/automerge/next';
 import {Access} from '../types/access';
 
 interface CreateNoteRequest {
@@ -19,12 +18,26 @@ interface SetAccessRequest {
     access: Access;
 }
 
+interface SummaryListReponseDto {
+    non_active_summary_ids: string[];
+    active_summary_ids: string[];
+}
+
+export interface SummaryListReponse {
+    nonActiveSummaryIds: string[];
+    activeSummaryIds: string[];
+}
+
+interface CheckOwnerReponseDto {
+    is_owner: boolean;
+}
+
 export const notesApi = createApi({
     reducerPath: 'notes-queries',
     baseQuery: fetchBaseQuery({
         baseUrl: import.meta.env.VITE_NOTES_URL,
     }),
-    tagTypes: ['Notes'],
+    tagTypes: ['Notes', 'SummaryList'],
     endpoints: (build) => ({
         getNote: build.query<Note, {noteId: string; userId: string}>({
             query: ({noteId, userId}) => ({
@@ -42,6 +55,24 @@ export const notesApi = createApi({
                 return response.notes.map((note) => convertFromNoteDto(note));
             },
             providesTags: () => ['Notes'],
+        }),
+        listSummaries: build.query<SummaryListReponse, {userId: string; noteId: string}>({
+            query: ({noteId, userId}) => ({
+                url: `/notes/${noteId}/summary_list`,
+                headers: {'X-User-Id': userId},
+            }),
+            transformResponse: (response: SummaryListReponseDto): SummaryListReponse => ({
+                nonActiveSummaryIds: response.non_active_summary_ids,
+                activeSummaryIds: response.active_summary_ids,
+            }),
+            providesTags: () => ['SummaryList'],
+        }),
+        checkOwner: build.query<boolean, {userId: string; noteId: string}>({
+            query: ({noteId, userId}) => ({
+                url: `/notes/${noteId}/is_owner/${userId}`,
+                headers: {'X-User-Id': userId},
+            }),
+            transformResponse: (response: CheckOwnerReponseDto): boolean => response.is_owner,
         }),
         createNote: build.mutation<Note, CreateNoteRequest>({
             query: (requestData) => ({
@@ -97,6 +128,22 @@ export const notesApi = createApi({
                 method: 'POST',
                 headers: {'X-User-Id': requestData.userID},
             }),
+        }),
+        attachSummary: build.mutation<string, {summId: string; noteId: string; userId: string}>({
+            query: ({summId, noteId, userId}) => ({
+                url: `/notes/${noteId}/attach_summ/${summId}`,
+                method: 'POST',
+                headers: {'X-User-Id': userId},
+            }),
+            invalidatesTags: ['SummaryList'],
+        }),
+        detachSummary: build.mutation<string, {summId: string; noteId: string; userId: string}>({
+            query: ({summId, noteId, userId}) => ({
+                url: `/notes/${noteId}/detach_summ/${summId}`,
+                method: 'POST',
+                headers: {'X-User-Id': userId},
+            }),
+            invalidatesTags: ['SummaryList'],
         }),
     }),
 });
