@@ -16,6 +16,8 @@ import {userAPI} from '../../services/UserService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {dirsApi} from '../../services/DirsService';
 import {setUser} from '../../store/reducers/UserSlice';
+import {Formik, Form, Field, ErrorMessage} from 'formik';
+import * as Yup from 'yup';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
@@ -46,6 +48,7 @@ function Registration() {
     const [password, setPassword] = React.useState('');
     const [confirmPassword, setConfirmPassword] = React.useState('');
     const [userId, setUserId] = React.useState<string | null>(null);
+    const [passwordError, setPasswordError] = React.useState(false);
     const [isPasswordError, setError] = React.useState<boolean>(false);
 
     const dispatch = useAppDispatch();
@@ -60,6 +63,12 @@ function Registration() {
         isError: isErrorUser,
     } = userAPI.useGetUserQuery(userId || '', {skip: userId === null});
 
+    const validationSchema = Yup.object().shape({
+        email: Yup.string()
+            .email('Пожалуйста, проверьте, правильно ли указан адрес')
+            .required('Необходимо указать почту'),
+    });
+
     const [createRootDir, {data: rootDir, isLoading: isLoadingRootDir, isError: isErrorRootDir}] =
         dirsApi.useCreateDirMutation();
 
@@ -68,7 +77,8 @@ function Registration() {
 
     const handleRegistration = React.useCallback(() => {
         if (confirmPassword !== password) {
-            setError(true);
+            setError(true); // Set a general error state
+            setPasswordError(true); // Set an error state for password fields
             return;
         }
         register({email, password, name});
@@ -112,86 +122,113 @@ function Registration() {
     }, [currUser, navigate]);
 
     return (
-        <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
-            <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
-                <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
-                <CardContent>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            flexDirection: 'column',
-                            gap: 2,
-                            textDecoration: 'none',
-                        }}
-                    >
-                        <StyledTextField
-                            label="Почта"
-                            variant="outlined"
-                            value={email}
-                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <StyledTextField
-                            label="Имя пользователя"
-                            variant="outlined"
-                            value={name}
-                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
-                            onChange={(e) => {
-                                setName(e.target.value);
-                                setError(false);
-                            }}
-                        />
-                        <StyledTextField
-                            label="Пароль"
-                            type="password"
-                            variant="outlined"
-                            error={
-                                isErrorRegistration ||
-                                isErrorUser ||
-                                isPasswordError ||
-                                isErrorRootDir ||
-                                isErrorSetting
-                            }
-                            value={password}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                setError(false);
-                            }}
-                        />
-                        <StyledTextField
-                            label="Подтверждение пароля"
-                            type="password"
-                            variant="outlined"
-                            error={
-                                isErrorRegistration ||
-                                isErrorUser ||
-                                isPasswordError ||
-                                isErrorRootDir ||
-                                isErrorSetting
-                            }
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleRegistration}
-                            sx={{minWidth: '343px'}}
-                        >
-                            {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
-                                <CircularProgress />
-                            ) : (
-                                'Зарегистрироваться'
-                            )}
-                        </Button>
-                        <Typography component={Link} to="/login" sx={{textDecoration: 'none', color: 'black'}}>
-                            Войти в аккаунт
-                        </Typography>
-                    </Box>
-                </CardContent>
-            </Card>
-        </Box>
+        <Formik
+            initialValues={{email: '', name: '', password: '', confirmPassword: ''}}
+            validationSchema={validationSchema}
+            onSubmit={handleRegistration}
+        >
+            {({errors, touched}) => (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '140vh',
+                        width: '140vw',
+                    }}
+                >
+                    <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
+                        <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
+                        <CardContent>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    textDecoration: 'none',
+                                }}
+                            >
+                                <Field name="email">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            label="Почта"
+                                            variant="outlined"
+                                            error={errors.email && touched.email}
+                                        />
+                                    )}
+                                </Field>
+                                <ErrorMessage name="email">
+                                    {(msg) => <div style={{color: 'red', fontSize: '14px'}}>{msg}</div>}
+                                </ErrorMessage>
+
+                                <Field name="name">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            label="Имя пользователя"
+                                            variant="outlined"
+                                            error={errors.name && touched.name}
+                                        />
+                                    )}
+                                </Field>
+                                <ErrorMessage name="name" component="div" />
+
+                                <StyledTextField
+                                    label="Пароль"
+                                    type="password"
+                                    variant="outlined"
+                                    error={
+                                        isErrorRegistration ||
+                                        isErrorUser ||
+                                        isErrorRootDir ||
+                                        isErrorSetting ||
+                                        passwordError
+                                    }
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        setError(false);
+                                        setPasswordError(false); // Reset password error state when changing password
+                                    }}
+                                />
+
+                                <StyledTextField
+                                    label="Подтверждение пароля"
+                                    type="password"
+                                    variant="outlined"
+                                    error={
+                                        isErrorRegistration ||
+                                        isErrorUser ||
+                                        isErrorRootDir ||
+                                        isErrorSetting ||
+                                        passwordError
+                                    }
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                />
+
+                                {passwordError && (
+                                    <Typography sx={{color: 'red', fontSize: '14px'}}>Пароли не совпадают</Typography>
+                                )}
+
+                                <Button variant="contained" color="primary" type="submit" sx={{minWidth: '343px'}}>
+                                    {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
+                                        <CircularProgress />
+                                    ) : (
+                                        'Зарегистрироваться'
+                                    )}
+                                </Button>
+                                <Typography component={Link} to="/login" sx={{textDecoration: 'none', color: 'black'}}>
+                                    Войти в аккаунт
+                                </Typography>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Box>
+            )}
+        </Formik>
     );
 }
 
