@@ -11,7 +11,9 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
-
+    optimizeDeps: {
+        include: ['notistack'],
+    },
     build: {
         target: 'esnext',
     },

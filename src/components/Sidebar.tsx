@@ -12,6 +12,8 @@ import {
     DialogContent,
     DialogTitle,
     Divider,
+    List,
+    ListItem,
     Stack,
     styled,
     TextField,
@@ -24,12 +26,15 @@ import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import ListIcon from '@mui/icons-material/List';
 import Folder from './Directory';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {dirsApi} from '../services/DirsService';
 import {notesApi} from '../services/NotesService';
 import {changeCollapsedStateForAllDirs, mergeDirTreeWithNotes} from '../store/reducers/DirsSlice';
 import {createAutomergeUrl} from '../utils/automerge';
+import {TabType} from './Layout';
+import NoteCard from './NoteCard';
 
 const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
     display: 'flex',
@@ -44,14 +49,15 @@ interface SidebarProps {
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
     width: number;
+    tab?: TabType;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarProps) => {
     const repo = useRepo();
     const navigate = useNavigate();
 
     const {user} = useAppSelector((state) => state.userReducer);
-    const {dirTree: fullDirTree} = useAppSelector((state) => state.dirsReducer);
+    const {dirTree: fullDirTree, sharedNotes} = useAppSelector((state) => state.dirsReducer);
     const dispatch = useAppDispatch();
 
     const {
@@ -153,13 +159,24 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             open={open}
         >
             <DrawerHeader>
-                <IconButton onClick={() => navigate('/')}>
-                    <HomeIcon />
-                </IconButton>
-                {/* // TODO: Реализовать список доступных заметок */}
-                {/* <IconButton> */}
-                {/*     <ListIcon /> */}
-                {/* </IconButton> */}
+                <Tooltip title={'Свои заметки'}>
+                    <IconButton
+                        onClick={() => {
+                            navigate('/');
+                        }}
+                    >
+                        <HomeIcon />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip disableFocusListener={!user} title={'Доступные заметки'}>
+                    <IconButton
+                        onClick={() => {
+                            navigate('/shared');
+                        }}
+                    >
+                        <ListIcon />
+                    </IconButton>
+                </Tooltip>
                 <IconButton onClick={() => setOpen(false)}>
                     <CollapseIcon color={'secondary'} />
                 </IconButton>
@@ -193,16 +210,35 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open}: SidebarProps) =
             {!(isErrorNotes || isErrorDirTree) && (
                 <Box sx={{p: 2}}>
                     {!!user ? (
-                        <Folder
-                            onDirCreateClick={() => setIsOpenCreateDialog(true)}
-                            handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
-                            refetchNotes={refetchNotes}
-                            folder={fullDirTree}
-                            setDirIdForCreate={setDirIdForCreate}
-                            isLoading={
-                                isLoadingDirTree || isLoadingNotes || isLoadingDirCreation || isLoadingNoteCreation
-                            }
-                        />
+                        <>
+                            {tab === TabType.HOME && (
+                                <Folder
+                                    onDirCreateClick={() => setIsOpenCreateDialog(true)}
+                                    handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
+                                    refetchNotes={refetchNotes}
+                                    folder={fullDirTree}
+                                    setDirIdForCreate={setDirIdForCreate}
+                                    isLoading={
+                                        isLoadingDirTree ||
+                                        isLoadingNotes ||
+                                        isLoadingDirCreation ||
+                                        isLoadingNoteCreation
+                                    }
+                                />
+                            )}
+                            {tab === TabType.SHARED &&
+                                (sharedNotes.length ? (
+                                    <List>
+                                        {sharedNotes.map((note, idx) => (
+                                            <ListItem button key={`note-${idx}`} sx={{p: 0}}>
+                                                <NoteCard key={note.id} {...note} refetchNotes={refetchNotes} />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (
+                                    <Typography>Нет доступных заметок</Typography>
+                                ))}
+                        </>
                     ) : (
                         <Typography>Войдите для доступа к заметкам</Typography>
                     )}
