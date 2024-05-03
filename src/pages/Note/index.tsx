@@ -115,6 +115,7 @@ function Note() {
     );
 
     const [startRecording, {}] = callAPI.useStartCallRecordingMutation();
+    const [stopCall, {}] = callAPI.useStopCallRecordingMutation();
     const [attachSummary, {}] = notesApi.useAttachSummaryMutation();
     const [detachSummary, {}] = notesApi.useDetachSummaryMutation();
 
@@ -125,14 +126,16 @@ function Note() {
         },
         {
             skip: !user,
-            pollingInterval: 20000,
+            pollingInterval: 8000,
         },
     );
-
-    // const emptyStringList: string[] = []
-    // const summaryIdstNonActive = useSelector(summaryList?.summaryIds || emptyStringList, (state) => )
+    console.log('summary list: ', summaryList);
 
     const [summaries, setSummaries] = React.useState<KVSummary>({});
+
+    useEffect(() => {
+        setSummaries({});
+    }, [id]);
 
     // callAPI.useGetSummarizationQuery({role: undefined, summ_id: id}, {skip: !summaryList});
 
@@ -193,19 +196,29 @@ function Note() {
                     // TODO: maybe add loader
                     let role = 'обычный';
 
-                    if (id in summaries) {
-                        role = summaries[id].role;
+                    if (summ_id in summaries) {
+                        role = summaries[summ_id].role;
                     }
 
-                    console.log('id:', id);
+                    console.log('id:', summ_id);
                     console.log('before callAPI.useGetSummarizationQuery');
 
                     fetchAndSetSumm({summ_id, role, active: ind >= summaryList.nonActiveSummaryIds.length});
+                    console.log('after fetchAndSetSumm: %s', Object.entries(summaries));
                 },
             );
         }
 
         if (summaryList) {
+            summaryList.activeSummaryIds.forEach((summ_id: string) => {
+                if (summ_id in summaries) {
+                    const role = summaries[summ_id].role || '';
+                    const loading = summaries[summ_id].loading || false;
+                    fetchAndUpdateSumm({summ_id, role, loading});
+                    console.log('after fetchAndUpdateSumm: %s', Object.entries(summaries).entries());
+                }
+            });
+
             const interval = setInterval(() => {
                 console.log('summaries in interval:', summaries);
 
@@ -213,12 +226,16 @@ function Note() {
                     const role = summaries[summ_id].role;
                     const loading = summaries[summ_id].loading;
                     fetchAndUpdateSumm({summ_id, role, loading});
+                    console.log('after fetchAndUpdateSumm: %s', Object.entries(summaries).entries());
                 });
-            }, 10000); // Polling interval
+            }, 3000); // Polling interval
 
-            return () => clearInterval(interval); // Cleanup on component unmount
+            return () => {
+                clearInterval(interval);
+                //setSummaries({});
+            };
         }
-    }, [summaryList]);
+    }, [summaryList, id]);
 
     const setRole = (id: string) => (newRole: string) => {
         const oldSum = summaries[id];
@@ -232,10 +249,10 @@ function Note() {
     };
 
     // const [role, setRole] = React.useState<string | null>(RoleEnum.DEFAULT);
-    // const [getChatSum, {data: chatSumData}] = chatAPI.useGetSummarizationMutation();
+    const [getChatSum, {data: chatSumData}] = chatAPI.useGetSummarizationMutation();
 
     const ref = React.useRef<MDXEditorMethods>(null);
-    // const summRef = React.useRef<MDXEditorMethods>(null);
+    const summRef = React.useRef<MDXEditorMethods>(null);
 
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     // const [sum, setSum] = React.useState<string>('');
@@ -251,9 +268,9 @@ function Note() {
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
 
-    // const fetchChatSum = () => {
-    //     getChatSum({id});
-    // };
+    const fetchChatSum = () => {
+        getChatSum({id});
+    };
 
     const handleFormSubmit = async () => {
         if (!!callUrl) {
@@ -273,6 +290,10 @@ function Note() {
         delete summaries[summId];
     };
 
+    const handleStopSumm = (summId: string) => () => {
+        stopCall({summ_id: summId});
+    };
+
     const handleChangeMd = (value: string) => {
         changeDoc((doc: NoteDoc) => {
             A.updateText(doc, ['text'], value);
@@ -289,11 +310,11 @@ function Note() {
         }
     }, [callSumData?.summ_text]);*/
 
-    /*React.useEffect(() => {
+    React.useEffect(() => {
         if (chatSumData?.summ_text) {
             summRef.current?.setMarkdown(chatSumData.summ_text);
         }
-    }, [chatSumData?.summ_text]);*/
+    }, [chatSumData?.summ_text]);
 
     React.useEffect(() => {
         if (note) {
@@ -304,17 +325,17 @@ function Note() {
     return (
         <Stack gap={2} sx={{p: 2}}>
             <Box gap={2} display="flex" alignItems={'center'}>
-                {/* <Button variant="outlined" color="secondary" onClick={fetchChatSum}>
+                <Button variant="outlined" color="secondary" onClick={fetchChatSum}>
                     Получить суммаризацию чата
-                </Button> */}
-                {/* <Button variant="outlined" color="secondary" onClick={() => setInfoModalIsOpen(true)}>
+                </Button>
+                <Button variant="outlined" color="secondary" onClick={() => setInfoModalIsOpen(true)}>
                     Привязать чат
-                </Button> */}
+                </Button>
                 <Button variant="outlined" color="secondary" onClick={() => setFormModalIsOpen(true)}>
                     Привязать звонок
                 </Button>
 
-                {/* <Dialog
+                <Dialog
                     open={infoModalIsOpen}
                     onClose={() => setInfoModalIsOpen(false)}
                     aria-labelledby="alert-dialog-title"
@@ -334,7 +355,7 @@ function Note() {
                             Закрыть
                         </Button>
                     </DialogActions>
-                </Dialog> */}
+                </Dialog>
 
                 <Dialog
                     open={formModalIsOpen}
@@ -401,8 +422,11 @@ function Note() {
                                 sx={{minWidth: 200}}
                                 renderInput={(params) => <TextField {...params} label="Роль" size="small" />}
                             />
-                            <Button variant="outlined" color="secondary" onClick={handleDetachSumm(id)}>
+                            <Button variant="outlined" color="error" onClick={handleDetachSumm(id)}>
                                 Отвязать суммаризацию от заметки
+                            </Button>
+                            <Button variant="outlined" color="error" onClick={handleStopSumm(id)} disabled={!v.loading}>
+                                Закончить суммаризацию
                             </Button>
                         </Box>
                         {/* </CardHeader> */}
