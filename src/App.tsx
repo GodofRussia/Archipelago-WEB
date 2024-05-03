@@ -9,10 +9,11 @@ import MainPage from './pages/MainPage';
 import Note from './pages/Note';
 import Login from './pages/Login';
 import {ColorMode} from './types/color-mode';
-import Layout from './components/Layout';
+import Layout, {TabType} from './components/Layout';
 import LoginLayout from './components/LoginLayout';
 import Registration from './pages/Registration';
 import {ProtectedRoute} from './components/ProtectedRoute';
+import {SnackbarProvider} from 'notistack';
 
 function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
@@ -66,47 +67,57 @@ function App() {
     );
 
     return (
-        <MuiThemeProvider theme={theme}>
-            {/* <JoyThemeProvider theme={joyTheme}> */}
-            <BrowserRouter>
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <Layout>
-                                <MainPage />
-                            </Layout>
-                        }
-                    />
-                    <Route
-                        path="/notes/:id"
-                        element={
-                            <ProtectedRoute>
+        <SnackbarProvider>
+            <MuiThemeProvider theme={theme}>
+                {/* <JoyThemeProvider theme={joyTheme}> */}
+                <BrowserRouter>
+                    <Routes>
+                        <Route
+                            path="/"
+                            element={
                                 <Layout>
-                                    <Note />
+                                    <MainPage />
                                 </Layout>
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/login/"
-                        element={
-                            <LoginLayout>
-                                <Login />
-                            </LoginLayout>
-                        }
-                    />
-                    <Route
-                        path="/registration/"
-                        element={
-                            <LoginLayout>
-                                <Registration />
-                            </LoginLayout>
-                        }
-                    />
-                </Routes>
-            </BrowserRouter>
-        </MuiThemeProvider>
+                            }
+                        />
+                        <Route
+                            path="/shared"
+                            element={
+                                <Layout tab={TabType.SHARED}>
+                                    <MainPage />
+                                </Layout>
+                            }
+                        />
+                        <Route
+                            path="/notes/:id"
+                            element={
+                                <ProtectedRoute>
+                                    <Layout>
+                                        <Note />
+                                    </Layout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/login/"
+                            element={
+                                <LoginLayout>
+                                    <Login />
+                                </LoginLayout>
+                            }
+                        />
+                        <Route
+                            path="/registration/"
+                            element={
+                                <LoginLayout>
+                                    <Registration />
+                                </LoginLayout>
+                            }
+                        />
+                    </Routes>
+                </BrowserRouter>
+            </MuiThemeProvider>
+        </SnackbarProvider>
     );
 }
 

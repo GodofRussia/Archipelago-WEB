@@ -1,4 +1,4 @@
-enum AccessEnum {
+export enum AccessEnum {
     delete = 'delete',
     update = 'update',
     get = 'get',
@@ -6,11 +6,11 @@ enum AccessEnum {
 }
 
 export interface Access {
-    access: AccessEnum;
+    access: string;
     withInvitation: boolean;
 }
 
 export interface AccessDto {
-    access: AccessEnum;
+    access: string;
     with_invitation: boolean;
 }

@@ -6,14 +6,18 @@ import {loadCollapsedDirIds, setCollapsedDirIds} from '../../utils/localStorage'
 interface DirsState {
     activeDir: Dir | undefined;
     activeNote: Note | undefined;
+    sharedNotes: Note[];
     dirTree: FullDirTreeWithNotes | undefined;
     collapsedDirIds: number[];
+    dirIds: number[];
 }
 
 const initialState: DirsState = {
     activeDir: undefined,
+    sharedNotes: [],
     activeNote: undefined,
     dirTree: undefined,
+    dirIds: [],
     collapsedDirIds: loadCollapsedDirIds() || [],
 };
 
@@ -49,6 +53,8 @@ export const dirsSlice = createSlice({
         },
         mergeDirTreeWithNotes(store, action: PayloadAction<{dirTree: DirTree; notes: Note[]}>) {
             store.dirTree = recursiveDFSWithNotes(action.payload.dirTree, action.payload.notes);
+            store.dirIds = recursiveDFSBuildDirsArray(store.dirTree) as number[];
+            store.sharedNotes = action.payload.notes.filter(({dirId}) => !store.dirIds.includes(dirId));
         },
         setActiveDir(store, action: PayloadAction<Dir>) {
             store.activeDir = action.payload;
@@ -68,7 +74,7 @@ export const dirsSlice = createSlice({
         },
         changeCollapsedStateForAllDirs(store, action: PayloadAction<boolean>) {
             if (action.payload) {
-                store.collapsedDirIds = recursiveDFSBuildDirsArray(store.dirTree) || [];
+                store.collapsedDirIds = store.dirIds;
             } else {
                 store.collapsedDirIds = [];
             }
