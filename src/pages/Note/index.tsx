@@ -279,7 +279,14 @@ function Note() {
     const [getChatSum, {data: chatSumData}] = chatAPI.useGetSummarizationMutation();
 
     const [usersMailQuery, setUsersMailQuery] = React.useState<string>('');
-    const {data: searchedUsers} = userAPI.useSearchUsersQuery(usersMailQuery, {skip: usersMailQuery.length < 3});
+    const [query, setQuery] = React.useState<string>('');
+    const {data: searchedUsers} = userAPI.useSearchUsersQuery(query, {skip: query.length < 3});
+
+    console.log(query, usersMailQuery);
+
+    const setMailQuery = debounce((query) => {
+        setQuery(query);
+    }, 700);
 
     const [updateNote, {data: updatedNote}] = notesApi.useUpdateNoteMutation();
     const [setUserAccess, {}] = notesApi.useSetAccessMutation();
@@ -290,7 +297,7 @@ function Note() {
     const summRef = React.useRef<MDXEditorMethods>(null);
 
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
-    const [sum, setSum] = React.useState<string>('');
+    // const [sum, setSum] = React.useState<string>('');
     const [accessRole, setAccessRole] = React.useState<string | null>(null);
 
     // const [callsType, setCallsType] = React.useState<string | null>(CallsTypeEnum.ZOOM);
@@ -455,7 +462,7 @@ function Note() {
                 >
                     <DialogTitle id="alert-dialog-title">Доступ к заметке {note?.title || ''}</DialogTitle>
                     <DialogContent>
-                        <Stack gap={3} marginTop={0.5}>
+                        <Stack gap={2} marginTop={0.5}>
                             <TextField
                                 type="text"
                                 margin="dense"
@@ -466,15 +473,18 @@ function Note() {
                                 fullWidth
                                 value={usersMailQuery}
                                 onChange={(e) => {
-                                    debounce(() => {
-                                        setUsersMailQuery(e.target.value);
-                                    }, 500);
+                                    setUsersMailQuery(e.target.value);
+                                    setMailQuery(e.target.value);
                                 }}
                             />
-                            <Checkbox checked={checked} onChange={(state) => setChecked(state.target.value)}></Checkbox>
+                            <Box display={'flex'} alignItems={'center'}>
+                                <Checkbox checked={checked} onChange={(state) => setChecked(state.target.checked)} />
+                                <Typography>Отправить приглашение на почту</Typography>
+                            </Box>
+
                             <List>
-                                {searchedUsers?.map(({id}) => (
-                                    <ListItem>
+                                {searchedUsers?.map(({id, email}, idx) => (
+                                    <ListItem key={idx}>
                                         <Box
                                             onClick={() =>
                                                 setUserAccess({
@@ -488,7 +498,9 @@ function Note() {
                                                     },
                                                 })
                                             }
-                                        ></Box>
+                                        >
+                                            {email}
+                                        </Box>
                                     </ListItem>
                                 )) || null}
                             </List>
