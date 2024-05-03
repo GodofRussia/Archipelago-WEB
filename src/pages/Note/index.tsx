@@ -402,7 +402,7 @@ function Note() {
                                 renderInput={(params) => <TextField {...params} label="Роль" size="small" />}
                             />
                             <Button variant="outlined" color="secondary" onClick={handleDetachSumm(id)}>
-                                Отвязать заметку
+                                Отвязать суммаризацию от заметки
                             </Button>
                         </Box>
                         {/* </CardHeader> */}
