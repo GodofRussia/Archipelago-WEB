@@ -4,7 +4,6 @@ import '@fontsource/inter';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {createTheme as createMuiTheme, ThemeProvider as MuiThemeProvider} from '@mui/material/styles';
 import {ruRU} from '@mui/material/locale';
-import {blue} from '@mui/material/colors';
 import MainPage from './pages/MainPage';
 import Note from './pages/Note';
 import Login from './pages/Login';
@@ -15,7 +14,7 @@ import Registration from './pages/Registration';
 import {ProtectedRoute} from './components/ProtectedRoute';
 import {SnackbarProvider} from 'notistack';
 
-function App() {
+export default function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
 
     const theme = React.useMemo(
@@ -33,8 +32,8 @@ function App() {
                     },
                     palette: {
                         mode: colorMode,
-                        primary: {main: '#0288d1', dark: '#040221', contrastText: '#ffffff'},
-                        secondary: {...blue, contrastText: '#ffffff'},
+                        primary: {main: '#0288d1', dark: '#015f92', light: '#349fda', contrastText: '#ffffff'},
+                        secondary: {main: '#4a148c', dark: '#330e62', light: '#6e43a3', contrastText: '#ffffff'},
                         error: {
                             main: '#f44336',
                             dark: '#e53935',
@@ -120,5 +119,3 @@ function App() {
         </SnackbarProvider>
     );
 }
-
-export default App;

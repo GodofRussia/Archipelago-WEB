@@ -482,10 +482,6 @@ function Note() {
                                     setMailQuery(e.target.value);
                                 }}
                             />
-                            <Box display={'flex'} alignItems={'center'}>
-                                <Checkbox checked={checked} onChange={(state) => setChecked(state.target.checked)} />
-                                <Typography>Отправить приглашение на почту</Typography>
-                            </Box>
 
                             <List>
                                 {searchedUsers?.map(({id, email}, idx) => (
@@ -509,6 +505,12 @@ function Note() {
                                     </ListItem>
                                 )) || null}
                             </List>
+
+                            <Box display={'flex'} alignItems={'center'}>
+                                <Checkbox checked={checked} onChange={(state) => setChecked(state.target.checked)} />
+                                <Typography>Отправить приглашение на почту</Typography>
+                            </Box>
+
                             <Box display={'flex'} alignItems={'center'} gap={2}>
                                 <Typography variant={'subtitle1'}>Всем, у кого есть ссылка</Typography>
                                 <Autocomplete
