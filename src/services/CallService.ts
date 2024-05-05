@@ -25,7 +25,7 @@ export interface GetCallSummarizationResponseDto {
     detalization?: string;
 }
 
-/*interface GetCallSummarizationResponse {
+interface GetCallSummarizationResponse {
     hasSum: boolean;
     summText: string;
     platform: string;
@@ -33,7 +33,7 @@ export interface GetCallSummarizationResponseDto {
     isActive: boolean;
     role: string;
     detalization: string;
-}*/
+}
 
 export const callAPI = createApi({
     reducerPath: 'call',
@@ -51,7 +51,6 @@ export const callAPI = createApi({
                 },
             }),
             transformResponse: (response: GetCallSummarizationResponseDto) => {
-                console.log('getSummarization response:', response);
                 return {
                     platform: response.platform || '',
                     date: response.date || '',
