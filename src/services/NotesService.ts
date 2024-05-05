@@ -1,8 +1,6 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {Note, NoteDto} from '../types/notes';
 import {convertFromAccessToDto, convertFromNoteDto, convertFromNoteToNoteDto} from '../utils/convert';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import {Access} from '../types/access';
 
 interface CreateNoteRequest {
@@ -23,12 +21,12 @@ interface SummaryListReponseDto {
     active_summary_ids: string[];
 }
 
-export interface SummaryListReponse {
+export interface SummaryListResponse {
     nonActiveSummaryIds: string[];
     activeSummaryIds: string[];
 }
 
-interface CheckOwnerReponseDto {
+interface CheckOwnerResponseDto {
     is_owner: boolean;
 }
 
@@ -56,12 +54,12 @@ export const notesApi = createApi({
             },
             providesTags: () => ['Notes'],
         }),
-        listSummaries: build.query<SummaryListReponse, {userId: string; noteId: string}>({
+        listSummaries: build.query<SummaryListResponse, {userId: string; noteId: string}>({
             query: ({noteId, userId}) => ({
                 url: `/notes/${noteId}/summary_list`,
                 headers: {'X-User-Id': userId},
             }),
-            transformResponse: (response: SummaryListReponseDto): SummaryListReponse => ({
+            transformResponse: (response: SummaryListReponseDto): SummaryListResponse => ({
                 nonActiveSummaryIds: response.non_active_summary_ids,
                 activeSummaryIds: response.active_summary_ids,
             }),
@@ -72,7 +70,7 @@ export const notesApi = createApi({
                 url: `/notes/${noteId}/is_owner/${userId}`,
                 headers: {'X-User-Id': userId},
             }),
-            transformResponse: (response: CheckOwnerReponseDto): boolean => response.is_owner,
+            transformResponse: (response: CheckOwnerResponseDto): boolean => response.is_owner,
         }),
         createNote: build.mutation<Note, CreateNoteRequest>({
             query: (requestData) => ({

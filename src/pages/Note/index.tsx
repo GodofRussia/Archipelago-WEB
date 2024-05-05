@@ -4,10 +4,7 @@ import {
     Box,
     Button,
     ButtonGroup,
-    Card,
-    CardContent,
     Checkbox,
-    CircularProgress,
     ClickAwayListener,
     debounce,
     Dialog,
@@ -53,7 +50,6 @@ import {
     CallsDetailEnum,
     CONVERT_DEFAULT_ACCESS_ROLE_MAP,
     NoteDoc,
-    Role,
 } from '../../types/notes';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -72,7 +68,7 @@ import List from '@mui/material/List';
 import {SummaryWithLoading} from '../../types/summary';
 import axios from 'axios';
 import {formatDate} from '../../utils/convert';
-import {CallSummary, CallSummaryProps} from '../../components/CallSummary';
+import {CallSummary} from '../../components/CallSummary';
 
 // костыль
 const makeSumm = async ({summ_id, role}: {summ_id: string; role: string}) => {
@@ -265,7 +261,7 @@ function Note() {
                 //setSummaries({});
             };
         }
-    }, [summaryList, id]);
+    }, [summaryList, id, summaries]);
 
     console.log('summaries: ', summaries);
 
