@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Autocomplete,
     Box,
@@ -72,6 +72,7 @@ import List from '@mui/material/List';
 import {SummaryWithLoading} from '../../types/summary';
 import axios from 'axios';
 import {formatDate} from '../../utils/convert';
+import {CallSummary, CallSummaryProps} from '../../components/CallSummary';
 
 // костыль
 const makeSumm = async ({summ_id, role}: {summ_id: string; role: string}) => {
@@ -125,6 +126,16 @@ type KVSummary = {
 function Note() {
     const {id = ''} = useParams();
 
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const [summaries, setSummaries] = React.useState<KVSummary>({});
+
+    useEffect(() => {
+        setLoading(true);
+        setSummaries({});
+        setLoading(false);
+    }, [id]);
+
     const {user} = useAppSelector((store) => store.userReducer);
     const dispatch = useAppDispatch();
 
@@ -160,12 +171,6 @@ function Note() {
         },
     );
     console.log('summary list: ', summaryList);
-
-    const [summaries, setSummaries] = React.useState<KVSummary>({});
-
-    useEffect(() => {
-        setSummaries({});
-    }, [id]);
 
     // callAPI.useGetSummarizationQuery({role: undefined, summ_id: id}, {skip: !summaryList});
 
@@ -610,63 +615,17 @@ function Note() {
                 </Dialog>
             </Box>
 
-            {Object.entries(summaries).map(([id, v]) => (
-                <Card key={id}>
-                    <div key={id} style={{margin: '10px 20px 30px 40px'}}>
-                        {/* <CardHeader > */}
-                        <Box gap={2} display="flex" alignItems={'center'}>
-                            <div>{v.date}</div>
-                            <div>{v.detalization}</div>
-                            <div>{v.platform}</div>
-                            <Autocomplete
-                                defaultValue={'обычный'}
-                                options={Role}
-                                value={v.role}
-                                onChange={(_, newValue) => {
-                                    setRole(id)(newValue || 'обычный');
-                                }}
-                                sx={{minWidth: 200}}
-                                renderInput={(params) => <TextField {...params} label="Роль" size="small" />}
-                            />
-                            <Button variant="outlined" color="error" onClick={handleDetachSumm(id)}>
-                                Отвязать суммаризацию от заметки
-                            </Button>
-                            <Button variant="outlined" color="error" onClick={handleStopSumm(id)} disabled={!v.loading}>
-                                Закончить суммаризацию
-                            </Button>
-                        </Box>
-                        {/* </CardHeader> */}
-
-                        <CardContent>
-                            {v.text === '' ? (
-                                v.loading ? (
-                                    <Box sx={{display: 'flex'}}>
-                                        <CircularProgress />
-                                    </Box>
-                                ) : (
-                                    <div>Звонок слишком рано прервался</div>
-                                )
-                            ) : (
-                                <MDXEditor
-                                    //ref={summRef}
-                                    className="dark-theme dark-editor"
-                                    placeholder="Здесь будет текст с суммаризацией"
-                                    markdown={v.text}
-                                    readOnly={true}
-                                    plugins={[
-                                        headingsPlugin(),
-                                        listsPlugin(),
-                                        quotePlugin(),
-                                        tablePlugin(),
-                                        thematicBreakPlugin(),
-                                        markdownShortcutPlugin(),
-                                    ]}
-                                />
-                            )}
-                        </CardContent>
-                    </div>
-                </Card>
-            ))}
+            {!loading &&
+                Object.entries(summaries).map(([id, v]) => (
+                    <CallSummary
+                        key={id}
+                        summary={v}
+                        id={id}
+                        handleDetachSumm={handleDetachSumm(id)}
+                        handleStopSumm={handleStopSumm(id)}
+                        setRole={setRole(id)}
+                    />
+                ))}
 
             <MDXEditor
                 ref={ref}
