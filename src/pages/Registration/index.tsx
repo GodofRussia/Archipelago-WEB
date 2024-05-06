@@ -67,6 +67,16 @@ function Registration() {
         email: Yup.string()
             .email('Пожалуйста, проверьте, правильно ли указан адрес')
             .required('Необходимо указать почту'),
+        name: Yup.string().required('Необходимо указать имя'),
+        password: Yup.string()
+            .required('Необходимо придумать пароль')
+            .matches(
+                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/,
+                'Пароль должен содержать как минимум 8 символов, включая одну прописную букву, одну строчную букву, одну цифру и один специальный символ',
+            ),
+        confirmPassword: Yup.string()
+            .oneOf([Yup.ref('password'), null], 'Пароли должны совпадать')
+            .required('Пожалуйста, подтвердите ваш пароль'),
     });
 
     const [createRootDir, {data: rootDir, isLoading: isLoadingRootDir, isError: isErrorRootDir}] =
@@ -77,9 +87,7 @@ function Registration() {
 
     const handleRegistration = React.useCallback(() => {
         if (confirmPassword !== password) {
-            setError(true); // Set a general error state
-            setPasswordError(true); // Set an error state for password fields
-            return;
+            console.log('Не совпадают пароли');
         }
         register({email, password, name});
     }, [confirmPassword, email, name, password, register]);
@@ -156,12 +164,10 @@ function Registration() {
                                             label="Почта"
                                             variant="outlined"
                                             error={errors.email && touched.email}
+                                            helperText={errors.email && touched.email ? errors.email : null}
                                         />
                                     )}
                                 </Field>
-                                <ErrorMessage name="email">
-                                    {(msg) => <div style={{color: 'red', fontSize: '14px'}}>{msg}</div>}
-                                </ErrorMessage>
 
                                 <Field name="name">
                                     {({field}) => (
@@ -170,48 +176,40 @@ function Registration() {
                                             label="Имя пользователя"
                                             variant="outlined"
                                             error={errors.name && touched.name}
+                                            helperText={errors.name && touched.name ? errors.name : null}
                                         />
                                     )}
                                 </Field>
-                                <ErrorMessage name="name" component="div" />
 
-                                <StyledTextField
-                                    label="Пароль"
-                                    type="password"
-                                    variant="outlined"
-                                    error={
-                                        isErrorRegistration ||
-                                        isErrorUser ||
-                                        isErrorRootDir ||
-                                        isErrorSetting ||
-                                        passwordError
-                                    }
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-                                        setError(false);
-                                        setPasswordError(false); // Reset password error state when changing password
-                                    }}
-                                />
+                                <Field name="password">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            type="password"
+                                            label="Придумайте пароль"
+                                            variant="outlined"
+                                            error={errors.password && touched.password}
+                                            helperText={errors.password && touched.password ? errors.password : null}
+                                        />
+                                    )}
+                                </Field>
 
-                                <StyledTextField
-                                    label="Подтверждение пароля"
-                                    type="password"
-                                    variant="outlined"
-                                    error={
-                                        isErrorRegistration ||
-                                        isErrorUser ||
-                                        isErrorRootDir ||
-                                        isErrorSetting ||
-                                        passwordError
-                                    }
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                />
-
-                                {passwordError && (
-                                    <Typography sx={{color: 'red', fontSize: '14px'}}>Пароли не совпадают</Typography>
-                                )}
+                                <Field name="confirmPassword">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            type="password"
+                                            label="Повторите пароль"
+                                            variant="outlined"
+                                            error={!!errors.confirmPassword && touched.confirmPassword}
+                                            helperText={
+                                                !!errors.confirmPassword && touched.confirmPassword
+                                                    ? errors.confirmPassword
+                                                    : null
+                                            }
+                                        />
+                                    )}
+                                </Field>
 
                                 <Button variant="contained" color="primary" type="submit" sx={{minWidth: '343px'}}>
                                     {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
