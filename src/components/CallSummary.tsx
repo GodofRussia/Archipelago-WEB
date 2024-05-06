@@ -152,7 +152,7 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                             ) : (
                                 <MDXEditor
                                     className="dark-theme dark-editor"
-                                    placeholder="Введите текст сюда"
+                                    placeholder="Суммаризация звонка"
                                     markdown={summary.text}
                                     readOnly
                                     plugins={[
