@@ -44,3 +44,21 @@ export enum RoleEnum {
     PIRATE = 'пират',
     YOB = 'гопник',
 }
+
+export const AccessRole = ['без доступа', 'читатель', 'редактор', 'управлять заметкой', 'выдача прав'];
+
+export enum AccessRoleEnum {
+    EMPTY = 'без доступа',
+    READ = 'читатель',
+    WRITE = 'редактор',
+    MODIFY = 'управлять заметкой',
+    MANAGE = 'выдача прав',
+}
+
+export const CONVERT_DEFAULT_ACCESS_ROLE_MAP: Record<AccessRoleEnum, string> = {
+    [AccessRoleEnum.EMPTY]: 'e',
+    [AccessRoleEnum.READ]: 'r',
+    [AccessRoleEnum.WRITE]: 'w',
+    [AccessRoleEnum.MODIFY]: 'm',
+    [AccessRoleEnum.MANAGE]: 'ma',
+};

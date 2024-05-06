@@ -89,7 +89,7 @@ function Navbar(props: NavbarProps) {
                 {!isAuthenticationPage && !user && (
                     <ButtonGroup>
                         <Button onClick={handleLoginClicked} startIcon={<LoginIcon fontSize={'medium'} />}>
-                            Логин
+                            Войти
                         </Button>
                         <Button onClick={handleRegisterClicked}>Зарегистрироваться</Button>
                     </ButtonGroup>

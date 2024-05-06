@@ -44,3 +44,21 @@ export function convertFromAccessDto(access: AccessDto): Access {
 export function convertFromAccessToDto(access: Access): AccessDto {
     return {...access, with_invitation: access.withInvitation};
 }
+
+export function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+
+    const options: Intl.DateTimeFormatOptions = {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+    };
+
+    //console.log(date.toLocaleDateString('en-GB', options));
+    //console.log(date.toLocaleTimeString('en-GB', options));
+
+    return date.toLocaleDateString('en-GB', options);
+}
