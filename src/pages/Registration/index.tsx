@@ -16,6 +16,9 @@ import {userAPI} from '../../services/UserService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {dirsApi} from '../../services/DirsService';
 import {setUser} from '../../store/reducers/UserSlice';
+import {Formik, Form, Field, ErrorMessage} from 'formik';
+import * as Yup from 'yup';
+import Tooltip from '@mui/material/Tooltip';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
@@ -46,6 +49,7 @@ function Registration() {
     const [password, setPassword] = React.useState('');
     const [confirmPassword, setConfirmPassword] = React.useState('');
     const [userId, setUserId] = React.useState<string | null>(null);
+    const [passwordError, setPasswordError] = React.useState(false);
     const [isPasswordError, setError] = React.useState<boolean>(false);
 
     const dispatch = useAppDispatch();
@@ -60,6 +64,22 @@ function Registration() {
         isError: isErrorUser,
     } = userAPI.useGetUserQuery(userId || '', {skip: userId === null});
 
+    const validationSchema = Yup.object().shape({
+        email: Yup.string()
+            .email('Пожалуйста, проверьте, правильно ли указан адрес')
+            .required('Необходимо указать почту'),
+        name: Yup.string().required('Необходимо указать имя'),
+        password: Yup.string()
+            .required('Необходимо придумать пароль')
+            .matches(
+                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/,
+                'Пароль должен содержать как минимум 8 символов, включая одну прописную букву, одну строчную букву, одну цифру и один специальный символ',
+            ),
+        confirmPassword: Yup.string()
+            .oneOf([Yup.ref('password'), null], 'Пароли должны совпадать')
+            .required('Пожалуйста, подтвердите ваш пароль'),
+    });
+
     const [createRootDir, {data: rootDir, isLoading: isLoadingRootDir, isError: isErrorRootDir}] =
         dirsApi.useCreateDirMutation();
 
@@ -68,8 +88,7 @@ function Registration() {
 
     const handleRegistration = React.useCallback(() => {
         if (confirmPassword !== password) {
-            setError(true);
-            return;
+            console.log('Не совпадают пароли');
         }
         register({email, password, name});
     }, [confirmPassword, email, name, password, register]);
@@ -112,86 +131,121 @@ function Registration() {
     }, [currUser, navigate]);
 
     return (
-        <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '140vh', width: '140vw'}}>
-            <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
-                <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
-                <CardContent>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            flexDirection: 'column',
-                            gap: 2,
-                            textDecoration: 'none',
-                        }}
-                    >
-                        <StyledTextField
-                            label="Почта"
-                            variant="outlined"
-                            value={email}
-                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <StyledTextField
-                            label="Имя пользователя"
-                            variant="outlined"
-                            value={name}
-                            error={isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting}
-                            onChange={(e) => {
-                                setName(e.target.value);
-                                setError(false);
-                            }}
-                        />
-                        <StyledTextField
-                            label="Пароль"
-                            type="password"
-                            variant="outlined"
-                            error={
-                                isErrorRegistration ||
-                                isErrorUser ||
-                                isPasswordError ||
-                                isErrorRootDir ||
-                                isErrorSetting
-                            }
-                            value={password}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                setError(false);
-                            }}
-                        />
-                        <StyledTextField
-                            label="Подтверждение пароля"
-                            type="password"
-                            variant="outlined"
-                            error={
-                                isErrorRegistration ||
-                                isErrorUser ||
-                                isPasswordError ||
-                                isErrorRootDir ||
-                                isErrorSetting
-                            }
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleRegistration}
-                            sx={{minWidth: '343px'}}
-                        >
-                            {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
-                                <CircularProgress />
-                            ) : (
-                                'Зарегистрироваться'
-                            )}
-                        </Button>
-                        <Typography component={Link} to="/login" sx={{textDecoration: 'none', color: 'black'}}>
-                            Войти в аккаунт
-                        </Typography>
-                    </Box>
-                </CardContent>
-            </Card>
-        </Box>
+        <Formik
+            initialValues={{email: '', name: '', password: '', confirmPassword: ''}}
+            validationSchema={validationSchema}
+            onSubmit={handleRegistration}
+        >
+            {({errors, touched}) => (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '140vh',
+                        width: '140vw',
+                    }}
+                >
+                    <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
+                        <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
+                        <CardContent>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    textDecoration: 'none',
+                                }}
+                            >
+                                <Field name="email">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            label="Почта"
+                                            variant="outlined"
+                                            error={errors.email && touched.email}
+                                            helperText={errors.email && touched.email ? errors.email : <div>&nbsp</div>}
+                                        />
+                                    )}
+                                </Field>
+
+                                <Field name="name">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            label="Имя пользователя"
+                                            variant="outlined"
+                                            error={errors.name && touched.name}
+                                            helperText={errors.name && touched.name ? errors.name : <div>&nbsp</div>}
+                                        />
+                                    )}
+                                </Field>
+                                <Field name="password">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            type="password"
+                                            label="Придумайте пароль"
+                                            variant="outlined"
+                                            error={errors.password && touched.password}
+                                            helperText={
+                                                <Tooltip title={errors.password} arrow>
+                                                    <div
+                                                        style={{
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            maxWidth: '100%',
+                                                        }}
+                                                    >
+                                                        {errors.password && touched.password ? (
+                                                            errors.password
+                                                        ) : (
+                                                            <div>&nbsp;</div>
+                                                        )}
+                                                    </div>
+                                                </Tooltip>
+                                            }
+                                        />
+                                    )}
+                                </Field>
+
+                                <Field name="confirmPassword">
+                                    {({field}) => (
+                                        <StyledTextField
+                                            {...field}
+                                            type="password"
+                                            label="Повторите пароль"
+                                            variant="outlined"
+                                            error={!!errors.confirmPassword && touched.confirmPassword}
+                                            helperText={
+                                                !!errors.confirmPassword && touched.confirmPassword ? (
+                                                    errors.confirmPassword
+                                                ) : (
+                                                    <div>&nbsp</div>
+                                                )
+                                            }
+                                        />
+                                    )}
+                                </Field>
+
+                                <Button variant="contained" color="primary" type="submit" sx={{minWidth: '343px'}}>
+                                    {isLoadingRegistration || isLoadingUser || isLoadingRootDir || isLoadingSetting ? (
+                                        <CircularProgress />
+                                    ) : (
+                                        'Зарегистрироваться'
+                                    )}
+                                </Button>
+                                <Typography component={Link} to="/login" sx={{textDecoration: 'none', color: 'black'}}>
+                                    Войти в аккаунт
+                                </Typography>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Box>
+            )}
+        </Formik>
     );
 }
 
