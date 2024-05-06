@@ -18,6 +18,7 @@ import {dirsApi} from '../../services/DirsService';
 import {setUser} from '../../store/reducers/UserSlice';
 import {Formik, Form, Field, ErrorMessage} from 'formik';
 import * as Yup from 'yup';
+import Tooltip from '@mui/material/Tooltip';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
@@ -164,7 +165,7 @@ function Registration() {
                                             label="Почта"
                                             variant="outlined"
                                             error={errors.email && touched.email}
-                                            helperText={errors.email && touched.email ? errors.email : null}
+                                            helperText={errors.email && touched.email ? errors.email : <div>&nbsp</div>}
                                         />
                                     )}
                                 </Field>
@@ -176,11 +177,10 @@ function Registration() {
                                             label="Имя пользователя"
                                             variant="outlined"
                                             error={errors.name && touched.name}
-                                            helperText={errors.name && touched.name ? errors.name : null}
+                                            helperText={errors.name && touched.name ? errors.name : <div>&nbsp</div>}
                                         />
                                     )}
                                 </Field>
-
                                 <Field name="password">
                                     {({field}) => (
                                         <StyledTextField
@@ -189,7 +189,24 @@ function Registration() {
                                             label="Придумайте пароль"
                                             variant="outlined"
                                             error={errors.password && touched.password}
-                                            helperText={errors.password && touched.password ? errors.password : null}
+                                            helperText={
+                                                <Tooltip title={errors.password} arrow>
+                                                    <div
+                                                        style={{
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            maxWidth: '100%',
+                                                        }}
+                                                    >
+                                                        {errors.password && touched.password ? (
+                                                            errors.password
+                                                        ) : (
+                                                            <div>&nbsp;</div>
+                                                        )}
+                                                    </div>
+                                                </Tooltip>
+                                            }
                                         />
                                     )}
                                 </Field>
@@ -203,9 +220,11 @@ function Registration() {
                                             variant="outlined"
                                             error={!!errors.confirmPassword && touched.confirmPassword}
                                             helperText={
-                                                !!errors.confirmPassword && touched.confirmPassword
-                                                    ? errors.confirmPassword
-                                                    : null
+                                                !!errors.confirmPassword && touched.confirmPassword ? (
+                                                    errors.confirmPassword
+                                                ) : (
+                                                    <div>&nbsp</div>
+                                                )
                                             }
                                         />
                                     )}
