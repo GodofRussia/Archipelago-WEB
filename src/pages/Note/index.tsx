@@ -10,7 +10,6 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     Grow,
     ListItem,
@@ -67,6 +66,9 @@ import {userAPI} from '../../services/UserService';
 import {useSnackbar} from 'notistack';
 import List from '@mui/material/List';
 import CallSummariesList from '../../components/CallSummariesList';
+import ChatSumStepper from '../../components/ChatSumStepper';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {SerializedError} from '@reduxjs/toolkit';
 
 function Note() {
     const {id = ''} = useParams();
@@ -119,7 +121,14 @@ function Note() {
     const [accessRightsDialogIsOpen, setAccessRightsDialogIsOpen] = React.useState(false);
 
     const fetchChatSum = () => {
-        getChatSum({id});
+        getChatSum({id}).then((data) => {
+            enqueueSnackbar(
+                (data as {error: FetchBaseQueryError | SerializedError})?.error
+                    ? 'Суммаризация чата отсутствует, сначала корректно привяжите чат'
+                    : 'Суммаризация чата получена',
+                {variant: (data as {error: FetchBaseQueryError | SerializedError})?.error ? 'warning' : 'success'},
+            );
+        });
     };
 
     const handleFormSubmit = async () => {
@@ -147,7 +156,7 @@ function Note() {
 
     React.useEffect(() => {
         if (chatSumData?.summ_text) {
-            enqueueSnackbar('Суммаризация чата получена');
+            enqueueSnackbar('Суммаризация чата получена', {variant: 'success'});
             summRef.current?.setMarkdown(chatSumData.summ_text);
         }
     }, [chatSumData?.summ_text, enqueueSnackbar]);
@@ -178,7 +187,7 @@ function Note() {
 
     React.useEffect(() => {
         if (!!updatedNote) {
-            enqueueSnackbar('Права на заметку обновлены');
+            enqueueSnackbar('Права на заметку обновлены', {variant: 'success'});
         }
     }, [enqueueSnackbar, updatedNote]);
 
@@ -332,12 +341,7 @@ function Note() {
                 >
                     <DialogTitle id="alert-dialog-title">Привязать телеграм-чат</DialogTitle>
                     <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            1. Добавьте бота @ArchipelagoSummarizer_bot в Ваш телеграм-чат
-                            <br /> &#09; Нажмите на название чата, затем на кнопку &quot;Добавить&quot; и вставьте имя
-                            бота
-                            <br /> 2. Введите в чат /config {id}
-                        </DialogContentText>
+                        <ChatSumStepper noteId={id} />
                     </DialogContent>
                     <DialogActions>
                         <Button color={'secondary'} onClick={() => setInfoModalIsOpen(false)}>
@@ -390,13 +394,28 @@ function Note() {
                             color={'secondary'}
                             onClick={handleFormSubmit}
                         >
-                            Подтвердить
+                            Начать запись
                         </LoadingButton>
                     </DialogActions>
                 </Dialog>
             </Box>
 
             <CallSummariesList noteId={id} />
+
+            {chatSumData?.summ_text && (
+                <MDXEditor
+                    ref={summRef}
+                    className="dark-theme dark-editor"
+                    placeholder="Суммаризация чата"
+                    readOnly
+                    plugins={[
+                        thematicBreakPlugin(),
+                        markdownShortcutPlugin(),
+                        diffSourcePlugin({viewMode: 'rich-text'}),
+                    ]}
+                    markdown={''}
+                />
+            )}
 
             <MDXEditor
                 ref={ref}
