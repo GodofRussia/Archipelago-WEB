@@ -16,6 +16,7 @@
     "@mdxeditor/editor": "^2.18.0",
     "@mui/icons-material": "^5.15.14",
     "@mui/joy": "^5.0.0-beta.32",
+    "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.14",
     "@reduxjs/toolkit": "^2.2.3",
     "@testing-library/jest-dom": "^5.17.0",

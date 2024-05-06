@@ -65,7 +65,7 @@ export const notesApi = createApi({
             }),
             providesTags: () => ['SummaryList'],
         }),
-        checkOwner: build.query<boolean, {userId: string; noteId: string}>({
+        checkNoteOwner: build.query<boolean, {userId: string; noteId: string}>({
             query: ({noteId, userId}) => ({
                 url: `/notes/${noteId}/is_owner/${userId}`,
                 headers: {'X-User-Id': userId},

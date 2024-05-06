@@ -2,134 +2,170 @@ import React from 'react';
 import {
     Autocomplete,
     Box,
-    Button,
     Card,
     CardActions,
     CardContent,
     CardHeader,
-    CircularProgress,
     Collapse,
+    Skeleton,
     TextField,
     Typography,
 } from '@mui/material';
 import IconButton, {IconButtonProps} from '@mui/material/IconButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {styled} from '@mui/material/styles';
-import {Role} from '../types/notes';
-import {SummaryWithLoading} from '../types/summary';
+import {CallsDetailEnum, Role} from '../types/notes';
+import {SummaryWithState} from '../types/summary';
+import {notesApi} from '../services/NotesService';
+import {callAPI} from '../services/CallService';
+import {useAppSelector} from '../hooks/useRedux';
+import {LoadingButton} from '@mui/lab';
+import {diffSourcePlugin, markdownShortcutPlugin, MDXEditor, thematicBreakPlugin} from '@mdxeditor/editor';
 
 interface ExpandMoreProps extends IconButtonProps {
     expand: boolean;
 }
 
 const ExpandMore = styled((props: ExpandMoreProps) => {
-    const {expand, ...other} = props;
+    const {...other} = props;
     return <IconButton {...other} />;
 })(({theme, expand}) => ({
     transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
-    //marginLeft: 'auto',
     transition: theme.transitions.create('transform', {
         duration: theme.transitions.duration.shortest,
     }),
 }));
 
 export interface CallSummaryProps {
-    summary: SummaryWithLoading;
-    setRole: (newRole: string) => void;
-    handleDetachSumm: () => void;
-    handleStopSumm: () => void;
-    id: string;
+    key: string;
+    summary: SummaryWithState;
+    noteId: string;
+    setRole: (sumId: string, newRole: CallsDetailEnum) => void;
 }
 
-export function CallSummary({summary, setRole, handleDetachSumm, handleStopSumm, id}: CallSummaryProps) {
-    const [expanded, setExpanded] = React.useState(summary.loading);
+export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
+    const {user} = useAppSelector((store) => store.userReducer);
+
+    const [detachSummary, {isLoading: isDetachingSummary}] = notesApi.useDetachSummaryMutation();
+    const [stopCall, {isLoading: isStoppingCall}] = callAPI.useStopCallRecordingMutation();
+    const {data: isNoteOwner, isLoading: checkedOwner} = notesApi.useCheckNoteOwnerQuery({
+        userId: user?.id || '',
+        noteId,
+    });
+
+    const [expanded, setExpanded] = React.useState(summary.isActive);
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
     };
 
+    const handleDetachSumm = () => {
+        detachSummary({userId: user?.id || '', noteId: noteId || '', summId: summary.id});
+    };
+
+    const handleStopSumm = () => {
+        stopCall({summ_id: summary.id});
+    };
+
+    console.log(summary);
+
     return (
-        <Card key={id}>
-            <div key={id} style={{margin: '10px 20px 30px 40px'}}>
-                <CardHeader
-                    title={summary.platform}
-                    subheader={
-                        <>
-                            <div>{summary.date}</div>
-                            <div>{`${summary.detalization} детализация`}</div>
-                        </>
-                    }
-                    action={
-                        <>
-                            <Box gap={2} display="flex" alignItems={'center'}>
-                                <Autocomplete
-                                    defaultValue={'обычный'}
-                                    options={Role}
-                                    value={summary.role}
-                                    onChange={(_, newValue) => {
-                                        setRole(newValue || 'обычный');
-                                    }}
-                                    sx={{minWidth: 200}}
-                                    renderInput={(params) => (
-                                        <TextField {...params} label="Стиль суммаризации" size="small" />
-                                    )}
-                                />
-                                <Button variant="outlined" color="error" onClick={handleDetachSumm} size="small">
-                                    Отвязать суммаризацию от заметки
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    onClick={handleStopSumm}
-                                    disabled={!summary.loading}
-                                    size="small"
-                                >
-                                    Закончить суммаризацию
-                                </Button>
-                            </Box>
-                        </>
-                    }
-                />
-                {summary.text === '' ? (
-                    summary.loading ? (
-                        <Box sx={{display: 'flex'}}>
-                            <CircularProgress />
-                        </Box>
-                    ) : (
-                        <div>Звонок слишком рано прервался</div>
-                    )
-                ) : (
+        <Card key={summary.id} sx={{p: 2}}>
+            <CardHeader
+                title={summary.platform}
+                subheader={
                     <>
-                        <CardActions disableSpacing>
-                            <ExpandMore
-                                expand={expanded}
-                                onClick={handleExpandClick}
-                                aria-expanded={expanded}
-                                aria-label="show more"
-                            >
-                                <ExpandMoreIcon />
-                            </ExpandMore>
-                        </CardActions>
-                        <Collapse in={expanded} timeout="auto" unmountOnExit>
-                            <CardContent>
-                                <Typography paragraph>
-                                    {summary.text === '' ? (
-                                        summary.loading ? (
-                                            <Box sx={{display: 'flex'}}>
-                                                <CircularProgress />
-                                            </Box>
-                                        ) : (
-                                            <div>Звонок слишком рано прервался</div>
-                                        )
-                                    ) : (
-                                        <div>{summary.text}</div>
-                                    )}
-                                </Typography>
-                            </CardContent>
-                        </Collapse>
+                        <div>{summary.date}</div>
+                        <div>{`${summary.detalization} детализация`}</div>
                     </>
-                )}
-            </div>
+                }
+                action={
+                    <>
+                        <Box gap={2} display="flex" alignItems={'center'} flexWrap={'wrap'}>
+                            <Autocomplete
+                                defaultValue={'обычный'}
+                                options={Role}
+                                value={summary.role}
+                                onChange={(_, newValue) => {
+                                    setRole(summary.id, (newValue as CallsDetailEnum) || CallsDetailEnum.AVERAGE);
+                                }}
+                                disabled={!summary.isActive || !isNoteOwner || !checkedOwner}
+                                sx={{minWidth: 200}}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Стиль суммаризации" size="small" />
+                                )}
+                            />
+                            <LoadingButton
+                                loading={isDetachingSummary}
+                                variant="outlined"
+                                color="error"
+                                disabled={!isNoteOwner || !checkedOwner}
+                                onClick={handleDetachSumm}
+                                size="small"
+                            >
+                                Отвязать суммаризацию от заметки
+                            </LoadingButton>
+                            <LoadingButton
+                                loading={isStoppingCall}
+                                variant="outlined"
+                                color="error"
+                                onClick={handleStopSumm}
+                                disabled={!summary.isActive || !isNoteOwner || !checkedOwner}
+                                size="small"
+                            >
+                                Закончить суммаризацию
+                            </LoadingButton>
+                        </Box>
+                    </>
+                }
+            />
+            {summary.text === '' ? (
+                summary.isActive ? (
+                    <Box sx={{display: 'flex'}}>
+                        <Skeleton width={200} height={40} />
+                    </Box>
+                ) : (
+                    <Typography variant={'body1'}>Звонок слишком рано прервался</Typography>
+                )
+            ) : (
+                <>
+                    <CardActions disableSpacing>
+                        <ExpandMore
+                            expand={expanded}
+                            onClick={handleExpandClick}
+                            aria-expanded={expanded}
+                            aria-label="show more"
+                        >
+                            <ExpandMoreIcon />
+                        </ExpandMore>
+                    </CardActions>
+                    <Collapse in={expanded} timeout="auto" unmountOnExit>
+                        <CardContent>
+                            {summary.text === '' ? (
+                                summary.isActive ? (
+                                    <Box sx={{display: 'flex'}}>
+                                        <Skeleton width={200} height={40} />
+                                    </Box>
+                                ) : (
+                                    <div>Звонок слишком рано прервался</div>
+                                )
+                            ) : (
+                                <MDXEditor
+                                    className="dark-theme dark-editor"
+                                    placeholder="Введите текст сюда"
+                                    markdown={summary.text}
+                                    readOnly
+                                    plugins={[
+                                        thematicBreakPlugin(),
+                                        markdownShortcutPlugin(),
+                                        diffSourcePlugin({viewMode: 'rich-text'}),
+                                    ]}
+                                />
+                            )}
+                        </CardContent>
+                    </Collapse>
+                </>
+            )}
         </Card>
     );
 }

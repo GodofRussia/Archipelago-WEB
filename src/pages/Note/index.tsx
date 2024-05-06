@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {
     Autocomplete,
     Box,
@@ -22,6 +22,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import {LoadingButton} from '@mui/lab';
 import {useParams} from 'react-router-dom';
 import {
     BlockTypeSelect,
@@ -58,79 +59,17 @@ import * as A from '@automerge/automerge/next';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {notesApi} from '../../services/NotesService';
 import {setActiveNote} from '../../store/reducers/DirsSlice';
-import {callAPI, GetCallSummarizationResponseDto} from '../../services/CallService';
+import {callAPI} from '../../services/CallService';
 import {chatAPI} from '../../services/ChatService';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LinkIcon from '@mui/icons-material/Link';
 import {userAPI} from '../../services/UserService';
 import {useSnackbar} from 'notistack';
 import List from '@mui/material/List';
-import {SummaryWithLoading} from '../../types/summary';
-import axios from 'axios';
-import {formatDate} from '../../utils/convert';
-import {CallSummary} from '../../components/CallSummary';
-
-// костыль
-const makeSumm = async ({summ_id, role}: {summ_id: string; role: string}) => {
-    const url = 'https://archipelago.team/meeting-bots-api/get_sum';
-    const method = 'POST';
-    const body = {
-        summ_id,
-        role,
-        token: import.meta.env.VITE_SERVICE_TOKEN,
-    };
-
-    return await axios({
-        url,
-        method,
-        data: body, // Axios uses 'data' instead of 'body' for the request body
-        headers: {
-            'Content-Type': 'application/json', // Ensure the server knows you're sending JSON
-        },
-    });
-};
-
-const fetchSumm = async ({summ_id, role}: {summ_id: string; role: string | undefined}) => {
-    try {
-        const r = role || 'обычный';
-        const resp = await makeSumm({summ_id, role: r});
-        console.log(resp);
-        const response: GetCallSummarizationResponseDto = resp.data;
-        console.log('FIRST:', response);
-        const ret = {
-            platform: response.platform || '',
-            date: response.date ? formatDate(response.date) : '',
-            // isActive: response.is_active || false,
-            // eslint-disable-next-line prettier/prettier
-            text: response.has_summ ? response.summ_text || '' : '', // no-lint
-            role: (response.role || '') === '' ? 'обычный' : response.role,
-            detalization: response.detalization || '',
-        };
-        console.log('SECOND:', ret);
-        return ret;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        return undefined;
-    }
-};
-// костыль
-
-type KVSummary = {
-    [key: string]: SummaryWithLoading;
-};
+import CallSummariesList from '../../components/CallSummariesList';
 
 function Note() {
     const {id = ''} = useParams();
-
-    const [loading, setLoading] = useState<boolean>(true);
-
-    const [summaries, setSummaries] = React.useState<KVSummary>({});
-
-    useEffect(() => {
-        setLoading(true);
-        setSummaries({});
-        setLoading(false);
-    }, [id]);
 
     const {user} = useAppSelector((store) => store.userReducer);
     const dispatch = useAppDispatch();
@@ -143,147 +82,14 @@ function Note() {
         {skip: !user},
     );
 
-    const [startRecording, {}] = callAPI.useStartCallRecordingMutation();
-    const [stopCall, {}] = callAPI.useStopCallRecordingMutation();
-    const [attachSummary, {}] = notesApi.useAttachSummaryMutation();
-    const [detachSummary, {}] = notesApi.useDetachSummaryMutation();
+    const [startRecording, {isLoading: isLoadingStartRecording}] = callAPI.useStartCallRecordingMutation();
+    const [attachSummary, {isLoading: isAttachingSummary}] = notesApi.useAttachSummaryMutation();
 
-    // const [role, setRole] = React.useState<string | null>(RoleEnum.DEFAULT);
-    // const {data: callSumData} = callAPI.useGetSummarizationQuery(
-    //     {user_id: user?.id || '', role: role || undefined},
-    //     {
-    //         pollingInterval: 20000,
-    //         skip: !user,
-    //     },
-    // );
-    const {data: summaryList} = notesApi.useListSummariesQuery(
-        {
-            noteId: id,
-            userId: user?.id || '',
-        },
-        {
-            skip: !user,
-            pollingInterval: 8000,
-        },
-    );
-    console.log('summary list: ', summaryList);
-
-    // callAPI.useGetSummarizationQuery({role: undefined, summ_id: id}, {skip: !summaryList});
-
-    // TODO: move to reducer
-    useEffect(() => {
-        const fetchAndSetSumm = async ({
-            summ_id,
-            role,
-            active,
-        }: {
-            summ_id: string;
-            role: string | undefined;
-            active: boolean;
-        }) => {
-            const callSumData = await fetchSumm({role: role, summ_id});
-            console.log('callAPI.useGetSummarizationQuery res:', callSumData);
-
-            if (callSumData) {
-                const newSum: SummaryWithLoading = active
-                    ? {
-                          ...callSumData,
-                          loading: true,
-                      }
-                    : {
-                          ...callSumData,
-                          loading: false,
-                      };
-
-                setSummaries((prev) => ({...prev, [summ_id]: newSum}));
-            }
-        };
-
-        const fetchAndUpdateSumm = async ({
-            summ_id,
-            role,
-            loading,
-        }: {
-            summ_id: string;
-            role: string | undefined;
-            loading: boolean;
-        }) => {
-            const callSumData = await fetchSumm({role: role || undefined, summ_id});
-            console.log('summ in fetchAndUpdateSumm: ', callSumData);
-            if (callSumData) {
-                const newSum: SummaryWithLoading = {
-                    ...callSumData,
-                    loading,
-                };
-                setSummaries((prev) => ({...prev, [summ_id]: newSum}));
-            }
-        };
-
-        if (summaryList) {
-            console.log('summaryList:', summaryList);
-            [...summaryList.nonActiveSummaryIds, ...summaryList.activeSummaryIds].forEach(
-                (summ_id: string, ind: number) => {
-                    console.log('ind:', ind);
-                    // TODO: maybe add loader
-                    let role = 'обычный';
-
-                    if (summ_id in summaries) {
-                        role = summaries[summ_id].role;
-                    }
-
-                    console.log('id:', summ_id);
-                    console.log('before callAPI.useGetSummarizationQuery');
-
-                    fetchAndSetSumm({summ_id, role, active: ind >= summaryList.nonActiveSummaryIds.length});
-                    console.log('after fetchAndSetSumm: %s', Object.entries(summaries));
-                },
-            );
-        }
-
-        if (summaryList) {
-            const foo = (summaryList, summaries) => {
-                summaryList.activeSummaryIds.forEach((summ_id: string) => {
-                    if (summ_id in summaries) {
-                        const role = summaries[summ_id].role || '';
-                        const loading = summaries[summ_id].loading || false;
-                        fetchAndUpdateSumm({summ_id, role, loading});
-                        console.log('after fetchAndUpdateSumm: %s', Object.entries(summaries).entries());
-                    }
-                });
-            };
-
-            foo(summaryList, summaries);
-
-            const interval = setInterval(foo, 3000, summaryList, summaries); // Polling interval
-
-            return () => {
-                clearInterval(interval);
-                //setSummaries({});
-            };
-        }
-    }, [summaryList, id, summaries]);
-
-    console.log('summaries: ', summaries);
-
-    const setRole = (id: string) => (newRole: string) => {
-        const oldSum = summaries[id];
-        setSummaries((prev) => ({
-            ...prev,
-            [id]: {
-                ...oldSum,
-                role: newRole,
-            },
-        }));
-    };
-
-    // const [role, setRole] = React.useState<string | null>(RoleEnum.DEFAULT);
     const [getChatSum, {data: chatSumData}] = chatAPI.useGetSummarizationMutation();
 
     const [usersMailQuery, setUsersMailQuery] = React.useState<string>('');
     const [query, setQuery] = React.useState<string>('');
-    const {data: searchedUsers} = userAPI.useSearchUsersQuery(query, {skip: query.length < 3});
-
-    console.log(query, usersMailQuery);
+    const {data: searchedUsers} = userAPI.useSearchUsersQuery(query, {skip: !query.length});
 
     const setMailQuery = debounce((query) => {
         setQuery(query);
@@ -298,10 +104,8 @@ function Note() {
     const summRef = React.useRef<MDXEditorMethods>(null);
 
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
-    // const [sum, setSum] = React.useState<string>('');
     const [accessRole, setAccessRole] = React.useState<string | null>(null);
 
-    // const [callsType, setCallsType] = React.useState<string | null>(CallsTypeEnum.ZOOM);
     const [callsDetail, setCallsDetail] = React.useState<string | null>(CallsDetailEnum.AVERAGE);
     const [callUrl, setCallUrl] = React.useState<string>('');
 
@@ -324,20 +128,11 @@ function Note() {
                 url: callUrl,
                 detalization: callsDetail || CallsDetailEnum.AVERAGE,
             }).unwrap();
-            console.log('summId:', summId);
+
             attachSummary({userId: user?.id || '', noteId: id, summId});
             setFormModalIsOpen(false);
         }
         // TODO: подумать над провалом условия !!user?.id && !!callUrl
-    };
-
-    const handleDetachSumm = (summId: string) => () => {
-        detachSummary({userId: user?.id || '', noteId: id, summId});
-        delete summaries[summId];
-    };
-
-    const handleStopSumm = (summId: string) => () => {
-        stopCall({summ_id: summId});
     };
 
     const handleChangeMd = (value: string) => {
@@ -402,13 +197,13 @@ function Note() {
     return (
         <Stack gap={2} sx={{p: 2}}>
             <Box gap={2} display="flex" alignItems={'center'}>
-                <Button variant="outlined" color="secondary" onClick={fetchChatSum}>
+                <Button variant="outlined" color="primary" onClick={fetchChatSum}>
                     Получить суммаризацию чата
                 </Button>
-                <Button variant="outlined" color="secondary" onClick={() => setInfoModalIsOpen(true)}>
+                <Button variant="outlined" color="primary" onClick={() => setInfoModalIsOpen(true)}>
                     Привязать чат
                 </Button>
-                <Button variant="outlined" color="secondary" onClick={() => setFormModalIsOpen(true)}>
+                <Button variant="outlined" color="primary" onClick={() => setFormModalIsOpen(true)}>
                     Привязать звонок
                 </Button>
                 <ButtonGroup variant="outlined" ref={anchorRef} aria-label="Button group with a nested menu">
@@ -524,25 +319,10 @@ function Note() {
                         </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button color={'primary'} onClick={handleCopyLink}>
-                            Копировать ссылку
-                        </Button>
-                        <Button color={'primary'} onClick={() => setAccessRightsDialogIsOpen(false)}>
-                            Готово
-                        </Button>
+                        <Button onClick={handleCopyLink}>Копировать ссылку</Button>
+                        <Button onClick={() => setAccessRightsDialogIsOpen(false)}>Закрыть</Button>
                     </DialogActions>
                 </Dialog>
-
-                {/* <Autocomplete */}
-                {/*     defaultValue={'обычный'} */}
-                {/*     options={Role} */}
-                {/*     value={role} */}
-                {/*     onChange={(_, newValue) => { */}
-                {/*         setRole(newValue); */}
-                {/*     }} */}
-                {/*     sx={{minWidth: 200}} */}
-                {/*     renderInput={(params) => <TextField {...params} label="Роль" size="small" />} */}
-                {/* /> */}
 
                 <Dialog
                     open={infoModalIsOpen}
@@ -589,7 +369,6 @@ function Note() {
                                 }}
                             />
                             <Autocomplete
-                                defaultValue={'Средняя'}
                                 options={CallsDetail}
                                 value={callsDetail}
                                 onChange={(_, newValue) => {
@@ -606,24 +385,18 @@ function Note() {
                         <Button color={'secondary'} onClick={() => setFormModalIsOpen(false)}>
                             Закрыть
                         </Button>
-                        <Button color={'secondary'} onClick={handleFormSubmit}>
+                        <LoadingButton
+                            loading={isAttachingSummary || isLoadingStartRecording}
+                            color={'secondary'}
+                            onClick={handleFormSubmit}
+                        >
                             Подтвердить
-                        </Button>
+                        </LoadingButton>
                     </DialogActions>
                 </Dialog>
             </Box>
 
-            {!loading &&
-                Object.entries(summaries).map(([id, v]) => (
-                    <CallSummary
-                        key={id}
-                        summary={v}
-                        id={id}
-                        handleDetachSumm={handleDetachSumm(id)}
-                        handleStopSumm={handleStopSumm(id)}
-                        setRole={setRole(id)}
-                    />
-                ))}
+            <CallSummariesList noteId={id} />
 
             <MDXEditor
                 ref={ref}
