@@ -1,4 +1,5 @@
 export interface SummaryInfo {
+    id: string;
     platform: string;
     date: string;
     role: string;
@@ -9,6 +10,11 @@ export interface Summary extends SummaryInfo {
     text: string;
 }
 
-export interface SummaryWithLoading extends Summary {
-    loading: boolean;
+export interface SummaryWithState extends Summary {
+    isActive: boolean;
+}
+
+export interface SummaryInfoData {
+    sumId: string;
+    role?: string;
 }

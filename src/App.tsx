@@ -33,7 +33,7 @@ export default function App() {
                     palette: {
                         mode: colorMode,
                         primary: {main: '#0288d1', dark: '#015f92', light: '#349fda', contrastText: '#ffffff'},
-                        secondary: {main: '#4a148c', dark: '#330e62', light: '#6e43a3', contrastText: '#ffffff'},
+                        secondary: {main: '#1de9b6', dark: '#14a37f', light: '#4aedc4', contrastText: '#ffffff'},
                         error: {
                             main: '#f44336',
                             dark: '#e53935',

@@ -1,5 +1,5 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
-import {Summary} from '../types/summary';
+import {Summary, SummaryWithState} from '../types/summary';
 
 interface ProduceJoinCallRequest {
     url: string;
@@ -11,12 +11,17 @@ interface GetCallSummarizationRequest {
     role?: string;
 }
 
+interface BatchGetCallSummarizationRequest {
+    summarizations: GetCallSummarizationRequest[];
+}
+
 interface CallStateResponse {
     state: string;
 }
 
 export interface GetCallSummarizationResponseDto {
-    has_sum: boolean;
+    id: string;
+    has_summ: boolean;
     summ_text?: string;
     platform?: string;
     date?: string;
@@ -25,15 +30,19 @@ export interface GetCallSummarizationResponseDto {
     detalization?: string;
 }
 
-interface GetCallSummarizationResponse {
-    hasSum: boolean;
-    summText: string;
-    platform: string;
-    date: string;
-    isActive: boolean;
-    role: string;
-    detalization: string;
+interface BatchGetCallSummarizationResponseDto {
+    summarizations: GetCallSummarizationResponseDto[];
 }
+
+// interface GetCallSummarizationResponse {
+//     hasSum: boolean;
+//     summText: string;
+//     platform: string;
+//     date: string;
+//     isActive: boolean;
+//     role: string;
+//     detalization: string;
+// }
 
 export const callAPI = createApi({
     reducerPath: 'call',
@@ -52,13 +61,33 @@ export const callAPI = createApi({
             }),
             transformResponse: (response: GetCallSummarizationResponseDto) => {
                 return {
+                    id: response.id,
                     platform: response.platform || '',
                     date: response.date || '',
                     isActive: response.is_active || false,
-                    text: response.has_sum ? response.summ_text || '' : '',
+                    text: response.has_summ ? response.summ_text || '' : '',
                     role: response.role || '',
                     detalization: response.detalization || '',
                 };
+            },
+        }),
+        batchGetSummarization: build.query<SummaryWithState[], BatchGetCallSummarizationRequest>({
+            query: ({summarizations}) => ({
+                url: `/batch_get_sum`,
+                method: 'POST',
+                body: {summarizations: summarizations},
+            }),
+            transformResponse: (response: BatchGetCallSummarizationResponseDto) => {
+                console.log(response);
+                return response.summarizations.map((sum) => ({
+                    id: sum.id,
+                    platform: sum.platform || '',
+                    date: sum.date || '',
+                    isActive: sum.is_active || false,
+                    text: sum.has_summ ? sum.summ_text || '' : '',
+                    role: sum.role || '',
+                    detalization: sum.detalization || '',
+                }));
             },
         }),
         getCallState: build.query<CallStateResponse, {summ_id: string}>({
