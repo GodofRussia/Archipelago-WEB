@@ -2,6 +2,7 @@ import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {Note, NoteDto} from '../types/notes';
 import {convertFromAccessToDto, convertFromNoteDto, convertFromNoteToNoteDto} from '../utils/convert';
 import {Access} from '../types/access';
+import {GetCallSummarizationResponseDto} from './CallService';
 
 interface CreateNoteRequest {
     title: string;
@@ -15,6 +16,11 @@ interface SetAccessRequest {
     userID: string;
     selfUserId: string;
     access: Access;
+}
+
+interface UpdateSummaryNameRequest {
+    id: string;
+    name: string;
 }
 
 interface SummaryListReponseDto {
@@ -142,6 +148,16 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': userId},
             }),
             invalidatesTags: ['SummaryList'],
+        }),
+        updateSummaryName: build.mutation<GetCallSummarizationResponseDto, UpdateSummaryNameRequest>({
+            query: ({id, name}) => ({
+                url: `/update_name`,
+                method: 'POST',
+                body: {
+                    id,
+                    name,
+                },
+            }),
         }),
     }),
 });

@@ -6,11 +6,6 @@ interface ProduceJoinCallRequest {
     detalization: string | null;
 }
 
-interface UpdateSummaryNameRequest {
-    id: string;
-    name: string;
-}
-
 interface GetCallSummarizationRequest {
     summ_id: string;
     role?: string;
@@ -93,16 +88,6 @@ export const callAPI = createApi({
                     detalization: sum.detalization || '',
                 }));
             },
-        }),
-        updateSummaryName: build.mutation<GetCallSummarizationResponseDto, UpdateSummaryNameRequest>({
-            query: ({id, name}) => ({
-                url: `/update_name`,
-                method: 'POST',
-                body: {
-                    id,
-                    name,
-                },
-            }),
         }),
         getCallState: build.query<CallStateResponse, {summ_id: string}>({
             query: ({summ_id}) => ({

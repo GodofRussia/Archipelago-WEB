@@ -19,10 +19,13 @@ import {notesApi} from '../services/NotesService';
 import {callAPI} from '../services/CallService';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {
-    diffSourcePlugin,
+    headingsPlugin,
+    listsPlugin,
     markdownShortcutPlugin,
     MDXEditor,
     MDXEditorMethods,
+    quotePlugin,
+    tablePlugin,
     thematicBreakPlugin,
 } from '@mdxeditor/editor';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
@@ -107,9 +110,12 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                             markdown={summary.text}
                             readOnly
                             plugins={[
+                                headingsPlugin(),
+                                listsPlugin(),
+                                quotePlugin(),
+                                tablePlugin(),
                                 thematicBreakPlugin(),
                                 markdownShortcutPlugin(),
-                                diffSourcePlugin({viewMode: 'rich-text'}),
                             ]}
                         />
                     </>

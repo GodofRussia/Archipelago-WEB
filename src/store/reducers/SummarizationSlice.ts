@@ -9,9 +9,10 @@ interface SumState {
     chatSum?: string;
     chatInfo?: ChatInfo;
     expandedSumIds: string[];
+    expandedDefault: boolean;
 }
 
-const initialState: SumState = {expandedSumIds: []};
+const initialState: SumState = {expandedSumIds: [], expandedDefault: false};
 
 export const sumSlice = createSlice({
     name: 'sum',
@@ -31,9 +32,12 @@ export const sumSlice = createSlice({
         removeExpandedSumId(store, action: PayloadAction<string | undefined>) {
             store.expandedSumIds = store.expandedSumIds.filter((id) => id !== action.payload);
         },
+        setExpandedDefault(store, action: PayloadAction<boolean | undefined>) {
+            store.expandedDefault = !!action.payload;
+        },
     },
 });
 
-export const {setChatSum, setChatInfo, removeExpandedSumId, addExpandedSumId} = sumSlice.actions;
+export const {setChatSum, setChatInfo, removeExpandedSumId, addExpandedSumId, setExpandedDefault} = sumSlice.actions;
 
 export default sumSlice.reducer;

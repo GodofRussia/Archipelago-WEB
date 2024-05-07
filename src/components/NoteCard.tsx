@@ -2,12 +2,12 @@ import React from 'react';
 import {ListItem, Typography, useTheme} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
 import {Note} from '../types/notes';
-import {deleteNote} from '../api/notes';
 import {useRepo} from '@automerge/automerge-repo-react-hooks';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {setActiveNote} from '../store/reducers/NotesSlice';
 import {AccessEnum} from '../types/access';
+import {notesApi} from '../services/NotesService';
 
 interface NoteCardProps extends Note {
     refetchNotes?: () => void;
@@ -27,6 +27,9 @@ const NoteCard: React.FC<NoteCardProps> = ({
 
     const dispatch = useAppDispatch();
     const {activeNote} = useAppSelector((store) => store.notesReducer);
+    const {user} = useAppSelector((store) => store.userReducer);
+
+    const [deleteNote, {}] = notesApi.useDeleteNoteMutation();
 
     const handleClickOnCard = React.useCallback(() => {
         dispatch(
@@ -54,12 +57,12 @@ const NoteCard: React.FC<NoteCardProps> = ({
         async (ev: React.MouseEvent, note: Note) => {
             ev.stopPropagation();
             if (note.allowedMethods.includes(AccessEnum.delete))
-                await deleteNote({id: note.id}).then(() => {
+                deleteNote({note, userId: user?.id || ''}).then(() => {
                     repo.delete(note.automergeUrl);
                     refetchNotes?.();
                 });
         },
-        [refetchNotes, repo],
+        [deleteNote, refetchNotes, repo, user?.id],
     );
 
     return (

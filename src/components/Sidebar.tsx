@@ -188,6 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                 '& .MuiDrawer-paper': {
                     width: width,
                     boxSizing: 'border-box',
+                    mt: `64px`,
                 },
             }}
             variant="persistent"
@@ -247,33 +248,39 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                 <Box sx={{p: 2}}>
                     {!!user ? (
                         <>
-                            {noteTab === TabType.HOME && (
-                                <Folder
-                                    onDirCreateClick={() => setIsOpenCreateDialog(true)}
-                                    handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
-                                    refetchNotes={refetchNotes}
-                                    folder={fullDirTree}
-                                    setDirIdForCreate={setDirIdForCreate}
-                                    isLoading={
-                                        isLoadingDirTree ||
-                                        isLoadingNotes ||
-                                        isLoadingDirCreation ||
-                                        isLoadingNoteCreation
-                                    }
-                                />
-                            )}
-                            {noteTab === TabType.SHARED &&
-                                (sharedNotes.length ? (
-                                    <List>
-                                        {sharedNotes.map((note, idx) => (
-                                            <ListItem button key={`note-${idx}`} sx={{p: 0}}>
-                                                <NoteCard key={note.id} {...note} refetchNotes={refetchNotes} />
-                                            </ListItem>
+                            {!fullDirTree || (!fullDirTree.notes.length && !fullDirTree.children.length) ? (
+                                <Typography>Ещё нет заметок</Typography>
+                            ) : (
+                                <>
+                                    {noteTab === TabType.HOME && (
+                                        <Folder
+                                            onDirCreateClick={() => setIsOpenCreateDialog(true)}
+                                            handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
+                                            refetchNotes={refetchNotes}
+                                            folder={fullDirTree}
+                                            setDirIdForCreate={setDirIdForCreate}
+                                            isLoading={
+                                                isLoadingDirTree ||
+                                                isLoadingNotes ||
+                                                isLoadingDirCreation ||
+                                                isLoadingNoteCreation
+                                            }
+                                        />
+                                    )}
+                                    {noteTab === TabType.SHARED &&
+                                        (sharedNotes.length ? (
+                                            <List>
+                                                {sharedNotes.map((note, idx) => (
+                                                    <ListItem button key={`note-${idx}`} sx={{p: 0}}>
+                                                        <NoteCard key={note.id} {...note} refetchNotes={refetchNotes} />
+                                                    </ListItem>
+                                                ))}
+                                            </List>
+                                        ) : (
+                                            <Typography>Нет доступных заметок</Typography>
                                         ))}
-                                    </List>
-                                ) : (
-                                    <Typography>Нет доступных заметок</Typography>
-                                ))}
+                                </>
+                            )}
                         </>
                     ) : (
                         <Typography>Войдите для доступа к заметкам</Typography>
