@@ -14,7 +14,6 @@ import Registration from './pages/Registration';
 import {ProtectedRoute} from './components/ProtectedRoute';
 import {SnackbarProvider} from 'notistack';
 import WelcomePage from './pages/WelcomePage';
-import Navbar from './components/Navbar';
 
 export default function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
@@ -76,9 +75,11 @@ export default function App() {
                         <Route
                             path="/"
                             element={
-                                <Layout>
-                                    <MainPage />
-                                </Layout>
+                                <ProtectedRoute isMainPage={true}>
+                                    <Layout>
+                                        <MainPage />
+                                    </Layout>
+                                </ProtectedRoute>
                             }
                         />
                         <Route path="/welcome" element={<WelcomePage />} />
