@@ -99,7 +99,7 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
 
             <AccordionActions>
                 {isLoadingSum ? (
-                    <CircularProgress />
+                    <CircularProgress sx={{width: 20, height: 20}} />
                 ) : (
                     <Tooltip title={'Обновить суммаризацию'}>
                         <IconButton onClick={onGetSum} disabled={!isNoteOwner}>
@@ -108,7 +108,7 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
                     </Tooltip>
                 )}
                 {isDetaching ? (
-                    <CircularProgress />
+                    <CircularProgress sx={{width: 40, height: 40}} />
                 ) : (
                     <Tooltip title={'Открепить заметку от чата'}>
                         <IconButton

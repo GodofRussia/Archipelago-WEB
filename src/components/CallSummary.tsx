@@ -145,7 +145,7 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
 
                 <>
                     {isDetachingSummary ? (
-                        <CircularProgress />
+                        <CircularProgress sx={{width: 40, height: 40}} />
                     ) : (
                         <Tooltip title={'Отвязать суммаризацию от заметки'}>
                             <IconButton disabled={!isNoteOwner} onClick={handleDetachSumm}>
@@ -158,7 +158,7 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                 {summary.isActive && (
                     <>
                         {isStoppingCall ? (
-                            <CircularProgress />
+                            <CircularProgress sx={{width: 40, height: 40}} />
                         ) : (
                             <Tooltip title={'Закончить суммаризацию'}>
                                 <IconButton onClick={handleStopSumm} disabled={!summary.isActive || !isNoteOwner}>
