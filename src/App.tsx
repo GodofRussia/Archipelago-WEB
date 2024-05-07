@@ -13,6 +13,8 @@ import LoginLayout from './components/LoginLayout';
 import Registration from './pages/Registration';
 import {ProtectedRoute} from './components/ProtectedRoute';
 import {SnackbarProvider} from 'notistack';
+import WelcomePage from './pages/WelcomePage';
+import Navbar from './components/Navbar';
 
 export default function App() {
     const [colorMode] = React.useState<ColorMode>(ColorMode.DARK);
@@ -79,6 +81,7 @@ export default function App() {
                                 </Layout>
                             }
                         />
+                        <Route path="/welcome" element={<WelcomePage />} />
                         <Route
                             path="/shared"
                             element={

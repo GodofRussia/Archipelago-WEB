@@ -9,7 +9,7 @@ interface LayoutProps {
 const RightHalfBox = styled(Box)({
     marginLeft: '40vw',
     width: '60vw',
-    height: '100vh',
+    height: '100hv',
     backgroundColor: 'rgba(255,255,255, 1)',
     display: 'flex',
     justifyContent: 'center',
