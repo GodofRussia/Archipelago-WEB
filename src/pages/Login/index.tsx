@@ -53,15 +53,8 @@ function Login() {
     } = userAPI.useGetUserQuery(userId || '', {skip: userId === null});
 
     const validationSchema = Yup.object().shape({
-        email: Yup.string()
-            .email('Пожалуйста, проверьте, правильно ли указан адрес')
-            .required('Необходимо указать почту'),
-        password: Yup.string()
-            .required('Необходимо указать пароль')
-            .matches(
-                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/,
-                'Пароль должен содержать как минимум 8 символов, включая одну прописную букву, одну строчную букву, одну цифру и один специальный символ',
-            ),
+        email: Yup.string().required('Необходимо указать почту'),
+        password: Yup.string().required('Необходимо указать пароль'),
     });
 
     React.useEffect(() => {

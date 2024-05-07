@@ -4,16 +4,50 @@ import {callAPI} from '../services/CallService';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {RoleEnum} from '../types/notes';
 import {SummaryInfoData} from '../types/summary';
-import {Paper, Skeleton, Stack, Typography} from '@mui/material';
+import MuiAccordion, {AccordionProps} from '@mui/material/Accordion';
+import {AccordionSummary, Paper, Skeleton, styled, Typography} from '@mui/material';
 import {CallSummary} from './CallSummary';
 import ChatSummary from './ChatSummary';
 import {chatAPI} from '../services/ChatService';
-import {setChatInfo, setChatSum} from '../store/reducers/SummarizationSlice';
+import {setChatInfo, setChatSum, setExpandedDefault} from '../store/reducers/SummarizationSlice';
 import {AccessEnum} from '../types/access';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
+
+const CustomAccordion = styled((props: AccordionProps) => <MuiAccordion disableGutters elevation={0} {...props} />)(
+    ({theme}) => ({
+        border: `1px solid ${theme.palette.divider}`,
+    }),
+);
+
+const CustomAccordionSummary = styled(AccordionSummary)(({theme}) => ({
+    position: 'relative',
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .04)' : 'rgba(0, 0, 0, .03)',
+    minHeight: 20,
+    height: 20,
+    padding: 0,
+
+    '& .MuiAccordionSummary-content': {
+        justifyContent: 'center',
+    },
+    '& .MuiButtonBase-root': {
+        justifyContent: 'center',
+    },
+    '& .MuiAccordionSummary-expandIconWrapper': {
+        position: 'absolute',
+        right: '50%',
+    },
+}));
+
+const CustomAccordionDetails = styled(MuiAccordionDetails)(() => ({
+    padding: 0,
+    borderTop: '1px solid rgba(0, 0, 0, .125)',
+}));
 
 const SummariesList = ({noteId}: {noteId: string}) => {
     const {user} = useAppSelector((store) => store.userReducer);
     const {activeNote} = useAppSelector((store) => store.notesReducer);
+    const {expandedDefault} = useAppSelector((state) => state.sumReducer);
     const dispatch = useAppDispatch();
 
     const {
@@ -56,6 +90,10 @@ const SummariesList = ({noteId}: {noteId: string}) => {
 
     const onGetSum = React.useCallback(() => getChatSum({id: noteId}), [getChatSum, noteId]);
 
+    const onExpandedStateChanged = (_: React.SyntheticEvent, expanded: boolean) => {
+        dispatch(setExpandedDefault(expanded));
+    };
+
     React.useEffect(() => {
         if (
             !summaryList?.activeSummaryIds.length &&
@@ -70,7 +108,8 @@ const SummariesList = ({noteId}: {noteId: string}) => {
 
     React.useEffect(() => {
         setSummarizeIdsWithRoles([]);
-    }, [noteId, isErrorSummaryList]);
+        dispatch(setExpandedDefault(false));
+    }, [noteId, isErrorSummaryList, dispatch]);
 
     const setRole = React.useCallback((sumId: string, role: RoleEnum) => {
         setSummarizeIdsWithRoles((prevSumWithRoles) =>
@@ -112,43 +151,59 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         if (chatInfo) getChatSum({id: noteId});
     }, [chatInfo, getChatSum, noteId]);
 
+    const [isLoadingInitial, setIsLoadingInitial] = React.useState<boolean>(true);
+
+    const isLoading = isLoadingSummaryList || isLoadingCallSummaries || isLoadingChatSum || isLoadingChatInfo;
+
+    React.useEffect(() => {
+        if (!isLoading && isLoadingInitial) {
+            setIsLoadingInitial(false);
+        }
+    }, [isLoading, isLoadingInitial]);
+
     return activeNote?.allowedMethods.includes(AccessEnum.get_summary_list) ? (
         <>
-            {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
-                <Paper sx={{py: 2}}>
-                    <Typography variant={'body1'} sx={{px: 2}}>
-                        Ошибка получения суммаризаций для заметки. Попробуйте позже.
-                    </Typography>
-                </Paper>
-            )}
-
-            {!isLoadingSummaryList &&
-                (!summaryList || (!summaryList.activeSummaryIds.length && !summaryList.nonActiveSummaryIds.length)) &&
-                !(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
-                    <Paper sx={{py: 2}}>
-                        <Typography variant={'body1'} sx={{px: 2}}>
-                            Нет суммаризаций звонка. Для привязки звонка нажмите на кнопку выше.
-                        </Typography>
-                    </Paper>
-                )}
-
-            {!isLoadingChatSum && !chatInfo && !isErrorChatSum && (
-                <Paper sx={{py: 2}}>
-                    <Typography variant={'body1'} sx={{px: 2}}>
-                        Нет суммаризаций чата. Для привязки звонка нажмите на кнопку выше.
-                    </Typography>
-                </Paper>
-            )}
-
-            {isLoadingSummaryList || isLoadingCallSummaries || isLoadingChatSum || isLoadingChatInfo ? (
-                <Skeleton variant="rounded" height={80} width={'100%'} />
+            {isLoading && isLoadingInitial ? (
+                <Skeleton variant="rounded" height={22} width={'100%'} />
             ) : (
-                <Stack>
-                    {callSummaries?.map((summary) => (
-                        <CallSummary noteId={noteId} key={summary.id} summary={summary} setRole={setRole} />
-                    )) || null}
-                    {chatInfo && <ChatSummary noteId={noteId} onGetSum={onGetSum} isLoadingSum={isLoadingChatSum} />}
-                </Stack>
+                <CustomAccordion defaultExpanded={expandedDefault} onChange={onExpandedStateChanged}>
+                    <CustomAccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="list-content"
+                        id="list-header"
+                    />
+                    <CustomAccordionDetails>
+                        {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
+                            <Paper square sx={{py: 2}}>
+                                <Typography variant={'body1'} sx={{px: 2}}>
+                                    Ошибка получения суммаризаций для заметки. Попробуйте позже.
+                                </Typography>
+                            </Paper>
+                        )}
+
+                        {!isLoadingChatSum &&
+                            !isLoadingSummaryList &&
+                            (!summaryList ||
+                                (!summaryList.activeSummaryIds.length && !summaryList.nonActiveSummaryIds.length)) &&
+                            !(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) &&
+                            !chatInfo &&
+                            !isErrorChatSum && (
+                                <Paper square sx={{py: 2}}>
+                                    <Typography variant={'body1'} sx={{px: 2}}>
+                                        Пока что нет кратких выжимок. Чтобы получить суммаризацию вашего звонка или
+                                        чата, привяжите их кнопками выше.
+                                    </Typography>
+                                </Paper>
+                            )}
+
+                        {callSummaries?.map((summary) => (
+                            <CallSummary noteId={noteId} key={summary.id} summary={summary} setRole={setRole} />
+                        )) || null}
+                        {chatInfo && (
+                            <ChatSummary noteId={noteId} onGetSum={onGetSum} isLoadingSum={isLoadingChatSum} />
+                        )}
+                    </CustomAccordionDetails>
+                </CustomAccordion>
             )}
         </>
     ) : null;

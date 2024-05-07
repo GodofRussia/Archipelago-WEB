@@ -1,9 +1,12 @@
 import React from 'react';
 import {
-    diffSourcePlugin,
+    headingsPlugin,
+    listsPlugin,
     markdownShortcutPlugin,
     MDXEditor,
     MDXEditorMethods,
+    quotePlugin,
+    tablePlugin,
     thematicBreakPlugin,
 } from '@mdxeditor/editor';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
@@ -62,8 +65,6 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
         }
     };
 
-    console.log(expandedSumIds);
-
     return (
         <Accordion
             defaultExpanded={!!chatInfo && expandedSumIds.includes(chatInfo.chatId)}
@@ -82,9 +83,12 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
                         placeholder="Суммаризация чата"
                         readOnly
                         plugins={[
+                            listsPlugin(),
+                            headingsPlugin(),
+                            quotePlugin(),
+                            tablePlugin(),
                             thematicBreakPlugin(),
                             markdownShortcutPlugin(),
-                            diffSourcePlugin({viewMode: 'rich-text'}),
                         ]}
                         markdown={chatSum}
                     />
@@ -106,7 +110,7 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
                 {isDetaching ? (
                     <CircularProgress />
                 ) : (
-                    <Tooltip title={'Закончить суммаризацию'}>
+                    <Tooltip title={'Открепить заметку от чата'}>
                         <IconButton
                             color={isErrorDetaching ? 'error' : 'default'}
                             onClick={handleDetachChat}

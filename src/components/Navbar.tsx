@@ -10,13 +10,13 @@ import {
 } from '@mui/material';
 import {useNavigate} from 'react-router-dom';
 import {Note} from '../types/notes';
-import CollapseIcon from '../icons/CollapseIcon';
 import MuiAppBar from '@mui/material/AppBar';
 import LoginIcon from '@mui/icons-material/Login';
 import React from 'react';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {logoutUser} from '../store/reducers/UserSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
+import CollapseIcon from '../icons/CollapseIcon';
 
 interface NavbarProps {
     itemsList: Note[];
@@ -39,7 +39,7 @@ const AppBar = styled(MuiAppBar, {
         duration: theme.transitions.duration.leavingScreen,
     }),
     ...(open && {
-        width: `calc(100% - ${width}px)`,
+        width: `100%`,
         marginLeft: `${width}px`,
         transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.easeOut,
