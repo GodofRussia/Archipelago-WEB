@@ -3,6 +3,8 @@ import {configureStore} from '@reduxjs/toolkit';
 
 import userReducer from './reducers/UserSlice';
 import dirsReducer from './reducers/DirsSlice';
+import notesReducer from './reducers/NotesSlice';
+import sumReducer from './reducers/SummarizationSlice';
 import {userAPI} from '../services/UserService';
 import {authApi} from '../services/AuthService';
 import {notesApi} from '../services/NotesService';
@@ -14,6 +16,8 @@ import {chatAPI} from '../services/ChatService';
 const rootReducer = combineReducers({
     userReducer,
     dirsReducer,
+    notesReducer,
+    sumReducer,
     [userAPI.reducerPath]: userAPI.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [notesApi.reducerPath]: notesApi.reducer,

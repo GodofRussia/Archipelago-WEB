@@ -1,63 +1,59 @@
-import React from 'react';
 import {
+    Accordion,
+    AccordionActions,
+    AccordionDetails,
+    AccordionSummary,
     Autocomplete,
     Box,
-    Card,
-    CardActions,
-    CardContent,
-    CardHeader,
-    Collapse,
+    CircularProgress,
+    IconButton,
     Skeleton,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
-import IconButton, {IconButtonProps} from '@mui/material/IconButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {styled} from '@mui/material/styles';
-import {CallsDetailEnum, Role} from '../types/notes';
+import {Role, RoleEnum} from '../types/notes';
 import {SummaryWithState} from '../types/summary';
 import {notesApi} from '../services/NotesService';
 import {callAPI} from '../services/CallService';
-import {useAppSelector} from '../hooks/useRedux';
-import {LoadingButton} from '@mui/lab';
-import {diffSourcePlugin, markdownShortcutPlugin, MDXEditor, thematicBreakPlugin} from '@mdxeditor/editor';
-
-interface ExpandMoreProps extends IconButtonProps {
-    expand: boolean;
-}
-
-const ExpandMore = styled((props: ExpandMoreProps) => {
-    const {...other} = props;
-    return <IconButton {...other} />;
-})(({theme, expand}) => ({
-    transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
-    transition: theme.transitions.create('transform', {
-        duration: theme.transitions.duration.shortest,
-    }),
-}));
+import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
+import {
+    diffSourcePlugin,
+    markdownShortcutPlugin,
+    MDXEditor,
+    MDXEditorMethods,
+    thematicBreakPlugin,
+} from '@mdxeditor/editor';
+import StopCircleIcon from '@mui/icons-material/StopCircle';
+import React from 'react';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import {addExpandedSumId, removeExpandedSumId} from '../store/reducers/SummarizationSlice';
+import {formatDateToMinute} from '../utils/date';
 
 export interface CallSummaryProps {
     key: string;
     summary: SummaryWithState;
     noteId: string;
-    setRole: (sumId: string, newRole: CallsDetailEnum) => void;
+    setRole: (sumId: string, newRole: RoleEnum) => void;
 }
 
 export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
     const {user} = useAppSelector((store) => store.userReducer);
+    const {expandedSumIds} = useAppSelector((state) => state.sumReducer);
+    const dispatch = useAppDispatch();
 
     const [detachSummary, {isLoading: isDetachingSummary}] = notesApi.useDetachSummaryMutation();
     const [stopCall, {isLoading: isStoppingCall}] = callAPI.useStopCallRecordingMutation();
-    const {data: isNoteOwner, isLoading: checkedOwner} = notesApi.useCheckNoteOwnerQuery({
-        userId: user?.id || '',
-        noteId,
-    });
+    const {data: isNoteOwner} = notesApi.useCheckNoteOwnerQuery(
+        {
+            userId: user?.id || '',
+            noteId,
+        },
+        {skip: !user},
+    );
 
-    const [expanded, setExpanded] = React.useState(summary.isActive);
-
-    const handleExpandClick = () => {
-        setExpanded(!expanded);
-    };
+    const ref = React.useRef<MDXEditorMethods>(null);
 
     const handleDetachSumm = () => {
         detachSummary({userId: user?.id || '', noteId: noteId || '', summId: summary.id});
@@ -67,105 +63,106 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
         stopCall({summ_id: summary.id});
     };
 
-    console.log(summary);
+    const onExpandedStateChanged = (_: React.SyntheticEvent, expanded: boolean) => {
+        if (expanded) {
+            dispatch(addExpandedSumId(summary.id));
+        } else {
+            dispatch(removeExpandedSumId(summary.id));
+        }
+    };
+
+    React.useEffect(() => {
+        ref.current?.setMarkdown(summary.text);
+    }, [summary.text]);
 
     return (
-        <Card key={summary.id} sx={{p: 2}}>
-            <CardHeader
-                title={summary.platform}
-                subheader={
-                    <>
-                        <div>{summary.date}</div>
-                        <div>{`${summary.detalization} детализация`}</div>
-                    </>
-                }
-                action={
-                    <>
-                        <Box gap={2} display="flex" alignItems={'center'} flexWrap={'wrap'}>
-                            <Autocomplete
-                                defaultValue={'обычный'}
-                                options={Role}
-                                value={summary.role}
-                                onChange={(_, newValue) => {
-                                    setRole(summary.id, (newValue as CallsDetailEnum) || CallsDetailEnum.AVERAGE);
-                                }}
-                                disabled={!summary.isActive || !isNoteOwner || !checkedOwner}
-                                sx={{minWidth: 200}}
-                                renderInput={(params) => (
-                                    <TextField {...params} label="Стиль суммаризации" size="small" />
-                                )}
-                            />
-                            <LoadingButton
-                                loading={isDetachingSummary}
-                                variant="outlined"
-                                color="error"
-                                disabled={!isNoteOwner || !checkedOwner}
-                                onClick={handleDetachSumm}
-                                size="small"
-                            >
-                                Отвязать суммаризацию от заметки
-                            </LoadingButton>
-                            <LoadingButton
-                                loading={isStoppingCall}
-                                variant="outlined"
-                                color="error"
-                                onClick={handleStopSumm}
-                                disabled={!summary.isActive || !isNoteOwner || !checkedOwner}
-                                size="small"
-                            >
-                                Закончить суммаризацию
-                            </LoadingButton>
+        <Accordion
+            key={summary.id}
+            sx={{p: 2}}
+            defaultExpanded={expandedSumIds.includes(summary.id)}
+            onChange={onExpandedStateChanged}
+        >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                {summary.platform} {formatDateToMinute(summary.date)}
+            </AccordionSummary>
+
+            <AccordionDetails>
+                {summary.text === '' ? (
+                    summary.isActive ? (
+                        <Box sx={{display: 'flex'}}>
+                            <Skeleton width={200} height={40} />
                         </Box>
-                    </>
-                }
-            />
-            {summary.text === '' ? (
-                summary.isActive ? (
-                    <Box sx={{display: 'flex'}}>
-                        <Skeleton width={200} height={40} />
-                    </Box>
+                    ) : (
+                        <div>Звонок слишком рано прервался</div>
+                    )
                 ) : (
-                    <Typography variant={'body1'}>Звонок слишком рано прервался</Typography>
-                )
-            ) : (
+                    <>
+                        <Typography variant={'body1'}>
+                            Детализация: {summary.detalization.toLowerCase()}, роль: {summary.role}
+                        </Typography>
+                        <MDXEditor
+                            ref={ref}
+                            className="dark-theme dark-editor"
+                            placeholder="Суммаризация звонка"
+                            markdown={summary.text}
+                            readOnly
+                            plugins={[
+                                thematicBreakPlugin(),
+                                markdownShortcutPlugin(),
+                                diffSourcePlugin({viewMode: 'rich-text'}),
+                            ]}
+                        />
+                    </>
+                )}
+            </AccordionDetails>
+
+            <AccordionActions sx={{gap: 2}}>
+                <Autocomplete
+                    defaultValue={'обычный'}
+                    options={Role}
+                    value={summary.role}
+                    onChange={(_, newValue) => {
+                        setRole(summary.id, (newValue as RoleEnum) || RoleEnum.DEFAULT);
+                    }}
+                    disabled={!isNoteOwner}
+                    sx={{minWidth: 200}}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Стиль суммаризации"
+                            InputProps={{...params.InputProps, readOnly: true}}
+                            size="small"
+                        />
+                    )}
+                    clearIcon={<></>}
+                />
+
                 <>
-                    <CardActions disableSpacing>
-                        <ExpandMore
-                            expand={expanded}
-                            onClick={handleExpandClick}
-                            aria-expanded={expanded}
-                            aria-label="show more"
-                        >
-                            <ExpandMoreIcon />
-                        </ExpandMore>
-                    </CardActions>
-                    <Collapse in={expanded} timeout="auto" unmountOnExit>
-                        <CardContent>
-                            {summary.text === '' ? (
-                                summary.isActive ? (
-                                    <Box sx={{display: 'flex'}}>
-                                        <Skeleton width={200} height={40} />
-                                    </Box>
-                                ) : (
-                                    <div>Звонок слишком рано прервался</div>
-                                )
-                            ) : (
-                                <MDXEditor
-                                    className="dark-theme dark-editor"
-                                    placeholder="Суммаризация звонка"
-                                    markdown={summary.text}
-                                    readOnly
-                                    plugins={[
-                                        thematicBreakPlugin(),
-                                        markdownShortcutPlugin(),
-                                        diffSourcePlugin({viewMode: 'rich-text'}),
-                                    ]}
-                                />
-                            )}
-                        </CardContent>
-                    </Collapse>
+                    {isDetachingSummary ? (
+                        <CircularProgress />
+                    ) : (
+                        <Tooltip title={'Отвязать суммаризацию от заметки'}>
+                            <IconButton disabled={!isNoteOwner} onClick={handleDetachSumm}>
+                                <DeleteOutlineIcon fontSize={'medium'} color={'error'} />
+                            </IconButton>
+                        </Tooltip>
+                    )}
                 </>
-            )}
-        </Card>
+
+                {summary.isActive && (
+                    <>
+                        {isStoppingCall ? (
+                            <CircularProgress />
+                        ) : (
+                            <Tooltip title={'Закончить суммаризацию'}>
+                                <IconButton onClick={handleStopSumm} disabled={!summary.isActive || !isNoteOwner}>
+                                    <StopCircleIcon fontSize={'medium'} color={'error'} />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </>
+                )}
+            </AccordionActions>
+        </Accordion>
     );
 }

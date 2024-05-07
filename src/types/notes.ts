@@ -1,5 +1,6 @@
 import * as A from '@automerge/automerge';
 import {AnyDocumentId} from '@automerge/automerge-repo';
+import {AccessEnum} from './access';
 
 export interface Note {
     id: string;
@@ -7,7 +8,7 @@ export interface Note {
     title: string;
     dirId: number; // int value
     defaultAccess: string;
-    allowedMethods: Array<string>;
+    allowedMethods: Array<AccessEnum>;
 }
 
 export interface NoteDto {
@@ -16,7 +17,7 @@ export interface NoteDto {
     title: string;
     dir_id: number; // int value
     default_access: string;
-    allowed_methods: Array<string>;
+    allowed_methods: Array<AccessEnum>;
 }
 
 export interface NoteDoc {

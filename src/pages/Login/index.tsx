@@ -1,20 +1,14 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CircularProgress,
-    styled,
-    TextField,
-    Typography,
-} from '@mui/material';
+import {Box, Card, CardContent, CardHeader, styled, TextField, Typography} from '@mui/material';
 import {userAPI} from '../../services/UserService';
 import {authApi} from '../../services/AuthService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {setUser} from '../../store/reducers/UserSlice';
+import {LoadingButton} from '@mui/lab';
+import * as Yup from 'yup';
+import {Field, FieldProps, Form, Formik} from 'formik';
+import Tooltip from '@mui/material/Tooltip';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
@@ -39,14 +33,16 @@ const StyledTextField = styled(TextField)(({theme}) => ({
     },
 }));
 
+interface LoginFormValues {
+    email: string;
+    password: string;
+}
+
 function Login() {
-    const [email, setEmail] = React.useState<string>('');
-    const [password, setPassword] = React.useState<string>('');
     const [userId, setUserId] = React.useState<string | null>(null);
 
     const dispatch = useAppDispatch();
     const currUser = useAppSelector((store) => store.userReducer.user);
-    // const currUser = currUserFunc();
     const navigate = useNavigate();
 
     const [login, {data: userData, isLoading: isLoadingLogin, isError: isErrorLogin}] = authApi.useLoginMutation();
@@ -56,9 +52,17 @@ function Login() {
         isError: isErrorUser,
     } = userAPI.useGetUserQuery(userId || '', {skip: userId === null});
 
-    const handleLogin = React.useCallback(() => {
-        login({email, password});
-    }, [email, login, password]);
+    const validationSchema = Yup.object().shape({
+        email: Yup.string()
+            .email('Пожалуйста, проверьте, правильно ли указан адрес')
+            .required('Необходимо указать почту'),
+        password: Yup.string()
+            .required('Необходимо указать пароль')
+            .matches(
+                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/,
+                'Пароль должен содержать как минимум 8 символов, включая одну прописную букву, одну строчную букву, одну цифру и один специальный символ',
+            ),
+    });
 
     React.useEffect(() => {
         if (userData?.userId) {
@@ -79,56 +83,114 @@ function Login() {
     }, [currUser, navigate]);
 
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
+        <Formik
+            initialValues={{email: '', password: ''}}
+            validationSchema={validationSchema}
+            onSubmit={(values: LoginFormValues) => {
+                login({email: values.email, password: values.password});
             }}
         >
-            <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
-                <CardHeader
-                    sx={{color: 'rgba(0, 0, 0, 0.87)'}}
-                    subheaderTypographyProps={{color: 'rgba(0, 0, 0, 0.87)', variant: 'body2'}}
-                    title="Войти в аккаунт"
-                    subheader="Для использования всех функций сервиса"
-                />
-                <CardContent>
+            {({errors, touched}) => (
+                <Form>
                     <Box
                         sx={{
                             display: 'flex',
                             justifyContent: 'center',
-                            flexDirection: 'column',
-                            gap: 2,
-                            textDecoration: 'none',
+                            alignItems: 'center',
+                            height: '100vh',
                         }}
                     >
-                        <StyledTextField
-                            label="Почта"
-                            variant="outlined"
-                            value={email}
-                            error={isErrorLogin || isErrorUser}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <StyledTextField
-                            label="Пароль"
-                            type="password"
-                            variant="outlined"
-                            value={password}
-                            error={isErrorLogin || isErrorUser}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <Button variant="contained" color="primary" onClick={handleLogin} sx={{minWidth: '343px'}}>
-                            {isLoadingLogin || isLoadingUser ? <CircularProgress /> : 'Войти'}
-                        </Button>
-                        <Typography component={Link} to="/registration" sx={{textDecoration: 'none', color: 'black'}}>
-                            Зарегистрироваться
-                        </Typography>
+                        <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
+                            <CardHeader
+                                sx={{color: 'rgba(0, 0, 0, 0.87)'}}
+                                subheaderTypographyProps={{color: 'rgba(0, 0, 0, 0.87)', variant: 'body2'}}
+                                title="Войти в аккаунт"
+                                subheader="Для использования всех функций сервиса"
+                            />
+                            <CardContent>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        flexDirection: 'column',
+                                        gap: 2,
+                                        textDecoration: 'none',
+                                    }}
+                                >
+                                    <Field name="email">
+                                        {({field}: FieldProps<string, LoginFormValues>) => (
+                                            <StyledTextField
+                                                {...field}
+                                                label="Почта"
+                                                variant="outlined"
+                                                error={(errors.email && touched.email) || isErrorLogin || isErrorUser}
+                                                helperText={
+                                                    errors.email && touched.email ? errors.email : <div>&nbsp;</div>
+                                                }
+                                            />
+                                        )}
+                                    </Field>
+
+                                    <Field name="password">
+                                        {({field}: FieldProps<string, LoginFormValues>) => (
+                                            <StyledTextField
+                                                {...field}
+                                                type="password"
+                                                label="Пароль"
+                                                variant="outlined"
+                                                error={
+                                                    (errors.password && touched.password) || isErrorLogin || isErrorUser
+                                                }
+                                                helperText={
+                                                    <Tooltip title={errors.password} arrow>
+                                                        <div
+                                                            style={{
+                                                                whiteSpace: 'nowrap',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                maxWidth: '100%',
+                                                            }}
+                                                        >
+                                                            {errors.password && touched.password ? (
+                                                                errors.password
+                                                            ) : (
+                                                                <div>&nbsp;</div>
+                                                            )}
+                                                        </div>
+                                                    </Tooltip>
+                                                }
+                                            />
+                                        )}
+                                    </Field>
+
+                                    <LoadingButton
+                                        loading={isLoadingLogin || isLoadingUser}
+                                        variant="contained"
+                                        color="primary"
+                                        type={'submit'}
+                                        sx={{
+                                            minWidth: '343px',
+                                            '& .MuiLoadingButton-loadingIndicator': {
+                                                color: 'black',
+                                            },
+                                        }}
+                                    >
+                                        Войти
+                                    </LoadingButton>
+                                    <Typography
+                                        component={Link}
+                                        to="/registration"
+                                        sx={{textDecoration: 'none', color: 'black'}}
+                                    >
+                                        Зарегистрироваться
+                                    </Typography>
+                                </Box>
+                            </CardContent>
+                        </Card>
                     </Box>
-                </CardContent>
-            </Card>
-        </Box>
+                </Form>
+            )}
+        </Formik>
     );
 }
 

@@ -5,8 +5,6 @@ import {loadCollapsedDirIds, setCollapsedDirIds} from '../../utils/localStorage'
 
 interface DirsState {
     activeDir: Dir | undefined;
-    activeNote: Note | undefined;
-    sharedNotes: Note[];
     dirTree: FullDirTreeWithNotes | undefined;
     collapsedDirIds: number[];
     dirIds: number[];
@@ -14,8 +12,6 @@ interface DirsState {
 
 const initialState: DirsState = {
     activeDir: undefined,
-    sharedNotes: [],
-    activeNote: undefined,
     dirTree: undefined,
     dirIds: [],
     collapsedDirIds: loadCollapsedDirIds() || [],
@@ -45,7 +41,7 @@ function recursiveDFSBuildDirsArray(dirTree: DirTree | undefined): Array<number>
 }
 
 export const dirsSlice = createSlice({
-    name: 'user',
+    name: 'dirs',
     initialState: initialState,
     reducers: {
         setDirTree(store, action: PayloadAction<FullDirTreeWithNotes>) {
@@ -54,13 +50,9 @@ export const dirsSlice = createSlice({
         mergeDirTreeWithNotes(store, action: PayloadAction<{dirTree: DirTree; notes: Note[]}>) {
             store.dirTree = recursiveDFSWithNotes(action.payload.dirTree, action.payload.notes);
             store.dirIds = recursiveDFSBuildDirsArray(store.dirTree) as number[];
-            store.sharedNotes = action.payload.notes.filter(({dirId}) => !store.dirIds.includes(dirId));
         },
         setActiveDir(store, action: PayloadAction<Dir>) {
             store.activeDir = action.payload;
-        },
-        setActiveNote(store, action: PayloadAction<Note>) {
-            store.activeNote = action.payload;
         },
         addCollapsedDirId(store, action: PayloadAction<number | undefined>) {
             if (action.payload) {
@@ -86,7 +78,6 @@ export const dirsSlice = createSlice({
 export const {
     setDirTree,
     setActiveDir,
-    setActiveNote,
     mergeDirTreeWithNotes,
     removeCollapsedDirId,
     addCollapsedDirId,

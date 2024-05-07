@@ -13,6 +13,7 @@ interface CreateNoteRequest {
 interface SetAccessRequest {
     noteID: string;
     userID: string;
+    selfUserId: string;
     access: Access;
 }
 
@@ -120,11 +121,10 @@ export const notesApi = createApi({
             query: (requestData) => ({
                 url: `/notes/${requestData.noteID}/access/${requestData.userID}`,
                 body: {
-                    ...requestData,
-                    access: convertFromAccessToDto(requestData.access),
+                    ...convertFromAccessToDto(requestData.access),
                 },
                 method: 'POST',
-                headers: {'X-User-Id': requestData.userID},
+                headers: {'X-User-Id': requestData.selfUserId},
             }),
         }),
         attachSummary: build.mutation<string, {summId: string; noteId: string; userId: string}>({

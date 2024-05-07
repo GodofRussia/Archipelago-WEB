@@ -35,6 +35,7 @@ import {changeCollapsedStateForAllDirs, mergeDirTreeWithNotes} from '../store/re
 import {createAutomergeUrl} from '../utils/automerge';
 import {TabType} from './Layout';
 import NoteCard from './NoteCard';
+import {setNotes, setSharedNotesByUserDirs, setTabType} from '../store/reducers/NotesSlice';
 
 const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
     display: 'flex',
@@ -57,7 +58,8 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
     const navigate = useNavigate();
 
     const {user} = useAppSelector((state) => state.userReducer);
-    const {dirTree: fullDirTree, sharedNotes} = useAppSelector((state) => state.dirsReducer);
+    const {dirTree: fullDirTree, dirIds} = useAppSelector((state) => state.dirsReducer);
+    const {sharedNotes, tab: noteTab} = useAppSelector((state) => state.notesReducer);
     const dispatch = useAppDispatch();
 
     const {
@@ -97,6 +99,12 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
     const [dirName, setDirName] = React.useState<string>('');
     const [noteTitle, setNoteTitle] = React.useState<string>('');
     const [dirIdForCreate, setDirIdForCreate] = React.useState<number>(1);
+
+    React.useEffect(() => {
+        if (tab) {
+            dispatch(setTabType({tab}));
+        }
+    }, [dispatch, tab]);
 
     const handleCreateNote = React.useCallback(
         (title: string, dirId?: number) => {
@@ -138,11 +146,39 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
         [createDirApi, user],
     );
 
+    const handleKeyDown = React.useCallback(
+        (event: React.KeyboardEvent<HTMLDivElement>, type: 'dir' | 'note') => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (type === 'dir') {
+                    handleCreateDir(dirIdForCreate, dirName);
+                    setIsOpenCreateDialog(false);
+                } else {
+                    handleCreateNote(noteTitle, dirIdForCreate);
+                    setIsOpenCreateDialog(false);
+                }
+            }
+        },
+        [dirIdForCreate, dirName, handleCreateDir, handleCreateNote, noteTitle],
+    );
+
     React.useEffect(() => {
-        if (user && notes && dirTree) {
+        if (notes) {
+            dispatch(setNotes({notes}));
+        }
+    }, [dirTree, dispatch, notes]);
+
+    React.useEffect(() => {
+        if (notes && dirTree) {
             dispatch(mergeDirTreeWithNotes({dirTree, notes}));
         }
-    }, [dirTree, dispatch, notes, user]);
+    }, [dirTree, dispatch, notes]);
+
+    React.useEffect(() => {
+        if (dirIds) {
+            dispatch(setSharedNotesByUserDirs({dirIds}));
+        }
+    }, [dispatch, dirIds]);
 
     return (
         <Drawer
@@ -211,7 +247,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                 <Box sx={{p: 2}}>
                     {!!user ? (
                         <>
-                            {tab === TabType.HOME && (
+                            {noteTab === TabType.HOME && (
                                 <Folder
                                     onDirCreateClick={() => setIsOpenCreateDialog(true)}
                                     handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
@@ -226,7 +262,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                                     }
                                 />
                             )}
-                            {tab === TabType.SHARED &&
+                            {noteTab === TabType.SHARED &&
                                 (sharedNotes.length ? (
                                     <List>
                                         {sharedNotes.map((note, idx) => (
@@ -258,6 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                             variant="outlined"
                             fullWidth
                             value={dirName}
+                            onKeyDown={(event) => handleKeyDown(event, 'dir')}
                             onChange={(e) => {
                                 setDirName(e.target.value);
                             }}
@@ -293,6 +330,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                             variant="outlined"
                             fullWidth
                             value={noteTitle}
+                            onKeyDown={(event) => handleKeyDown(event, 'note')}
                             onChange={(e) => {
                                 setNoteTitle(e.target.value);
                             }}

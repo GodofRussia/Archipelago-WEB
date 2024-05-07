@@ -57,23 +57,23 @@ import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import * as A from '@automerge/automerge/next';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {notesApi} from '../../services/NotesService';
-import {setActiveNote} from '../../store/reducers/DirsSlice';
+import {setActiveNote, setTabType} from '../../store/reducers/NotesSlice';
 import {callAPI} from '../../services/CallService';
-import {chatAPI} from '../../services/ChatService';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LinkIcon from '@mui/icons-material/Link';
 import {userAPI} from '../../services/UserService';
 import {useSnackbar} from 'notistack';
 import List from '@mui/material/List';
-import CallSummariesList from '../../components/CallSummariesList';
 import ChatSumStepper from '../../components/ChatSumStepper';
-import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
-import {SerializedError} from '@reduxjs/toolkit';
+import {TabType} from '../../components/Layout';
+import SummariesList from '../../components/SummariesList';
+import {AccessEnum} from '../../types/access';
 
 function Note() {
     const {id = ''} = useParams();
 
     const {user} = useAppSelector((store) => store.userReducer);
+    const {sharedNotes} = useAppSelector((store) => store.notesReducer);
     const dispatch = useAppDispatch();
 
     const {data: note} = notesApi.useGetNoteQuery(
@@ -86,8 +86,6 @@ function Note() {
 
     const [startRecording, {isLoading: isLoadingStartRecording}] = callAPI.useStartCallRecordingMutation();
     const [attachSummary, {isLoading: isAttachingSummary}] = notesApi.useAttachSummaryMutation();
-
-    const [getChatSum, {data: chatSumData}] = chatAPI.useGetSummarizationMutation();
 
     const [usersMailQuery, setUsersMailQuery] = React.useState<string>('');
     const [query, setQuery] = React.useState<string>('');
@@ -103,7 +101,6 @@ function Note() {
     const {enqueueSnackbar} = useSnackbar();
 
     const ref = React.useRef<MDXEditorMethods>(null);
-    const summRef = React.useRef<MDXEditorMethods>(null);
 
     const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
     const [accessRole, setAccessRole] = React.useState<string | null>(null);
@@ -111,25 +108,11 @@ function Note() {
     const [callsDetail, setCallsDetail] = React.useState<string | null>(CallsDetailEnum.AVERAGE);
     const [callUrl, setCallUrl] = React.useState<string>('');
 
-    // TODO: ручка добавится для short polling
-    // const [canSummarizeChat, setCanSummarizeChat] = React.useState<boolean>(false);
-
     const [checked, setChecked] = React.useState(false);
 
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
     const [accessRightsDialogIsOpen, setAccessRightsDialogIsOpen] = React.useState(false);
-
-    const fetchChatSum = () => {
-        getChatSum({id}).then((data) => {
-            enqueueSnackbar(
-                (data as {error: FetchBaseQueryError | SerializedError})?.error
-                    ? 'Суммаризация чата отсутствует, сначала корректно привяжите чат'
-                    : 'Суммаризация чата получена',
-                {variant: (data as {error: FetchBaseQueryError | SerializedError})?.error ? 'warning' : 'success'},
-            );
-        });
-    };
 
     const handleFormSubmit = async () => {
         if (!!callUrl) {
@@ -155,17 +138,13 @@ function Note() {
     }, [doc?.text]);
 
     React.useEffect(() => {
-        if (chatSumData?.summ_text) {
-            enqueueSnackbar('Суммаризация чата получена', {variant: 'success'});
-            summRef.current?.setMarkdown(chatSumData.summ_text);
-        }
-    }, [chatSumData?.summ_text, enqueueSnackbar]);
-
-    React.useEffect(() => {
         if (note) {
             dispatch(setActiveNote(note));
+            if (sharedNotes.find(({id: noteId}) => id === noteId)) {
+                dispatch(setTabType({tab: TabType.SHARED}));
+            }
         }
-    }, [dispatch, note]);
+    }, [dispatch, id, note, sharedNotes]);
 
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -205,18 +184,33 @@ function Note() {
 
     return (
         <Stack gap={2} sx={{p: 2}}>
-            <Box gap={2} display="flex" alignItems={'center'}>
-                <Button variant="outlined" color="primary" onClick={fetchChatSum}>
-                    Получить суммаризацию чата
-                </Button>
-                <Button variant="outlined" color="primary" onClick={() => setInfoModalIsOpen(true)}>
-                    Привязать чат
-                </Button>
-                <Button variant="outlined" color="primary" onClick={() => setFormModalIsOpen(true)}>
-                    Привязать звонок
-                </Button>
+            <Box gap={2} display="flex" alignItems={'center'} justifyContent={'space-between'}>
+                <Box gap={2} display="flex" alignItems={'center'}>
+                    <Button
+                        disabled={!note?.allowedMethods.includes(AccessEnum.attach_summary)}
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => setInfoModalIsOpen(true)}
+                    >
+                        Привязать чат
+                    </Button>
+                    <Button
+                        disabled={!note?.allowedMethods.includes(AccessEnum.attach_summary)}
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => setFormModalIsOpen(true)}
+                    >
+                        Привязать звонок
+                    </Button>
+                </Box>
+
                 <ButtonGroup variant="outlined" ref={anchorRef} aria-label="Button group with a nested menu">
-                    <Button onClick={() => setAccessRightsDialogIsOpen(true)}>Настройки прав доступа</Button>
+                    <Button
+                        disabled={!note?.allowedMethods.includes(AccessEnum.set_access)}
+                        onClick={() => setAccessRightsDialogIsOpen(true)}
+                    >
+                        Поделиться заметкой
+                    </Button>
                     <Button
                         size="small"
                         aria-controls={open ? 'split-button-menu' : undefined}
@@ -291,6 +285,7 @@ function Note() {
                                                 setUserAccess({
                                                     userID: id,
                                                     noteID: note?.id || '',
+                                                    selfUserId: user?.id || '',
                                                     access: {
                                                         withInvitation: checked,
                                                         access: CONVERT_DEFAULT_ACCESS_ROLE_MAP[
@@ -321,8 +316,15 @@ function Note() {
                                     }}
                                     sx={{minWidth: 150}}
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Роль" variant={'standard'} size="small" />
+                                        <TextField
+                                            {...params}
+                                            label="Роль"
+                                            InputProps={{...params.InputProps, readOnly: true}}
+                                            variant={'standard'}
+                                            size="small"
+                                        />
                                     )}
+                                    clearIcon={<></>}
                                 />
                             </Box>
                         </Stack>
@@ -380,8 +382,14 @@ function Note() {
                                 }}
                                 sx={{width: 300}}
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Степень детализации звонка" size="small" />
+                                    <TextField
+                                        {...params}
+                                        label="Степень детализации звонка"
+                                        InputProps={{...params.InputProps, readOnly: true}}
+                                        size="small"
+                                    />
                                 )}
+                                clearIcon={<></>}
                             />
                         </Stack>
                     </DialogContent>
@@ -400,27 +408,13 @@ function Note() {
                 </Dialog>
             </Box>
 
-            <CallSummariesList noteId={id} />
-
-            {chatSumData?.summ_text && (
-                <MDXEditor
-                    ref={summRef}
-                    className="dark-theme dark-editor"
-                    placeholder="Суммаризация чата"
-                    readOnly
-                    plugins={[
-                        thematicBreakPlugin(),
-                        markdownShortcutPlugin(),
-                        diffSourcePlugin({viewMode: 'rich-text'}),
-                    ]}
-                    markdown={''}
-                />
-            )}
+            <SummariesList noteId={id} />
 
             <MDXEditor
                 ref={ref}
                 className="dark-theme dark-editor"
                 placeholder="Введите текст сюда"
+                readOnly={!note?.allowedMethods.includes(AccessEnum.update)}
                 markdown={typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || ''}
                 onChange={(md) => handleChangeMd(md)}
                 plugins={[

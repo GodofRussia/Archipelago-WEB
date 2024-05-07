@@ -3,6 +3,8 @@ export enum AccessEnum {
     update = 'update',
     get = 'get',
     set_access = 'set_access',
+    attach_summary = 'attach_summary',
+    get_summary_list = 'get_summary_list',
 }
 
 export interface Access {

@@ -6,6 +6,11 @@ interface ProduceJoinCallRequest {
     detalization: string | null;
 }
 
+interface UpdateSummaryNameRequest {
+    id: string;
+    name: string;
+}
+
 interface GetCallSummarizationRequest {
     summ_id: string;
     role?: string;
@@ -47,7 +52,7 @@ interface BatchGetCallSummarizationResponseDto {
 export const callAPI = createApi({
     reducerPath: 'call',
     baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_ZOOM_URL}),
-    tagTypes: ['Call'],
+    tagTypes: ['Call', 'Summ'],
     endpoints: (build) => ({
         getSummarization: build.query<Summary, GetCallSummarizationRequest>({
             query: ({summ_id, role}) => ({
@@ -78,7 +83,6 @@ export const callAPI = createApi({
                 body: {summarizations: summarizations},
             }),
             transformResponse: (response: BatchGetCallSummarizationResponseDto) => {
-                console.log(response);
                 return response.summarizations.map((sum) => ({
                     id: sum.id,
                     platform: sum.platform || '',
@@ -89,6 +93,16 @@ export const callAPI = createApi({
                     detalization: sum.detalization || '',
                 }));
             },
+        }),
+        updateSummaryName: build.mutation<GetCallSummarizationResponseDto, UpdateSummaryNameRequest>({
+            query: ({id, name}) => ({
+                url: `/update_name`,
+                method: 'POST',
+                body: {
+                    id,
+                    name,
+                },
+            }),
         }),
         getCallState: build.query<CallStateResponse, {summ_id: string}>({
             query: ({summ_id}) => ({

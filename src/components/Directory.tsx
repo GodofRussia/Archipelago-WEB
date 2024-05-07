@@ -46,7 +46,7 @@ function Folder({folder, onDirCreateClick, refetchNotes, handleCreateNote, setDi
 
     return !isLoading ? (
         <List sx={{m: 0, p: 0}}>
-            {!folder || !folder.notes ? (
+            {!folder || !folder.notes.length ? (
                 <Typography>Ещё нет заметок</Typography>
             ) : (
                 <>

@@ -42,7 +42,10 @@ export function convertFromAccessDto(access: AccessDto): Access {
 }
 
 export function convertFromAccessToDto(access: Access): AccessDto {
-    return {...access, with_invitation: access.withInvitation};
+    return {
+        access: access.access,
+        with_invitation: access.withInvitation,
+    };
 }
 
 export function formatDate(dateString: string): string {

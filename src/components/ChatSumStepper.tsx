@@ -96,7 +96,7 @@ export default function ChatSumStepper({noteId}: {noteId: string}) {
                 <Paper square elevation={0} sx={{p: 3}}>
                     <Typography>Все действия для привязки чата выполнены</Typography>
                     <Button onClick={handleReset} sx={{mt: 1, mr: 1}}>
-                        Сбросить
+                        Начать заново
                     </Button>
                 </Paper>
             )}
