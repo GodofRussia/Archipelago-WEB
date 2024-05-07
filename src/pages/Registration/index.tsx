@@ -132,8 +132,8 @@ function Registration() {
                             display: 'flex',
                             justifyContent: 'center',
                             alignItems: 'center',
-                            height: '140vh',
-                            width: '140vw',
+                            height: '100vh',
+                            width: '100vw',
                         }}
                     >
                         <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
