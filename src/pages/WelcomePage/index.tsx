@@ -35,13 +35,15 @@ function WelcomePage() {
                 <Button
                     variant="text"
                     sx={{
-                        color: 'rgb(20, 168, 247)',
-                        borderColor: 'blue',
-                        border: 4.5,
+                        color: 'white',
                         marginTop: '1rem',
                         marginBottom: '4rem',
                         borderRadius: '20px',
                         paddingTop: '1px',
+                        '&:hover .MuiTypography-root': {
+                            transform: 'scale(1.05)',
+                            backgroundColor: 'transparent',
+                        },
                     }}
                     onClick={handleButtonClick}
                 >
@@ -64,7 +66,7 @@ function WelcomePage() {
                     justifyContent: 'center',
                     backgroundColor: 'rgb(23, 23, 23)',
                     width: '100%',
-                    height: '110vh',
+                    height: '135vh',
                     borderTopLeftRadius: '20%',
                     borderTopRightRadius: '20%',
                     marginTop: '-21%',
@@ -78,15 +80,15 @@ function WelcomePage() {
                     alt=""
                     style={{
                         width: '100%',
-                        height: '80%',
+                        height: '110%',
                         position: 'absolute',
                         marginTop: '9%',
                     }}
                 />
-                <img src="/zoom-logo.png" alt="Zoom Logo" style={{width: '8%', height: '11.5%'}} />
-                <img src="/meets-logo.png" alt="Meets Logo" style={{width: '8%', height: '11.5%'}} />
-                <img src="/teams-logo.png" alt="Teams Logo" style={{width: '8%', height: '11.5%'}} />
-                <img src="/tg-logo.png" alt="Telegram Logo" style={{width: '8%', height: '11.5%'}} />
+                <img src="/zoom-logo.png" alt="Zoom Logo" style={{width: '8%', height: '8%'}} />
+                <img src="/meets-logo.png" alt="Meets Logo" style={{width: '8%', height: '8%'}} />
+                <img src="/teams-logo.png" alt="Teams Logo" style={{width: '8%', height: '8%'}} />
+                <img src="/tg-logo.png" alt="Telegram Logo" style={{width: '8%', height: '8%'}} />
             </Box>
             <Footer />
         </Box>
