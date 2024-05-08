@@ -223,19 +223,20 @@ function Registration() {
                                                     isErrorSomeRegistrationStep
                                                 }
                                                 helperText={
-                                                    (errors.password && touched.password) ||
+                                                    (errors.confirmPassword && touched.confirmPassword) ||
                                                     isErrorSomeRegistrationStep ? (
                                                         <Stack sx={{height: '48px'}} gap={1}>
                                                             <Typography variant={'inherit'}>
                                                                 {errors.confirmPassword && errors.confirmPassword}
                                                             </Typography>
                                                             <Typography variant={'inherit'}>
-                                                                {(
-                                                                    (registrationError as FetchBaseQueryError)
-                                                                        ?.data as {error: string}
-                                                                )?.error?.includes('User exist')
-                                                                    ? 'Пользователь уже существует'
-                                                                    : 'Технические неполадки. Попробуйте позже.'}
+                                                                {isErrorSomeRegistrationStep &&
+                                                                    ((
+                                                                        (registrationError as FetchBaseQueryError)
+                                                                            ?.data as {error: string}
+                                                                    )?.error?.includes('User exist')
+                                                                        ? 'Пользователь уже существует'
+                                                                        : 'Технические неполадки. Попробуйте позже.')}
                                                             </Typography>
                                                         </Stack>
                                                     ) : (

@@ -144,13 +144,14 @@ function Login() {
                                                                 {errors.password && errors.password}
                                                             </Typography>
                                                             <Typography variant={'inherit'}>
-                                                                {(
-                                                                    (errorLogin as FetchBaseQueryError)?.data as {
-                                                                        error: string;
-                                                                    }
-                                                                )?.error?.includes('Not found user')
-                                                                    ? 'Неверные почта или пароль. Проверьте правильность введенных данных.'
-                                                                    : 'Технические неполадки. Попробуйте позже.'}
+                                                                {isErrorLogin &&
+                                                                    ((
+                                                                        (errorLogin as FetchBaseQueryError)?.data as {
+                                                                            error: string;
+                                                                        }
+                                                                    )?.error?.includes('Not found user')
+                                                                        ? 'Неверные почта или пароль. Проверьте правильность введенных данных.'
+                                                                        : 'Технические неполадки. Попробуйте позже.')}
                                                             </Typography>
                                                         </Stack>
                                                     ) : (
