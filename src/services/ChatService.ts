@@ -42,7 +42,7 @@ export const chatAPI = createApi({
         detachNoteFromChat: build.mutation<void, {id: string}>({
             query: ({id}) => ({
                 url: `/delete-notes-link`,
-                method: 'POST',
+                method: 'DELETE',
                 body: {
                     token_note: id,
                     token: import.meta.env.VITE_SERVICE_TOKEN,

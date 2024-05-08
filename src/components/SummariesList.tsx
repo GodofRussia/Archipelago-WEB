@@ -80,10 +80,12 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         },
     );
 
-    const {data: chatInfo, isLoading: isLoadingChatInfo} = chatAPI.useGetSummarizationExistsInfoQuery(
-        {id: noteId},
-        {pollingInterval: 20000},
-    );
+    const {
+        data: chatInfo,
+        isLoading: isLoadingChatInfo,
+        isError: isErrorChatInfo,
+        error: errorChatInfo,
+    } = chatAPI.useGetSummarizationExistsInfoQuery({id: noteId}, {pollingInterval: 20000});
 
     const [getChatSum, {data: chatSumData, isError: isErrorChatSum, isLoading: isLoadingChatSum}] =
         chatAPI.useGetSummarizationMutation();
@@ -140,6 +142,13 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     React.useEffect(() => {
         dispatch(setChatInfo({chatInfo}));
     }, [chatInfo, dispatch]);
+
+    React.useEffect(() => {
+        if (isErrorChatInfo && !!errorChatInfo.originalStatus === 400) {
+            console.log(errorChatInfo);
+            dispatch(setChatInfo({chatInfo: undefined}));
+        }
+    }, [chatInfo, dispatch, errorChatInfo, isErrorChatInfo]);
 
     React.useEffect(() => {
         if (chatSumData?.summ_text) {
