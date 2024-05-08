@@ -26,20 +26,6 @@ const CustomAccordion = styled((props: AccordionProps) => <MuiAccordion disableG
 const CustomAccordionSummary = styled(AccordionSummary)(({theme}) => ({
     position: 'relative',
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .04)' : 'rgba(0, 0, 0, .03)',
-    minHeight: 20,
-    height: 20,
-    padding: 0,
-
-    '& .MuiAccordionSummary-content': {
-        justifyContent: 'center',
-    },
-    '& .MuiButtonBase-root': {
-        justifyContent: 'center',
-    },
-    '& .MuiAccordionSummary-expandIconWrapper': {
-        position: 'absolute',
-        right: '50%',
-    },
 }));
 
 const CustomAccordionDetails = styled(MuiAccordionDetails)(() => ({
@@ -180,15 +166,17 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     return activeNote?.allowedMethods.includes(AccessEnum.get_summary_list) ? (
         <>
             {isLoading && isLoadingInitial ? (
-                <Skeleton variant="rounded" height={22} width={'100%'} />
+                <Skeleton variant="rounded" height={48} width={'100%'} />
             ) : (
                 <CustomAccordion expanded={expandedDefault} onChange={onExpandedStateChanged}>
                     <CustomAccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="list-content"
                         id="list-header"
-                    />
-                    <CustomAccordionDetails>
+                    >
+                        Управление суммаризациями
+                    </CustomAccordionSummary>
+                    <CustomAccordionDetails sx={{p: 2}}>
                         {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
                             <Paper square sx={{py: 2}}>
                                 <Typography variant={'body1'} sx={{px: 2}}>
@@ -206,8 +194,8 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                             !(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) &&
                             !chatInfo &&
                             !isErrorChatSum && (
-                                <Paper square sx={{py: 2}}>
-                                    <Typography variant={'body1'} sx={{px: 2}}>
+                                <Paper square sx={{py: 2, px: 2}}>
+                                    <Typography variant={'body1'}>
                                         Пока что нет кратких выжимок. Чтобы получить суммаризацию вашего звонка или
                                         чата, привяжите их кнопками выше.
                                     </Typography>
