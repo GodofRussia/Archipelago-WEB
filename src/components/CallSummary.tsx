@@ -33,6 +33,7 @@ import React from 'react';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {addExpandedSumId, removeExpandedSumId} from '../store/reducers/SummarizationSlice';
 import {formatDateToMinute} from '../utils/date';
+import {AccessEnum} from '../types/access';
 
 export interface CallSummaryProps {
     key: string;
@@ -44,6 +45,7 @@ export interface CallSummaryProps {
 export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
     const {user} = useAppSelector((store) => store.userReducer);
     const {expandedSumIds} = useAppSelector((state) => state.sumReducer);
+    const {activeNote} = useAppSelector((state) => state.notesReducer);
     const dispatch = useAppDispatch();
 
     const [detachSummary, {isLoading: isDetachingSummary}] = notesApi.useDetachSummaryMutation();
@@ -130,7 +132,7 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                     onChange={(_, newValue) => {
                         setRole(summary.id, (newValue as RoleEnum) || RoleEnum.DEFAULT);
                     }}
-                    disabled={!isNoteOwner}
+                    disabled={!activeNote?.allowedMethods.includes(AccessEnum.attach_summary)}
                     sx={{minWidth: 200}}
                     renderInput={(params) => (
                         <TextField
@@ -148,7 +150,11 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                         <CircularProgress sx={{width: 40, height: 40}} />
                     ) : (
                         <Tooltip title={'Отвязать суммаризацию от заметки'}>
-                            <IconButton disabled={!isNoteOwner} onClick={handleDetachSumm}>
+                            <IconButton
+                                disabled={!isNoteOwner}
+                                sx={{display: !isNoteOwner ? 'none' : 'block'}}
+                                onClick={handleDetachSumm}
+                            >
                                 <DeleteOutlineIcon fontSize={'medium'} color={'error'} />
                             </IconButton>
                         </Tooltip>
@@ -161,7 +167,11 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                             <CircularProgress sx={{width: 40, height: 40}} />
                         ) : (
                             <Tooltip title={'Закончить суммаризацию'}>
-                                <IconButton onClick={handleStopSumm} disabled={!summary.isActive || !isNoteOwner}>
+                                <IconButton
+                                    onClick={handleStopSumm}
+                                    disabled={!summary.isActive || !isNoteOwner}
+                                    sx={{display: !summary.isActive || !isNoteOwner ? 'none' : 'block'}}
+                                >
                                     <StopCircleIcon fontSize={'medium'} color={'error'} />
                                 </IconButton>
                             </Tooltip>

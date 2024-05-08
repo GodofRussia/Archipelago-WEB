@@ -18,10 +18,10 @@ export const sumSlice = createSlice({
     name: 'sum',
     initialState: initialState,
     reducers: {
-        setChatSum(store, action: PayloadAction<{chatSum: string}>) {
+        setChatSum(store, action: PayloadAction<{chatSum?: string}>) {
             store.chatSum = action.payload.chatSum;
         },
-        setChatInfo(store, action: PayloadAction<{chatInfo: ChatInfo}>) {
+        setChatInfo(store, action: PayloadAction<{chatInfo?: ChatInfo}>) {
             store.chatInfo = action.payload.chatInfo;
         },
         addExpandedSumId(store, action: PayloadAction<string | undefined>) {

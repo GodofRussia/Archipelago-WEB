@@ -102,7 +102,11 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
                     <CircularProgress sx={{width: 20, height: 20}} />
                 ) : (
                     <Tooltip title={'Обновить суммаризацию'}>
-                        <IconButton onClick={onGetSum} disabled={!isNoteOwner}>
+                        <IconButton
+                            onClick={onGetSum}
+                            disabled={!isNoteOwner}
+                            sx={{display: !isNoteOwner ? 'none' : 'block'}}
+                        >
                             <RefreshIcon fontSize={'medium'} />
                         </IconButton>
                     </Tooltip>
@@ -115,6 +119,7 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
                             color={isErrorDetaching ? 'error' : 'default'}
                             onClick={handleDetachChat}
                             disabled={!isNoteOwner}
+                            sx={{display: !isNoteOwner ? 'none' : 'block'}}
                         >
                             <DeleteOutlineIcon fontSize={'medium'} color={'error'} />
                         </IconButton>

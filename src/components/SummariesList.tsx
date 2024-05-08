@@ -47,7 +47,7 @@ const CustomAccordionDetails = styled(MuiAccordionDetails)(() => ({
 const SummariesList = ({noteId}: {noteId: string}) => {
     const {user} = useAppSelector((store) => store.userReducer);
     const {activeNote} = useAppSelector((store) => store.notesReducer);
-    const {expandedDefault} = useAppSelector((state) => state.sumReducer);
+    const {expandedDefault, chatInfo: storedChatInfo} = useAppSelector((state) => state.sumReducer);
     const dispatch = useAppDispatch();
 
     const {
@@ -109,12 +109,14 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     React.useEffect(() => {
         setSummarizeIdsWithRoles([]);
         dispatch(setExpandedDefault(false));
-    }, [noteId, isErrorSummaryList, dispatch]);
+        dispatch(setChatInfo({chatInfo: undefined}));
+        dispatch(setChatSum({chatSum: undefined}));
+    }, [noteId, dispatch]);
 
     const setRole = React.useCallback((sumId: string, role: RoleEnum) => {
         setSummarizeIdsWithRoles((prevSumWithRoles) =>
             prevSumWithRoles.map(({sumId: prevSumId, role: prevRole}) => ({
-                sumId,
+                sumId: prevSumId,
                 role: prevSumId === sumId ? role : prevRole,
             })),
         );
@@ -136,9 +138,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     }, [summaryList]);
 
     React.useEffect(() => {
-        if (chatInfo) {
-            dispatch(setChatInfo({chatInfo}));
-        }
+        dispatch(setChatInfo({chatInfo}));
     }, [chatInfo, dispatch]);
 
     React.useEffect(() => {
@@ -146,10 +146,6 @@ const SummariesList = ({noteId}: {noteId: string}) => {
             dispatch(setChatSum({chatSum: chatSumData.summ_text}));
         }
     }, [chatSumData?.summ_text, dispatch]);
-
-    React.useEffect(() => {
-        if (chatInfo) getChatSum({id: noteId});
-    }, [chatInfo, getChatSum, noteId]);
 
     const [isLoadingInitial, setIsLoadingInitial] = React.useState<boolean>(true);
 
@@ -166,7 +162,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
             {isLoading && isLoadingInitial ? (
                 <Skeleton variant="rounded" height={22} width={'100%'} />
             ) : (
-                <CustomAccordion defaultExpanded={expandedDefault} onChange={onExpandedStateChanged}>
+                <CustomAccordion expanded={expandedDefault} onChange={onExpandedStateChanged}>
                     <CustomAccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="list-content"
@@ -199,7 +195,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                         {callSummaries?.map((summary) => (
                             <CallSummary noteId={noteId} key={summary.id} summary={summary} setRole={setRole} />
                         )) || null}
-                        {chatInfo && (
+                        {storedChatInfo && (
                             <ChatSummary noteId={noteId} onGetSum={onGetSum} isLoadingSum={isLoadingChatSum} />
                         )}
                     </CustomAccordionDetails>
