@@ -155,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                     setIsOpenCreateDialog(false);
                 } else {
                     handleCreateNote(noteTitle, dirIdForCreate);
-                    setIsOpenCreateDialog(false);
+                    setIsOpenCreateNoteDialog(false);
                 }
             }
         },
@@ -220,19 +220,25 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
             </DrawerHeader>
 
             <ButtonGroup sx={{display: 'flex', justifyContent: 'flex-end'}}>
-                <Tooltip disableFocusListener={!user} title={collapsed ? 'Свернуть все' : 'Развернуть все'}>
-                    <IconButton disabled={!user} onClick={handleCollapsedClicked}>
+                <Tooltip
+                    disableFocusListener={!user || tab === TabType.SHARED}
+                    title={collapsed ? 'Свернуть все' : 'Развернуть все'}
+                >
+                    <IconButton disabled={!user || tab === TabType.SHARED} onClick={handleCollapsedClicked}>
                         {collapsed ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
                     </IconButton>
                 </Tooltip>
 
-                <Tooltip disableFocusListener={!user} title={'Создать заметку'}>
-                    <IconButton disabled={!user} onClick={() => setIsOpenCreateNoteDialog(true)}>
+                <Tooltip disableFocusListener={!user || tab === TabType.SHARED} title={'Создать заметку'}>
+                    <IconButton
+                        disabled={!user || tab === TabType.SHARED}
+                        onClick={() => setIsOpenCreateNoteDialog(true)}
+                    >
                         <NoteAddIcon />
                     </IconButton>
                 </Tooltip>
-                <Tooltip disableFocusListener={!user} title={'Создать папку'}>
-                    <IconButton disabled={!user} onClick={() => setIsOpenCreateDialog(true)}>
+                <Tooltip disableFocusListener={!user || tab === TabType.SHARED} title={'Создать папку'}>
+                    <IconButton disabled={!user || tab === TabType.SHARED} onClick={() => setIsOpenCreateDialog(true)}>
                         <CreateNewFolderIcon />
                     </IconButton>
                 </Tooltip>
