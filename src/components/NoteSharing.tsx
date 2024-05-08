@@ -5,6 +5,7 @@ import {
     Button,
     ButtonGroup,
     Checkbox,
+    Chip,
     debounce,
     Dialog,
     DialogActions,
@@ -133,14 +134,35 @@ const NoteSharing = ({isOpen, close}: NoteSharingProps) => {
                             <Box display={'flex'} alignItems={'center'} gap={2} justifyContent={'space-between'}>
                                 <Autocomplete
                                     multiple
-                                    // limitTags={1}
                                     id="tags-standard"
-                                    options={searchedUsers || []}
+                                    options={
+                                        searchedUsers?.filter(
+                                            ({id}) => !usersValue.find(({id: userID}) => userID === id),
+                                        ) || []
+                                    }
                                     getOptionLabel={(option) => option.email}
                                     onChange={(_, newValue) => {
                                         setUsersValue(newValue);
                                     }}
-                                    sx={{flexGrow: 1}}
+                                    filterSelectedOptions
+                                    renderTags={(value, getTagProps) =>
+                                        value.map((option, index) => (
+                                            <Stack key={index}>
+                                                <Chip
+                                                    variant="outlined"
+                                                    label={option.email}
+                                                    {...getTagProps({index})}
+                                                />
+                                            </Stack>
+                                        ))
+                                    }
+                                    sx={{
+                                        flexGrow: 1,
+                                        '& .chipsContainer': {
+                                            maxHeight: '120px',
+                                            overflow: 'auto',
+                                        },
+                                    }}
                                     value={usersValue}
                                     renderInput={(params) => (
                                         <TextField
