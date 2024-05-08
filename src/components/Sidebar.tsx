@@ -248,11 +248,13 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab}: SidebarPro
                 <Box sx={{p: 2}}>
                     {!!user ? (
                         <>
-                            {!fullDirTree || (!fullDirTree.notes.length && !fullDirTree.children.length) ? (
+                            {((!fullDirTree || (!fullDirTree.notes.length && !fullDirTree.children.length)) &&
+                                noteTab === TabType.HOME) ||
+                            (!sharedNotes.length && noteTab === TabType.SHARED) ? (
                                 <Typography>Ещё нет заметок</Typography>
                             ) : (
                                 <>
-                                    {noteTab === TabType.HOME && (
+                                    {noteTab === TabType.HOME && fullDirTree && (
                                         <Folder
                                             onDirCreateClick={() => setIsOpenCreateDialog(true)}
                                             handleCreateNote={() => setIsOpenCreateNoteDialog(true)}
