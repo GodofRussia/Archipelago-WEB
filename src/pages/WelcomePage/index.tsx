@@ -1,11 +1,11 @@
-import {Box, Typography, Button} from '@mui/material';
+import {Box, Button, Typography} from '@mui/material';
 import Navbar from '../../components/Navbar';
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import Footer from '../../components/Footer';
 
 function WelcomePage() {
-    const [width, setWidth] = useState(-1);
+    const width = -1;
     const [open, setOpen] = useState(true); // Corrected from React.useState
     const navigate = useNavigate();
     const handleButtonClick = React.useCallback(() => {

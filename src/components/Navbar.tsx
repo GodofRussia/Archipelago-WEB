@@ -1,25 +1,13 @@
-import {
-    AppBarProps as MuiAppBarProps,
-    Box,
-    Button,
-    ButtonGroup,
-    IconButton,
-    styled,
-    Toolbar,
-    Typography,
-} from '@mui/material';
+import {AppBarProps as MuiAppBarProps, Box, Button, ButtonGroup, styled, Toolbar, Typography} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
-import {Note} from '../types/notes';
 import MuiAppBar from '@mui/material/AppBar';
 import LoginIcon from '@mui/icons-material/Login';
 import React from 'react';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {logoutUser} from '../store/reducers/UserSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
-import CollapseIcon from '../icons/CollapseIcon';
 
 interface NavbarProps {
-    itemsList: Note[];
     open: boolean;
     setOpen: (val: boolean) => void;
     width: number;
@@ -49,7 +37,7 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 function Navbar(props: NavbarProps) {
-    const {open, setOpen, width, isAuthenticationPage = false} = props;
+    const {open, width, isAuthenticationPage = false} = props;
     const {user} = useAppSelector((state) => state.userReducer);
     const dispatch = useAppDispatch();
 
@@ -67,18 +55,9 @@ function Navbar(props: NavbarProps) {
     }, [dispatch]);
 
     return (
-        <AppBar position={'fixed'} open={open} width={width} sx={{backgroundColor: '#000000'}}>
+        <AppBar position={'fixed'} open={open} width={width} sx={{backgroundColor: '#000000', zIndex: 100000}}>
             <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
                 <Box display={'flex'} alignItems={'center'}>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        onClick={() => setOpen(true)}
-                        edge="start"
-                        sx={{mr: 2, ...(open && {display: 'none'})}}
-                    >
-                        <CollapseIcon color={'secondary'} />
-                    </IconButton>
                     <Box onClick={() => navigate('/')} sx={{cursor: 'pointer'}}>
                         <Typography variant="h6" noWrap component="div">
                             ARCHIPELAGO

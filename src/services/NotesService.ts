@@ -108,6 +108,7 @@ export const notesApi = createApi({
             transformResponse: (response: NoteDto) => {
                 return convertFromNoteDto(response);
             },
+            invalidatesTags: ['Notes'],
         }),
         deleteNote: build.mutation<Note, {note: Note; userId: string}>({
             query: (requestData) => ({

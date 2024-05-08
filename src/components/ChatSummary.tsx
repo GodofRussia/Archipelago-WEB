@@ -26,6 +26,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {notesApi} from '../services/NotesService';
 import {chatAPI} from '../services/ChatService';
 import {addExpandedSumId, removeExpandedSumId} from '../store/reducers/SummarizationSlice';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {SerializedError} from '@reduxjs/toolkit';
+import {useSnackbar} from 'notistack';
 
 interface ChatSummaryProps {
     onGetSum: () => void;
@@ -49,8 +52,15 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
 
     const [detachChat, {isError: isErrorDetaching, isLoading: isDetaching}] = chatAPI.useDetachNoteFromChatMutation();
 
+    const {enqueueSnackbar} = useSnackbar();
     const handleDetachChat = () => {
-        detachChat({id: noteId});
+        detachChat({id: noteId}).then((data) => {
+            if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
+                enqueueSnackbar('Не удалось отвязать чат', {variant: 'error'});
+            } else {
+                enqueueSnackbar('Чат успешно отвязан', {variant: 'success'});
+            }
+        });
     };
 
     React.useEffect(() => {
@@ -71,7 +81,12 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
             onChange={onExpandedStateChanged}
             sx={{py: '4px'}}
         >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+                sx={{p: 2}}
+            >
                 Суммаризация чата {chatInfo?.chatName || ''}
             </AccordionSummary>
 
@@ -93,33 +108,33 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
                         markdown={chatSum}
                     />
                 ) : (
-                    <Typography>Ещё пока нет суммаризации</Typography>
+                    <Typography>Суммаризация не получена. Обновите суммаризацию.</Typography>
                 )}
             </AccordionDetails>
 
             <AccordionActions>
                 {isLoadingSum ? (
-                    <CircularProgress sx={{width: 20, height: 20}} />
+                    <CircularProgress size={24} />
                 ) : (
                     <Tooltip title={'Обновить суммаризацию'}>
                         <IconButton
                             onClick={onGetSum}
                             disabled={!isNoteOwner}
-                            sx={{display: !isNoteOwner ? 'none' : 'block'}}
+                            sx={{display: !isNoteOwner ? 'none' : 'flex'}}
                         >
                             <RefreshIcon fontSize={'medium'} />
                         </IconButton>
                     </Tooltip>
                 )}
                 {isDetaching ? (
-                    <CircularProgress sx={{width: 40, height: 40}} />
+                    <CircularProgress size={24} />
                 ) : (
                     <Tooltip title={'Открепить заметку от чата'}>
                         <IconButton
                             color={isErrorDetaching ? 'error' : 'default'}
                             onClick={handleDetachChat}
                             disabled={!isNoteOwner}
-                            sx={{display: !isNoteOwner ? 'none' : 'block'}}
+                            sx={{display: !isNoteOwner ? 'none' : 'flex'}}
                         >
                             <DeleteOutlineIcon fontSize={'medium'} color={'error'} />
                         </IconButton>

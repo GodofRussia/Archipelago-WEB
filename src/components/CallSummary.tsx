@@ -34,6 +34,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {addExpandedSumId, removeExpandedSumId} from '../store/reducers/SummarizationSlice';
 import {formatDateToMinute} from '../utils/date';
 import {AccessEnum} from '../types/access';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {SerializedError} from '@reduxjs/toolkit';
+import {useSnackbar} from 'notistack';
 
 export interface CallSummaryProps {
     key: string;
@@ -60,12 +63,25 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
 
     const ref = React.useRef<MDXEditorMethods>(null);
 
+    const {enqueueSnackbar} = useSnackbar();
     const handleDetachSumm = () => {
-        detachSummary({userId: user?.id || '', noteId: noteId || '', summId: summary.id});
+        detachSummary({userId: user?.id || '', noteId: noteId || '', summId: summary.id}).then((data) => {
+            if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
+                enqueueSnackbar('Не удалось отвязать звонок', {variant: 'error'});
+            } else {
+                enqueueSnackbar('Звонок успешно отвязан', {variant: 'success'});
+            }
+        });
     };
 
     const handleStopSumm = () => {
-        stopCall({summ_id: summary.id});
+        stopCall({summ_id: summary.id}).then((data) => {
+            if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
+                enqueueSnackbar('Не удалось закончить запись звонка', {variant: 'error'});
+            } else {
+                enqueueSnackbar('Запись звонка остановлена', {variant: 'success'});
+            }
+        });
     };
 
     const onExpandedStateChanged = (_: React.SyntheticEvent, expanded: boolean) => {
@@ -147,12 +163,12 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
 
                 <>
                     {isDetachingSummary ? (
-                        <CircularProgress sx={{width: 40, height: 40}} />
+                        <CircularProgress size={24} />
                     ) : (
                         <Tooltip title={'Отвязать суммаризацию от заметки'}>
                             <IconButton
                                 disabled={!isNoteOwner}
-                                sx={{display: !isNoteOwner ? 'none' : 'block'}}
+                                sx={{display: !isNoteOwner ? 'none' : 'flex'}}
                                 onClick={handleDetachSumm}
                             >
                                 <DeleteOutlineIcon fontSize={'medium'} color={'error'} />
@@ -164,13 +180,13 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                 {summary.isActive && (
                     <>
                         {isStoppingCall ? (
-                            <CircularProgress sx={{width: 40, height: 40}} />
+                            <CircularProgress size={24} />
                         ) : (
                             <Tooltip title={'Закончить суммаризацию'}>
                                 <IconButton
                                     onClick={handleStopSumm}
                                     disabled={!summary.isActive || !isNoteOwner}
-                                    sx={{display: !summary.isActive || !isNoteOwner ? 'none' : 'block'}}
+                                    sx={{display: !summary.isActive || !isNoteOwner ? 'none' : 'flex'}}
                                 >
                                     <StopCircleIcon fontSize={'medium'} color={'error'} />
                                 </IconButton>

@@ -56,8 +56,10 @@ export const dirsSlice = createSlice({
         },
         addCollapsedDirId(store, action: PayloadAction<number | undefined>) {
             if (action.payload) {
-                store.collapsedDirIds.push(action.payload);
-                setCollapsedDirIds(store.collapsedDirIds);
+                if (!store.collapsedDirIds.includes(action.payload)) {
+                    store.collapsedDirIds.push(action.payload);
+                    setCollapsedDirIds(store.collapsedDirIds);
+                }
             }
         },
         removeCollapsedDirId(store, action: PayloadAction<number | undefined>) {

@@ -13,6 +13,9 @@ import {setChatInfo, setChatSum, setExpandedDefault} from '../store/reducers/Sum
 import {AccessEnum} from '../types/access';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {useSnackbar} from 'notistack';
+import {SerializedError} from '@reduxjs/toolkit';
 
 const CustomAccordion = styled((props: AccordionProps) => <MuiAccordion disableGutters elevation={0} {...props} />)(
     ({theme}) => ({
@@ -49,6 +52,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     const {activeNote} = useAppSelector((store) => store.notesReducer);
     const {expandedDefault, chatInfo: storedChatInfo} = useAppSelector((state) => state.sumReducer);
     const dispatch = useAppDispatch();
+    const {enqueueSnackbar} = useSnackbar();
 
     const {
         data: summaryList,
@@ -85,12 +89,22 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         isLoading: isLoadingChatInfo,
         isError: isErrorChatInfo,
         error: errorChatInfo,
-    } = chatAPI.useGetSummarizationExistsInfoQuery({id: noteId}, {pollingInterval: 20000});
+    } = chatAPI.useGetSummarizationExistsInfoQuery({id: noteId}, {skip: !user, pollingInterval: 20000});
 
     const [getChatSum, {data: chatSumData, isError: isErrorChatSum, isLoading: isLoadingChatSum}] =
         chatAPI.useGetSummarizationMutation();
 
-    const onGetSum = React.useCallback(() => getChatSum({id: noteId}), [getChatSum, noteId]);
+    const onGetSum = React.useCallback(
+        () =>
+            getChatSum({id: noteId}).then((data) => {
+                if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
+                    enqueueSnackbar('Ошибка получения суммаризации чата', {variant: 'error'});
+                } else {
+                    enqueueSnackbar('Суммаризация чата получена', {variant: 'success'});
+                }
+            }),
+        [enqueueSnackbar, getChatSum, noteId],
+    );
 
     const onExpandedStateChanged = (_: React.SyntheticEvent, expanded: boolean) => {
         dispatch(setExpandedDefault(expanded));
@@ -111,8 +125,6 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     React.useEffect(() => {
         setSummarizeIdsWithRoles([]);
         dispatch(setExpandedDefault(false));
-        dispatch(setChatInfo({chatInfo: undefined}));
-        dispatch(setChatSum({chatSum: undefined}));
     }, [noteId, dispatch]);
 
     const setRole = React.useCallback((sumId: string, role: RoleEnum) => {
@@ -140,13 +152,12 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     }, [summaryList]);
 
     React.useEffect(() => {
-        dispatch(setChatInfo({chatInfo}));
-    }, [chatInfo, dispatch]);
-
-    React.useEffect(() => {
-        if (isErrorChatInfo && !!errorChatInfo.originalStatus === 400) {
-            console.log(errorChatInfo);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        if (isErrorChatInfo && (errorChatInfo as FetchBaseQueryError).originalStatus === 400) {
             dispatch(setChatInfo({chatInfo: undefined}));
+        } else if (!isErrorChatInfo) {
+            dispatch(setChatInfo({chatInfo}));
         }
     }, [chatInfo, dispatch, errorChatInfo, isErrorChatInfo]);
 
@@ -181,7 +192,9 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                         {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
                             <Paper square sx={{py: 2}}>
                                 <Typography variant={'body1'} sx={{px: 2}}>
-                                    Ошибка получения суммаризаций для заметки. Попробуйте позже.
+                                    Ошибка получения суммаризаций&nbsp;
+                                    {isErrorCallSummaries || isErrorSummaryList ? 'звонка' : isErrorChatSum && ' и '}
+                                    {isErrorChatSum ? 'чата' : ''} для заметки. Попробуйте позже.
                                 </Typography>
                             </Paper>
                         )}

@@ -27,6 +27,7 @@ export const Main = styled('main', {shouldForwardProp: (prop) => prop !== 'open'
 }>(({theme, open, width}) => ({
     flexGrow: 1,
     padding: theme.spacing(3),
+    paddingTop: theme.spacing(1),
     transition: theme.transitions.create('margin', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
@@ -44,12 +45,25 @@ export const Main = styled('main', {shouldForwardProp: (prop) => prop !== 'open'
 export default function Layout({children, tab = TabType.HOME}: LayoutProps) {
     const [width, setWidth] = useState(240);
     const [open, setOpen] = React.useState(true);
+    const refContainer = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (open) setWidth(240);
+        else setWidth(10);
+    }, [open]);
 
     return (
-        <Box sx={{display: 'flex'}}>
+        <Box ref={refContainer} sx={{display: 'flex', overflow: 'auto', position: 'relative'}}>
             <CssBaseline />
-            <Navbar setOpen={setOpen} width={width} itemsList={[]} open={open} />
-            <Sidebar tab={tab} setWidth={setWidth} width={width} open={open} setOpen={setOpen} />
+            <Navbar setOpen={setOpen} width={width} open={open} />
+            <Sidebar
+                refContainer={refContainer}
+                tab={tab}
+                setWidth={setWidth}
+                width={width}
+                open={open}
+                setOpen={setOpen}
+            />
             <Main open={open} width={width}>
                 <DrawerHeader />
                 {children}
