@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Box, Card, CardContent, CardHeader, styled, TextField, Typography} from '@mui/material';
+import {Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
 import {authApi} from '../../services/AuthService';
 import {userAPI} from '../../services/UserService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
@@ -10,6 +10,7 @@ import {Field, FieldProps, Form, Formik} from 'formik';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import {LoadingButton} from '@mui/lab';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
@@ -48,8 +49,11 @@ function Registration() {
     const {user: currUser} = useAppSelector((store) => store.userReducer);
     const navigate = useNavigate();
 
-    const [register, {data: userData, isLoading: isLoadingRegistration, isError: isErrorRegistration}] =
-        authApi.useRegistrationMutation();
+    const [
+        register,
+        {data: userData, isLoading: isLoadingRegistration, isError: isErrorRegistration, error: registrationError},
+    ] = authApi.useRegistrationMutation();
+
     const {
         data: user,
         isLoading: isLoadingUser,
@@ -219,10 +223,23 @@ function Registration() {
                                                     isErrorSomeRegistrationStep
                                                 }
                                                 helperText={
-                                                    !!errors.confirmPassword && touched.confirmPassword ? (
-                                                        errors.confirmPassword
+                                                    (errors.password && touched.password) ||
+                                                    isErrorSomeRegistrationStep ? (
+                                                        <Stack sx={{height: '48px'}} gap={1}>
+                                                            <Typography variant={'inherit'}>
+                                                                {errors.confirmPassword && errors.confirmPassword}
+                                                            </Typography>
+                                                            <Typography variant={'inherit'}>
+                                                                {(
+                                                                    (registrationError as FetchBaseQueryError)
+                                                                        ?.data as {error: string}
+                                                                )?.error?.includes('User exist')
+                                                                    ? 'Пользователь уже существует'
+                                                                    : 'Технические неполадки. Попробуйте позже.'}
+                                                            </Typography>
+                                                        </Stack>
                                                     ) : (
-                                                        <div>&nbsp;</div>
+                                                        <Box sx={{height: '48px'}}>&nbsp;</Box>
                                                     )
                                                 }
                                             />

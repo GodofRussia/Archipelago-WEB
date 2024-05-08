@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Box, Card, CardContent, CardHeader, styled, TextField, Typography} from '@mui/material';
+import {Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
 import {userAPI} from '../../services/UserService';
 import {authApi} from '../../services/AuthService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
@@ -8,7 +8,7 @@ import {setUser} from '../../store/reducers/UserSlice';
 import {LoadingButton} from '@mui/lab';
 import * as Yup from 'yup';
 import {Field, FieldProps, Form, Formik} from 'formik';
-import Tooltip from '@mui/material/Tooltip';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& .MuiOutlinedInput-root': {
@@ -45,7 +45,8 @@ function Login() {
     const currUser = useAppSelector((store) => store.userReducer.user);
     const navigate = useNavigate();
 
-    const [login, {data: userData, isLoading: isLoadingLogin, isError: isErrorLogin}] = authApi.useLoginMutation();
+    const [login, {data: userData, isLoading: isLoadingLogin, isError: isErrorLogin, error: errorLogin}] =
+        authApi.useLoginMutation();
     const {
         data: user,
         isLoading: isLoadingUser,
@@ -56,6 +57,8 @@ function Login() {
         email: Yup.string().required('Необходимо указать почту'),
         password: Yup.string().required('Необходимо указать пароль'),
     });
+
+    console.log(errorLogin);
 
     React.useEffect(() => {
         if (userData?.userId) {
@@ -135,22 +138,24 @@ function Login() {
                                                     (errors.password && touched.password) || isErrorLogin || isErrorUser
                                                 }
                                                 helperText={
-                                                    <Tooltip title={errors.password} arrow>
-                                                        <div
-                                                            style={{
-                                                                whiteSpace: 'nowrap',
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                maxWidth: '100%',
-                                                            }}
-                                                        >
-                                                            {errors.password && touched.password ? (
-                                                                errors.password
-                                                            ) : (
-                                                                <div>&nbsp;</div>
-                                                            )}
-                                                        </div>
-                                                    </Tooltip>
+                                                    (errors.password && touched.password) || isErrorLogin ? (
+                                                        <Stack sx={{height: '68px'}} gap={1}>
+                                                            <Typography variant={'inherit'}>
+                                                                {errors.password && errors.password}
+                                                            </Typography>
+                                                            <Typography variant={'inherit'}>
+                                                                {(
+                                                                    (errorLogin as FetchBaseQueryError)?.data as {
+                                                                        error: string;
+                                                                    }
+                                                                )?.error?.includes('Not found user')
+                                                                    ? 'Неверные почта или пароль. Проверьте правильность введенных данных.'
+                                                                    : 'Технические неполадки. Попробуйте позже.'}
+                                                            </Typography>
+                                                        </Stack>
+                                                    ) : (
+                                                        <Box sx={{height: '68px'}}>&nbsp;</Box>
+                                                    )
                                                 }
                                             />
                                         )}
