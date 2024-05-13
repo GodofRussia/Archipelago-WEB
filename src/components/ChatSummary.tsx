@@ -79,14 +79,9 @@ const ChatSummary = ({onGetSum, noteId, isLoadingSum}: ChatSummaryProps) => {
         <Accordion
             defaultExpanded={!!chatInfo && expandedSumIds.includes(chatInfo.chatId)}
             onChange={onExpandedStateChanged}
-            sx={{py: '4px'}}
+            sx={{p: 2}}
         >
-            <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-                sx={{p: 2}}
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                 Суммаризация чата {chatInfo?.chatName || ''}
             </AccordionSummary>
 

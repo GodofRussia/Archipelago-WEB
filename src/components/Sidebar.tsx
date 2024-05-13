@@ -43,6 +43,7 @@ import {useSnackbar} from 'notistack';
 import {Note} from '../types/notes';
 import {extractNumberAfterLastDot} from '../utils/numbers';
 import {Dir} from '../types/dirs';
+import {LoadingButton} from '@mui/lab';
 
 const DrawerHeader = styled(ButtonGroup)(({theme}) => ({
     display: 'flex',
@@ -423,12 +424,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                                                 refetchNotes={refetchNotes}
                                                 folder={fullDirTree}
                                                 setDirIdForCreate={setDirIdForCreate}
-                                                isLoading={
-                                                    isLoadingDirTree ||
-                                                    isLoadingNotes ||
-                                                    isLoadingDirCreation ||
-                                                    isLoadingNoteCreation
-                                                }
+                                                isLoading={isLoadingDirTree || isLoadingNotes}
                                             />
                                         )}
                                         {noteTab === TabType.SHARED &&
@@ -477,7 +473,8 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                         <Button color={'secondary'} onClick={() => setIsOpenCreateDialog(false)}>
                             Закрыть
                         </Button>
-                        <Button
+                        <LoadingButton
+                            loading={isLoadingDirCreation}
                             color={'secondary'}
                             onClick={() => {
                                 handleCreateDir(dirIdForCreate, dirName);
@@ -486,7 +483,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                             }}
                         >
                             Подтвердить
-                        </Button>
+                        </LoadingButton>
                     </DialogActions>
                 </Dialog>
 
@@ -515,7 +512,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                         <Button color={'secondary'} onClick={() => setIsOpenCreateNoteDialog(false)}>
                             Закрыть
                         </Button>
-                        <Button
+                        <LoadingButton
+                            variant={'outlined'}
+                            loading={isLoadingNoteCreation}
                             color={'secondary'}
                             onClick={() => {
                                 handleCreateNote(noteTitle, dirIdForCreate);
@@ -524,7 +523,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                             }}
                         >
                             Подтвердить
-                        </Button>
+                        </LoadingButton>
                     </DialogActions>
                 </Dialog>
             </Drawer>

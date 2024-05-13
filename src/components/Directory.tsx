@@ -25,6 +25,7 @@ import {dirsApi} from '../services/DirsService';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import {SerializedError} from '@reduxjs/toolkit';
 import {useSnackbar} from 'notistack';
+import {LoadingButton} from '@mui/lab';
 
 interface FolderProps {
     folder: FullDirTreeWithNotes;
@@ -57,7 +58,7 @@ function Folder({
     );
 
     const [deleteDir, {}] = dirsApi.useDeleteDirMutation();
-    const [updateDir, {}] = dirsApi.useUpdateDirMutation();
+    const [updateDir, {isLoading: isLoadingUpdateDir}] = dirsApi.useUpdateDirMutation();
 
     const [contextMenu, setContextMenu] = React.useState<{mouseX: number; mouseY: number} | null>(null);
 
@@ -95,9 +96,9 @@ function Folder({
         }
     };
 
-    const handleRenameDir = React.useCallback(() => {
+    const handleRenameDir = React.useCallback(async () => {
         if (user && dir) {
-            updateDir({dir: {...dir, name: newTitle}, userId: user.id}).then((data) => {
+            await updateDir({dir: {...dir, name: newTitle}, userId: user.id}).then((data) => {
                 if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
                     enqueueSnackbar(`Ошибка при переименовании папки ${folder.name}`, {variant: 'error'});
                 } else {
@@ -108,10 +109,10 @@ function Folder({
     }, [dir, enqueueSnackbar, folder.name, newTitle, updateDir, user]);
 
     const handleKeyDown = React.useCallback(
-        (event: React.KeyboardEvent<HTMLDivElement>) => {
+        async (event: React.KeyboardEvent<HTMLDivElement>) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                handleRenameDir();
+                await handleRenameDir();
 
                 setIsOpenNewTitleDialog(false);
             }
@@ -270,10 +271,11 @@ function Folder({
                         <Button color={'secondary'} onClick={() => setIsOpenNewTitleDialog(false)}>
                             Закрыть
                         </Button>
-                        <Button
+                        <LoadingButton
+                            loading={isLoadingUpdateDir}
                             color={'secondary'}
-                            onClick={() => {
-                                handleRenameDir();
+                            onClick={async () => {
+                                await handleRenameDir();
 
                                 setNewTitle('');
                                 setIsOpenNewTitleDialog(false);
@@ -281,7 +283,7 @@ function Folder({
                             }}
                         >
                             Подтвердить
-                        </Button>
+                        </LoadingButton>
                     </DialogActions>
                 </Dialog>
             </>

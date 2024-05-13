@@ -23,6 +23,7 @@ import {notesApi} from '../services/NotesService';
 import {useSnackbar} from 'notistack';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import {SerializedError} from '@reduxjs/toolkit';
+import {LoadingButton} from '@mui/lab';
 
 const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
     id,
@@ -43,8 +44,8 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
     const [newTitle, setNewTitle] = React.useState<string>(title);
     const [isOpenNewTitleDialog, setIsOpenNewTitleDialog] = React.useState<boolean>(false);
 
-    const [deleteNote, {}] = notesApi.useDeleteNoteMutation();
-    const [updateNote, {}] = notesApi.useUpdateNoteMutation();
+    const [deleteNote, {isLoading: isLoadingDeleteNote}] = notesApi.useDeleteNoteMutation();
+    const [updateNote, {isLoading: isLoadingUpdateNote}] = notesApi.useUpdateNoteMutation();
 
     const [contextMenu, setContextMenu] = React.useState<{mouseX: number; mouseY: number} | null>(null);
 
@@ -115,10 +116,10 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
     );
 
     const handleKeyDown = React.useCallback(
-        (event: React.KeyboardEvent<HTMLDivElement>) => {
+        async (event: React.KeyboardEvent<HTMLDivElement>) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                handleRenameNote(event, {
+                await handleRenameNote(event, {
                     id,
                     title,
                     automergeUrl,
@@ -217,10 +218,11 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
                     <Button color={'secondary'} onClick={() => setIsOpenNewTitleDialog(false)}>
                         Закрыть
                     </Button>
-                    <Button
+                    <LoadingButton
                         color={'secondary'}
-                        onClick={(ev) => {
-                            handleRenameNote(ev, {
+                        loading={isLoadingUpdateNote}
+                        onClick={async (ev) => {
+                            await handleRenameNote(ev, {
                                 id,
                                 title,
                                 automergeUrl,
@@ -231,11 +233,10 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
 
                             setNewTitle('');
                             setIsOpenNewTitleDialog(false);
-                            handleClose();
                         }}
                     >
                         Подтвердить
-                    </Button>
+                    </LoadingButton>
                 </DialogActions>
             </Dialog>
         </ListItem>
