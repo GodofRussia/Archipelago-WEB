@@ -44,7 +44,7 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
     const [newTitle, setNewTitle] = React.useState<string>(title);
     const [isOpenNewTitleDialog, setIsOpenNewTitleDialog] = React.useState<boolean>(false);
 
-    const [deleteNote, {isLoading: isLoadingDeleteNote}] = notesApi.useDeleteNoteMutation();
+    const [deleteNote, {}] = notesApi.useDeleteNoteMutation();
     const [updateNote, {isLoading: isLoadingUpdateNote}] = notesApi.useUpdateNoteMutation();
 
     const [contextMenu, setContextMenu] = React.useState<{mouseX: number; mouseY: number} | null>(null);

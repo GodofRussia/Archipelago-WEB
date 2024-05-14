@@ -21,28 +21,8 @@ import {
 } from '@mui/material';
 import {LoadingButton} from '@mui/lab';
 import {useParams} from 'react-router-dom';
-import {
-    BlockTypeSelect,
-    BoldItalicUnderlineToggles,
-    diffSourcePlugin,
-    DiffSourceToggleWrapper,
-    headingsPlugin,
-    imagePlugin,
-    InsertImage,
-    listsPlugin,
-    ListsToggle,
-    markdownShortcutPlugin,
-    MDXEditor,
-    MDXEditorMethods,
-    quotePlugin,
-    tablePlugin,
-    thematicBreakPlugin,
-    toolbarPlugin,
-    UndoRedo,
-} from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
-import {CallsDetail, CallsDetailEnum, NoteDoc} from '../../types/notes';
-import {useDocument} from '@automerge/automerge-repo-react-hooks';
+import {CallsDetail, CallsDetailEnum} from '../../types/notes';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as A from '@automerge/automerge/next';
@@ -59,6 +39,7 @@ import {AccessEnum} from '../../types/access';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import BreadCrumbs from '../../components/BreadCrumbs';
 import NoteSharing from '../../components/NoteSharing';
+import Editor from '../../components/Editor';
 
 function Note() {
     const {id = ''} = useParams();
@@ -82,10 +63,6 @@ function Note() {
     const [startRecording, {isLoading: isLoadingStartRecording}] = callAPI.useStartCallRecordingMutation();
     const [attachSummary, {isLoading: isAttachingSummary}] = notesApi.useAttachSummaryMutation();
 
-    const ref = React.useRef<MDXEditorMethods>(null);
-
-    const [doc, changeDoc] = useDocument<NoteDoc>(note?.automergeUrl);
-
     const [callsDetail, setCallsDetail] = React.useState<string | null>(CallsDetailEnum.AVERAGE);
     const [callUrl, setCallUrl] = React.useState<string>('');
 
@@ -104,16 +81,6 @@ function Note() {
             setFormModalIsOpen(false);
         }
     };
-
-    const handleChangeMd = (value: string) => {
-        changeDoc((doc: NoteDoc) => {
-            A.updateText(doc, ['text'], value);
-        });
-    };
-
-    React.useEffect(() => {
-        ref.current?.setMarkdown(typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '');
-    }, [doc?.text]);
 
     React.useEffect(() => {
         if (note) {
@@ -292,39 +259,7 @@ function Note() {
 
                 <SummariesList noteId={id} />
 
-                <MDXEditor
-                    ref={ref}
-                    className="dark-theme dark-editor"
-                    placeholder="Введите текст сюда"
-                    readOnly={!note?.allowedMethods.includes(AccessEnum.update)}
-                    markdown={typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || ''}
-                    onChange={(md) => handleChangeMd(md)}
-                    plugins={[
-                        imagePlugin({
-                            imageUploadHandler: (image) => {
-                                return Promise.resolve(image.name);
-                            },
-                        }),
-                        headingsPlugin(),
-                        listsPlugin(),
-                        quotePlugin(),
-                        tablePlugin(),
-                        thematicBreakPlugin(),
-                        markdownShortcutPlugin(),
-                        diffSourcePlugin({viewMode: 'rich-text'}),
-                        toolbarPlugin({
-                            toolbarContents: () => (
-                                <DiffSourceToggleWrapper>
-                                    <UndoRedo />
-                                    <BoldItalicUnderlineToggles />
-                                    <BlockTypeSelect />
-                                    <ListsToggle />
-                                    <InsertImage />
-                                </DiffSourceToggleWrapper>
-                            ),
-                        }),
-                    ]}
-                />
+                <Editor />
             </Stack>
         </>
     ) : (
