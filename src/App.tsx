@@ -58,7 +58,7 @@ export default function App() {
                         },
                     },
                     typography: {
-                        fontFamily: ['Arial', 'sans-serif'].join(','),
+                        fontFamily: 'Roboto, Arial, sans-serif',
                     },
                 },
                 ruRU,

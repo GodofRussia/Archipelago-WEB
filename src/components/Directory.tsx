@@ -268,12 +268,9 @@ function Folder({
                         </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button color={'secondary'} onClick={() => setIsOpenNewTitleDialog(false)}>
-                            Закрыть
-                        </Button>
+                        <Button onClick={() => setIsOpenNewTitleDialog(false)}>Закрыть</Button>
                         <LoadingButton
                             loading={isLoadingUpdateDir}
-                            color={'secondary'}
                             onClick={async () => {
                                 await handleRenameDir();
 

@@ -13,7 +13,7 @@ function WelcomePage() {
     }, [navigate]);
     return (
         <Box sx={{backgroundColor: 'rgb(30, 33, 68)'}}>
-            <Navbar setOpen={setOpen} width={width} itemsList={[]} open={open} />
+            <Navbar setOpen={setOpen} width={width} open={open} />
             <Box
                 sx={{
                     display: 'flex',
@@ -28,7 +28,7 @@ function WelcomePage() {
             >
                 <Typography
                     color="white"
-                    sx={{fontFamily: 'Montserrat Black', fontSize: 110, fontWeight: 'bold', marginTop: '-8%'}}
+                    sx={{fontFamily: 'Montserrat', fontSize: 110, fontWeight: 'bold', marginTop: '-8%'}}
                 >
                     ARCHIPELAGO
                 </Typography>
@@ -40,7 +40,9 @@ function WelcomePage() {
                         marginBottom: '4rem',
                         borderRadius: '20px',
                         paddingTop: '1px',
-                        '&:hover .MuiTypography-root': {
+                        dec: 'none',
+                        backgroundColor: 'transparent',
+                        '&:hover': {
                             transform: 'scale(1.05)',
                             backgroundColor: 'transparent',
                         },
@@ -49,13 +51,17 @@ function WelcomePage() {
                 >
                     <Typography
                         color="inherit"
-                        sx={{fontFamily: 'Montserrat SemiBold', fontWeight: 'bold', fontSize: 60}}
+                        sx={{
+                            fontFamily: 'Montserrat',
+                            fontWeight: 'bold',
+                            fontSize: 60,
+                        }}
                     >
                         НАЧАТЬ
                     </Typography>
                 </Button>
 
-                <Typography color="white" sx={{fontFamily: 'Montserrat SemiBold', fontSize: 30}}>
+                <Typography color="white" sx={{fontFamily: 'Montserrat', fontSize: 30}}>
                     ПОЛУЧАЙ ИТОГИ<br></br> ВСТРЕЧ И ЧАТОВ ОДНИМ КЛИКОМ
                 </Typography>
             </Box>
