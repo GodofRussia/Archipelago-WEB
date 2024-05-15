@@ -9,6 +9,7 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    DialogContentText,
     DialogTitle,
     Grow,
     MenuItem,
@@ -100,8 +101,10 @@ function Note() {
                 detalization: callsDetail || CallsDetailEnum.AVERAGE,
             }).unwrap();
 
-            attachSummary({userId: user?.id || '', noteId: id, summId});
-            setFormModalIsOpen(false);
+            attachSummary({userId: user?.id || '', noteId: id, summId}).then(() => {
+                setIsOpenCallNotification(true);
+                setFormModalIsOpen(false);
+            });
         }
     };
 
@@ -125,6 +128,7 @@ function Note() {
     }, [dispatch, id, note, sharedNotes]);
 
     const [open, setOpen] = React.useState(false);
+    const [isOpenCallNotification, setIsOpenCallNotification] = React.useState<boolean>(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
 
     const handleCopyLink = async () => await navigator.clipboard.writeText(window.location.href);
@@ -227,9 +231,7 @@ function Note() {
                             <ChatSumStepper noteId={id} />
                         </DialogContent>
                         <DialogActions>
-                            <Button color={'secondary'} onClick={() => setInfoModalIsOpen(false)}>
-                                Закрыть
-                            </Button>
+                            <Button onClick={() => setInfoModalIsOpen(false)}>Закрыть</Button>
                         </DialogActions>
                     </Dialog>
 
@@ -276,16 +278,37 @@ function Note() {
                             </Stack>
                         </DialogContent>
                         <DialogActions>
-                            <Button color={'secondary'} onClick={() => setFormModalIsOpen(false)}>
-                                Закрыть
-                            </Button>
+                            <Button onClick={() => setFormModalIsOpen(false)}>Закрыть</Button>
                             <LoadingButton
                                 loading={isAttachingSummary || isLoadingStartRecording}
-                                color={'secondary'}
                                 onClick={handleFormSubmit}
                             >
-                                Начать запись
+                                Добавить бота
                             </LoadingButton>
+                        </DialogActions>
+                    </Dialog>
+
+                    <Dialog
+                        open={isOpenCallNotification}
+                        onClose={() => setIsOpenCallNotification(false)}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                        fullWidth
+                        maxWidth="sm"
+                    >
+                        <DialogTitle id="alert-dialog-title">Обратите внимание!</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                Сейчас к в звонок вам подлючится бот и начнёт суммаризировать ваш звонок.
+                                <br />
+                                Пожалуйста, впустите его и выдайте все необходимые права. Суммаризацию вы сможете
+                                увидеть во вкладке &quot;Управление суммаризацией&quot;
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => setIsOpenCallNotification(false)} color="primary" autoFocus>
+                                ОК
+                            </Button>
                         </DialogActions>
                     </Dialog>
                 </Box>

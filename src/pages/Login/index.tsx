@@ -11,6 +11,10 @@ import {Field, FieldProps, Form, Formik} from 'formik';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
+    '& input:-webkit-autofill': {
+        WebkitBoxShadow: '0 0 0 100px transparent inset',
+        WebkitTextFillColor: '#000',
+    },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
             borderColor: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',

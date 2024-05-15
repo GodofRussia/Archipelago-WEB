@@ -215,11 +215,8 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button color={'secondary'} onClick={() => setIsOpenNewTitleDialog(false)}>
-                        Закрыть
-                    </Button>
+                    <Button onClick={() => setIsOpenNewTitleDialog(false)}>Закрыть</Button>
                     <LoadingButton
-                        color={'secondary'}
                         loading={isLoadingUpdateNote}
                         onClick={async (ev) => {
                             await handleRenameNote(ev, {

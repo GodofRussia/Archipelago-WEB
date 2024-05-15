@@ -470,12 +470,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                         </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button color={'secondary'} onClick={() => setIsOpenCreateDialog(false)}>
-                            Закрыть
-                        </Button>
+                        <Button onClick={() => setIsOpenCreateDialog(false)}>Закрыть</Button>
                         <LoadingButton
                             loading={isLoadingDirCreation}
-                            color={'secondary'}
                             onClick={() => {
                                 handleCreateDir(dirIdForCreate, dirName);
                                 setIsOpenCreateDialog(false);
@@ -509,13 +506,10 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                         </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button color={'secondary'} onClick={() => setIsOpenCreateNoteDialog(false)}>
-                            Закрыть
-                        </Button>
+                        <Button onClick={() => setIsOpenCreateNoteDialog(false)}>Закрыть</Button>
                         <LoadingButton
                             variant={'outlined'}
                             loading={isLoadingNoteCreation}
-                            color={'secondary'}
                             onClick={() => {
                                 handleCreateNote(noteTitle, dirIdForCreate);
                                 setIsOpenCreateNoteDialog(false);
