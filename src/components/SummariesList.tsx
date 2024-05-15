@@ -194,7 +194,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                             !(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) &&
                             !chatInfo &&
                             !isErrorChatSum && (
-                                <Paper square sx={{py: 2, px: 2}}>
+                                <Paper square sx={{p: 4}}>
                                     <Typography variant={'body1'}>
                                         Пока что нет кратких выжимок. Чтобы получить суммаризацию вашего звонка или
                                         чата, привяжите их кнопками выше.
