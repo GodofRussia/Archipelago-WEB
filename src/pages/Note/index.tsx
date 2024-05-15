@@ -259,7 +259,7 @@ function Note() {
 
                 <SummariesList noteId={id} />
 
-                <Editor />
+                {note && <Editor automergeUrl={note.automergeUrl} />}
             </Stack>
         </>
     ) : (
