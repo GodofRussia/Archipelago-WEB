@@ -56,10 +56,14 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
                 const data = typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '';
                 editorRef.current?.setData(data);
                 editorRef.current.model.enqueueChange((w) => {
-                    const newRange = w.createRange(firstRange.start);
-
-                    w.setSelection(newRange);
-                    setFirstRange(newRange);
+                    try {
+                        const newRange = w.createRange(firstRange.start);
+                        w.setSelection(newRange);
+                        setFirstRange(newRange);
+                        //console.log('selection set');
+                    } catch (e) {
+                        console.log(e);
+                    }
                 });
                 setCurDoc(data);
             } else {
