@@ -54,7 +54,7 @@ function Navbar(props: NavbarProps) {
 
     const handleLogoutClicked = React.useCallback(() => {
         logout().then(() => dispatch(logoutUser()));
-    }, [dispatch]);
+    }, [dispatch, logout]);
 
     return (
         <AppBar position={'fixed'} open={open} width={width} sx={{backgroundColor: '#000000', zIndex: 100000}}>

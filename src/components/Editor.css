@@ -112,10 +112,23 @@
 }
 
 .ck-editor__editable_inline:not(.ck-comment__input *) {
-    height: 600px; /* Set your desired height */
+    height: 100%; /* Set your desired height */
     /* overflow-y: auto; Enable vertical scrolling */
 }
 
+.ck {
+    border: none;
+}
+
 .ck.ck-editor {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    height: 100%;
+}
+
+.k-editor__main {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
 }

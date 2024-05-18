@@ -115,7 +115,15 @@ function Note() {
     return !isError ? (
         <>
             <BreadCrumbs />
-            <Stack gap={2} sx={{p: 2}}>
+            <Stack
+                gap={2}
+                sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: 10,
+                }}
+            >
                 <Box gap={2} display="flex" alignItems={'center'} justifyContent={'space-between'}>
                     <Box gap={2} display="flex" alignItems={'center'}>
                         <Button

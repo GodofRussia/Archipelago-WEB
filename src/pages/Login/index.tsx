@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
+import {Alert, Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
 import {userAPI} from '../../services/UserService';
 import {authApi} from '../../services/AuthService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
@@ -102,12 +102,38 @@ function Login() {
                     >
                         <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
                             <CardHeader
-                                sx={{color: 'rgba(0, 0, 0, 0.87)'}}
+                                sx={{color: 'rgba(0, 0, 0, 0.87)', pb: 0}}
                                 subheaderTypographyProps={{color: 'rgba(0, 0, 0, 0.87)', variant: 'body2'}}
                                 title="Войти в аккаунт"
                                 subheader="Для использования всех функций сервиса"
                             />
                             <CardContent>
+                                {isErrorLogin && (
+                                    <Alert sx={{mb: '16px', color: 'white'}} severity={'error'} variant={'filled'}>
+                                        <Stack>
+                                            <Typography variant={'body1'}>
+                                                {(
+                                                    (errorLogin as FetchBaseQueryError)?.data as {
+                                                        error: string;
+                                                    }
+                                                )?.error?.includes('Not found user')
+                                                    ? 'Неверные почта или пароль'
+                                                    : 'Технические неполадки'}
+                                            </Typography>
+
+                                            <Typography variant={'body2'}>
+                                                {(
+                                                    (errorLogin as FetchBaseQueryError)?.data as {
+                                                        error: string;
+                                                    }
+                                                )?.error?.includes('Not found user')
+                                                    ? 'Проверьте правильность введенных данных'
+                                                    : 'Попробуйте войти позже'}
+                                            </Typography>
+                                        </Stack>
+                                    </Alert>
+                                )}
+
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -125,7 +151,11 @@ function Login() {
                                                 variant="outlined"
                                                 error={(errors.email && touched.email) || isErrorLogin || isErrorUser}
                                                 helperText={
-                                                    errors.email && touched.email ? errors.email : <div>&nbsp;</div>
+                                                    errors.email && touched.email ? (
+                                                        errors.email
+                                                    ) : (
+                                                        <Box sx={{height: '16px'}}>&nbsp;</Box>
+                                                    )
                                                 }
                                             />
                                         )}
@@ -142,24 +172,10 @@ function Login() {
                                                     (errors.password && touched.password) || isErrorLogin || isErrorUser
                                                 }
                                                 helperText={
-                                                    (errors.password && touched.password) || isErrorLogin ? (
-                                                        <Stack sx={{height: '68px'}} gap={1}>
-                                                            <Typography variant={'inherit'}>
-                                                                {errors.password && errors.password}
-                                                            </Typography>
-                                                            <Typography variant={'inherit'}>
-                                                                {isErrorLogin &&
-                                                                    ((
-                                                                        (errorLogin as FetchBaseQueryError)?.data as {
-                                                                            error: string;
-                                                                        }
-                                                                    )?.error?.includes('Not found user')
-                                                                        ? 'Неверные почта или пароль. Проверьте правильность введенных данных.'
-                                                                        : 'Технические неполадки. Попробуйте позже.')}
-                                                            </Typography>
-                                                        </Stack>
+                                                    errors.password && touched.password ? (
+                                                        errors.password
                                                     ) : (
-                                                        <Box sx={{height: '68px'}}>&nbsp;</Box>
+                                                        <Box sx={{height: '16px'}}>&nbsp;</Box>
                                                     )
                                                 }
                                             />
