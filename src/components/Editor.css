@@ -115,3 +115,7 @@
     height: 600px; /* Set your desired height */
     /* overflow-y: auto; Enable vertical scrolling */
 }
+
+.ck.ck-editor {
+    width: 100%;
+}

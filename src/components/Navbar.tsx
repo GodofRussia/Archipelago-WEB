@@ -6,6 +6,7 @@ import React from 'react';
 import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {logoutUser} from '../store/reducers/UserSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
+import {authApi} from '../services/AuthService';
 
 interface NavbarProps {
     open: boolean;
@@ -40,6 +41,7 @@ function Navbar(props: NavbarProps) {
     const {open, width, isAuthenticationPage = false} = props;
     const {user} = useAppSelector((state) => state.userReducer);
     const dispatch = useAppDispatch();
+    const [logout, {}] = authApi.useLogoutMutation();
 
     const navigate = useNavigate();
     const handleLoginClicked = React.useCallback(() => {
@@ -51,7 +53,7 @@ function Navbar(props: NavbarProps) {
     }, [navigate]);
 
     const handleLogoutClicked = React.useCallback(() => {
-        dispatch(logoutUser());
+        logout().then(() => dispatch(logoutUser()));
     }, [dispatch]);
 
     return (

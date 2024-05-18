@@ -35,5 +35,12 @@ export const authApi = createApi({
             }),
             transformResponse: (response) => convertFromAuthDto(response as AuthResponseDto),
         }),
+        logout: build.mutation<void, void>({
+            query: () => ({
+                url: '/logout',
+                method: 'POST',
+                body: {},
+            }),
+        }),
     }),
 });
