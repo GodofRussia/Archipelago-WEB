@@ -60,8 +60,17 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
                         const newRange = w.createRange(firstRange.start);
                         w.setSelection(newRange);
                         setFirstRange(newRange);
-                        //console.log('selection set');
+
+                        // console.log('selection set');
                     } catch (e) {
+                        const root = w.model.document.getRoot();
+                        if (root) {
+                            const newRange = w.createRange(w.createPositionAt( root, 'end' ));
+                            w.setSelection(newRange);
+                            setFirstRange(newRange);
+                        }
+                        // const newRange = w.
+
                         console.log(e);
                     }
                 });
@@ -70,6 +79,7 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
                 const data = typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '';
                 setCurDoc(data);
                 editorRef.current?.setData(data);
+                setFirstRange(null);
             }
 
             setIsDataInProgress(false);
