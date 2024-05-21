@@ -7,6 +7,9 @@ import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {logoutUser} from '../store/reducers/UserSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {authApi} from '../services/AuthService';
+import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {SerializedError} from '@reduxjs/toolkit';
+import {useSnackbar} from 'notistack';
 
 interface NavbarProps {
     open: boolean;
@@ -52,9 +55,16 @@ function Navbar(props: NavbarProps) {
         navigate('/registration');
     }, [navigate]);
 
+    const {enqueueSnackbar} = useSnackbar();
     const handleLogoutClicked = React.useCallback(() => {
-        logout().then(() => dispatch(logoutUser()));
-    }, [dispatch, logout]);
+        logout().then((data) => {
+            if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
+                enqueueSnackbar('Ошибка во время выхода из аккаунта. Попробуйте позже.', {variant: 'error'});
+            } else {
+                dispatch(logoutUser());
+            }
+        });
+    }, [dispatch, enqueueSnackbar, logout]);
 
     return (
         <AppBar position={'fixed'} open={open} width={width} sx={{backgroundColor: '#000000', zIndex: 100000}}>

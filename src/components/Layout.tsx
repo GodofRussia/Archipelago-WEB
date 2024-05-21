@@ -30,6 +30,7 @@ export const Main = styled('main', {shouldForwardProp: (prop) => prop !== 'open'
     flexGrow: 10,
     padding: theme.spacing(3),
     paddingTop: 0,
+    paddingBottom: 0,
     transition: theme.transitions.create('margin', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,

@@ -127,8 +127,25 @@
     height: 100%;
 }
 
-.k-editor__main {
+.ck-editor__main {
     flex-grow: 1;
     width: 100%;
     height: 100%;
+}
+
+.ck.ck-editor__editable_inline {
+    border: 1px solid transparent;
+    border-top: 1px solid white;
+}
+
+.ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content {
+    border: none;
+}
+
+.ck.ck-editor__main > .ck-editor__editable:not(.ck-focused) {
+    border-color: transparent;
+}
+
+.ck-blurred {
+
 }
