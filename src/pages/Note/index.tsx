@@ -18,6 +18,7 @@ import {
     Popper,
     Stack,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import {LoadingButton} from '@mui/lab';
@@ -126,31 +127,43 @@ function Note() {
             >
                 <Box gap={2} display="flex" alignItems={'center'} justifyContent={'space-between'}>
                     <Box gap={2} display="flex" alignItems={'center'}>
-                        <Button
-                            disabled={!note?.allowedMethods.includes(AccessEnum.attach_summary)}
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => setInfoModalIsOpen(true)}
-                        >
-                            Привязать чат
-                        </Button>
-                        <Button
-                            disabled={!note?.allowedMethods.includes(AccessEnum.attach_summary)}
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => setFormModalIsOpen(true)}
-                        >
-                            Привязать звонок
-                        </Button>
+                        <Tooltip title={'Привязать чат в Telegram для получения кратких итогов из чатов'}>
+                            <Button
+                                disabled={!note?.allowedMethods.includes(AccessEnum.attach_summary)}
+                                variant="outlined"
+                                color="primary"
+                                onClick={() => setInfoModalIsOpen(true)}
+                            >
+                                Привязать чат
+                            </Button>
+                        </Tooltip>
+
+                        <Tooltip title={'Привязать онлайн-звонок для получения кратких итогов'}>
+                            <Button
+                                disabled={!note?.allowedMethods.includes(AccessEnum.attach_summary)}
+                                variant="outlined"
+                                color="primary"
+                                onClick={() => setFormModalIsOpen(true)}
+                            >
+                                Привязать звонок
+                            </Button>
+                        </Tooltip>
                     </Box>
 
                     <ButtonGroup variant="outlined" ref={anchorRef} aria-label="Button group with a nested menu">
-                        <Button
-                            disabled={!note?.allowedMethods.includes(AccessEnum.set_access)}
-                            onClick={() => setAccessRightsDialogIsOpen(true)}
+                        <Tooltip
+                            title={
+                                'Вы можете выдать общие права по ссылке или отправить приглашение пользователю по его почте'
+                            }
                         >
-                            Поделиться заметкой
-                        </Button>
+                            <Button
+                                disabled={!note?.allowedMethods.includes(AccessEnum.set_access)}
+                                onClick={() => setAccessRightsDialogIsOpen(true)}
+                            >
+                                Поделиться заметкой
+                            </Button>
+                        </Tooltip>
+
                         <Button
                             size="small"
                             aria-controls={open ? 'split-button-menu' : undefined}

@@ -154,7 +154,7 @@ function Login() {
                                                     errors.email && touched.email ? (
                                                         errors.email
                                                     ) : (
-                                                        <Box sx={{height: '16px'}}>&nbsp;</Box>
+                                                        <Box sx={{height: '20px'}}>&nbsp;</Box>
                                                     )
                                                 }
                                             />
@@ -175,7 +175,7 @@ function Login() {
                                                     errors.password && touched.password ? (
                                                         errors.password
                                                     ) : (
-                                                        <Box sx={{height: '16px'}}>&nbsp;</Box>
+                                                        <Box sx={{height: '20px'}}>&nbsp;</Box>
                                                     )
                                                 }
                                             />
@@ -199,7 +199,7 @@ function Login() {
                                     <Typography
                                         component={Link}
                                         to="/registration"
-                                        sx={{textDecoration: 'none', color: 'black'}}
+                                        sx={{color: 'black', '&:hover': {color: 'primary.main'}}}
                                     >
                                         Зарегистрироваться
                                     </Typography>

@@ -153,7 +153,7 @@ export function CallSummary({summary, setRole, noteId}: CallSummaryProps) {
                     renderInput={(params) => (
                         <TextField
                             {...params}
-                            label="Стиль суммаризации"
+                            label="Стиль итогов"
                             InputProps={{...params.InputProps, readOnly: true}}
                             size="small"
                         />
