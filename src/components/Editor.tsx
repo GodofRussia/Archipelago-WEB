@@ -60,28 +60,13 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
                         const newRange = w.createRange(firstRange.start);
                         w.setSelection(newRange);
                         setFirstRange(newRange);
-<<<<<<< HEAD
                     } catch (e) {
                         const root = w.model.document.getRoot();
                         if (root) {
                             const newRange = w.createRange(w.createPositionAt(root, 'end'));
-=======
-
-                        // console.log('selection set');
-                    } catch (e) {
-                        const root = w.model.document.getRoot();
-                        if (root) {
-                            const newRange = w.createRange(w.createPositionAt( root, 'end' ));
->>>>>>> 2057d49 (position fix)
                             w.setSelection(newRange);
                             setFirstRange(newRange);
                         }
-                        // const newRange = w.
-<<<<<<< HEAD
-=======
-
-                        console.log(e);
->>>>>>> 2057d49 (position fix)
                     }
                 });
                 setCurDoc(data);
