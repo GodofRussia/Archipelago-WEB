@@ -32,18 +32,6 @@ export default function Footer() {
                         <Typography variant="body2" color="text.secondary">
                             archipelago_team@mail.ru <br></br>
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Telegram PR Manager: @yarik_tri
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Telegram Software Lead: @puzzypizza
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Telegram Frontend Lead: @god_of_ru
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Telegram ML Lead: @rbeketov
-                        </Typography>
                     </Grid>
                     <Grid item xs={12} sm={4}>
                         <Typography variant="h6" color="text.primary" gutterBottom>
