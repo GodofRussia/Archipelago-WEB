@@ -167,6 +167,13 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         }
     }, [isLoading, isLoadingInitial]);
 
+    const errorDescription = React.useMemo(() => {
+        return [
+            ...(isErrorCallSummaries || isErrorSummaryList ? ['звонка'] : []),
+            ...(isErrorChatSum ? ['чата'] : []),
+        ].join(' и ');
+    }, [isErrorCallSummaries, isErrorChatSum, isErrorSummaryList]);
+
     return activeNote?.allowedMethods.includes(AccessEnum.get_summary_list) ? (
         <>
             {isLoading && isLoadingInitial ? (
@@ -183,10 +190,8 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                     <CustomAccordionDetails sx={{p: 2}}>
                         {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
                             <Paper square sx={{py: 2}}>
-                                <Typography variant={'body1'} sx={{px: 2}}>
-                                    Ошибка получения суммаризаций&nbsp;
-                                    {isErrorCallSummaries || isErrorSummaryList ? 'звонка' : isErrorChatSum && ' и '}
-                                    {isErrorChatSum ? 'чата' : ''} для заметки. Попробуйте позже.
+                                <Typography variant={'body1'} sx={{px: 4}}>
+                                    Ошибка получения суммаризаций {errorDescription} для заметки. Попробуйте позже.
                                 </Typography>
                             </Paper>
                         )}

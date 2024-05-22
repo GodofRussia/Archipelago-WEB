@@ -15,7 +15,7 @@
 
     --ck-color-base-foreground: var(--ck-custom-background);
     --ck-color-base-background: hsla(0, 0%, 0%, 0.038);
-    --ck-color-focus-border: hsl(208, 90%, 62%);
+    --ck-color-focus-border: white;
     --ck-color-text: hsl(0, 0%, 98%);
     --ck-color-shadow-drop: hsla(0, 0%, 0%, 0.2);
     --ck-color-shadow-inner: hsla(0, 0%, 0%, 0.1);
@@ -146,6 +146,15 @@
     border-color: transparent;
 }
 
-.ck-blurred {
+:is(.ck.ck-button,a.ck.ck-button) .ck-button__label {
+    color: white;
+}
 
+.ck-editor__editable_inline {
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+.ck-powered-by {
+    display: none;
 }
