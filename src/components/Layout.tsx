@@ -25,9 +25,12 @@ export const Main = styled('main', {shouldForwardProp: (prop) => prop !== 'open'
     open?: boolean;
     width: number;
 }>(({theme, open, width}) => ({
-    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 10,
     padding: theme.spacing(3),
-    paddingTop: theme.spacing(1),
+    paddingTop: 0,
+    paddingBottom: 0,
     transition: theme.transitions.create('margin', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,

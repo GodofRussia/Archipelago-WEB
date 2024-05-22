@@ -24,7 +24,7 @@ export interface NoteDoc {
     text: A.Text;
 }
 
-export const Role = ['обычный', 'пират', 'гопник'];
+export const Role = ['обычный', 'пират', 'деловой'];
 export const CallsType = ['Zoom', 'GoogleMeets', 'Microsoft Teams'];
 export const CallsDetail = ['Краткая', 'Средняя', 'Развёрнутая'];
 
@@ -43,7 +43,7 @@ export enum CallsTypeEnum {
 export enum RoleEnum {
     DEFAULT = 'обычный',
     PIRATE = 'пират',
-    YOB = 'гопник',
+    BUSINESS = 'деловой',
 }
 
 export const AccessRole = ['без доступа', 'читатель', 'редактор', 'управлять заметкой', 'выдача прав'];

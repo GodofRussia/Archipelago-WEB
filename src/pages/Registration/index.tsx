@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
+import {Alert, Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
 import {authApi} from '../../services/AuthService';
 import {userAPI} from '../../services/UserService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
@@ -141,7 +141,7 @@ function Registration() {
                         }}
                     >
                         <Card sx={{width: '375px', backgroundColor: 'transparent', boxShadow: 'unset'}}>
-                            <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)'}} title="Регистрация" />
+                            <CardHeader sx={{color: 'rgba(0, 0, 0, 0.87)', pb: 0}} title="Регистрация" />
                             <CardContent>
                                 <Box
                                     sx={{
@@ -152,6 +152,34 @@ function Registration() {
                                         textDecoration: 'none',
                                     }}
                                 >
+                                    {isErrorSomeRegistrationStep && (
+                                        <Alert sx={{color: 'white'}} severity={'error'} variant={'filled'}>
+                                            <Stack>
+                                                <Typography variant={'body1'}>
+                                                    {isErrorSomeRegistrationStep &&
+                                                        ((
+                                                            (registrationError as FetchBaseQueryError)?.data as {
+                                                                error: string;
+                                                            }
+                                                        )?.error?.includes('User exist')
+                                                            ? 'Пользователь уже существует'
+                                                            : 'Технические неполадки')}
+                                                </Typography>
+
+                                                <Typography variant={'body2'}>
+                                                    {isErrorSomeRegistrationStep &&
+                                                        ((
+                                                            (registrationError as FetchBaseQueryError)?.data as {
+                                                                error: string;
+                                                            }
+                                                        )?.error?.includes('User exist')
+                                                            ? 'Проверьте правильность введенных данных'
+                                                            : 'Попробуйте войти позже')}
+                                                </Typography>
+                                            </Stack>
+                                        </Alert>
+                                    )}
+
                                     <Field name="email">
                                         {({field}: FieldProps<string, RegistrationFormValues>) => (
                                             <StyledTextField
@@ -223,24 +251,10 @@ function Registration() {
                                                     isErrorSomeRegistrationStep
                                                 }
                                                 helperText={
-                                                    (errors.confirmPassword && touched.confirmPassword) ||
-                                                    isErrorSomeRegistrationStep ? (
-                                                        <Stack sx={{height: '48px'}} gap={1}>
-                                                            <Typography variant={'inherit'}>
-                                                                {errors.confirmPassword && errors.confirmPassword}
-                                                            </Typography>
-                                                            <Typography variant={'inherit'}>
-                                                                {isErrorSomeRegistrationStep &&
-                                                                    ((
-                                                                        (registrationError as FetchBaseQueryError)
-                                                                            ?.data as {error: string}
-                                                                    )?.error?.includes('User exist')
-                                                                        ? 'Пользователь уже существует'
-                                                                        : 'Технические неполадки. Попробуйте позже.')}
-                                                            </Typography>
-                                                        </Stack>
+                                                    errors.confirmPassword && touched.confirmPassword ? (
+                                                        errors.confirmPassword
                                                     ) : (
-                                                        <Box sx={{height: '48px'}}>&nbsp;</Box>
+                                                        <Box sx={{height: '16px'}}>&nbsp;</Box>
                                                     )
                                                 }
                                             />

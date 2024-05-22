@@ -15,7 +15,10 @@ interface RegistrationRequest {
 
 export const authApi = createApi({
     reducerPath: 'auth-queries',
-    baseQuery: fetchBaseQuery({baseUrl: import.meta.env.VITE_AUTH_URL}), // credentials: 'include'
+    baseQuery: fetchBaseQuery({
+        baseUrl: import.meta.env.VITE_AUTH_URL,
+        credentials: 'include',
+    }),
     endpoints: (build) => ({
         login: build.mutation<AuthResponse, LoginRequest>({
             query: ({password, email}) => ({
@@ -34,6 +37,13 @@ export const authApi = createApi({
                 body: {name, email, password},
             }),
             transformResponse: (response) => convertFromAuthDto(response as AuthResponseDto),
+        }),
+        logout: build.mutation<void, void>({
+            query: () => ({
+                url: '/logout',
+                method: 'POST',
+                body: {},
+            }),
         }),
     }),
 });

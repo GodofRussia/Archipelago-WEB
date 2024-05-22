@@ -145,7 +145,11 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         } else if (!isErrorChatInfo) {
             dispatch(setChatInfo({chatInfo}));
         }
-    }, [chatInfo, dispatch, errorChatInfo, isErrorChatInfo]);
+    }, [chatInfo, dispatch, errorChatInfo, isErrorChatInfo, onGetSum]);
+
+    React.useEffect(() => {
+        if (noteId && chatInfo) getChatSum({id: noteId});
+    }, [noteId, chatInfo, getChatSum]);
 
     React.useEffect(() => {
         if (chatSumData?.summ_text) {
@@ -163,6 +167,13 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         }
     }, [isLoading, isLoadingInitial]);
 
+    const errorDescription = React.useMemo(() => {
+        return [
+            ...(isErrorCallSummaries || isErrorSummaryList ? ['звонка'] : []),
+            ...(isErrorChatSum ? ['чата'] : []),
+        ].join(' и ');
+    }, [isErrorCallSummaries, isErrorChatSum, isErrorSummaryList]);
+
     return activeNote?.allowedMethods.includes(AccessEnum.get_summary_list) ? (
         <>
             {isLoading && isLoadingInitial ? (
@@ -174,15 +185,13 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                         aria-controls="list-content"
                         id="list-header"
                     >
-                        Управление суммаризациями
+                        Краткие итоги
                     </CustomAccordionSummary>
                     <CustomAccordionDetails sx={{p: 2}}>
                         {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (
                             <Paper square sx={{py: 2}}>
-                                <Typography variant={'body1'} sx={{px: 2}}>
-                                    Ошибка получения суммаризаций&nbsp;
-                                    {isErrorCallSummaries || isErrorSummaryList ? 'звонка' : isErrorChatSum && ' и '}
-                                    {isErrorChatSum ? 'чата' : ''} для заметки. Попробуйте позже.
+                                <Typography variant={'body1'} sx={{px: 4}}>
+                                    Ошибка получения суммаризаций {errorDescription} для заметки. Попробуйте позже.
                                 </Typography>
                             </Paper>
                         )}

@@ -15,7 +15,7 @@
 
     --ck-color-base-foreground: var(--ck-custom-background);
     --ck-color-base-background: hsla(0, 0%, 0%, 0.038);
-    --ck-color-focus-border: hsl(208, 90%, 62%);
+    --ck-color-focus-border: white;
     --ck-color-text: hsl(0, 0%, 98%);
     --ck-color-shadow-drop: hsla(0, 0%, 0%, 0.2);
     --ck-color-shadow-inner: hsla(0, 0%, 0%, 0.1);
@@ -112,6 +112,49 @@
 }
 
 .ck-editor__editable_inline:not(.ck-comment__input *) {
-    height: 600px; /* Set your desired height */
+    height: 100%; /* Set your desired height */
     /* overflow-y: auto; Enable vertical scrolling */
+}
+
+.ck {
+    border: none;
+}
+
+.ck.ck-editor {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.ck-editor__main {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.ck.ck-editor__editable_inline {
+    border: 1px solid transparent;
+    border-top: 1px solid white;
+}
+
+.ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content {
+    border: none;
+}
+
+.ck.ck-editor__main > .ck-editor__editable:not(.ck-focused) {
+    border-color: transparent;
+}
+
+:is(.ck.ck-button,a.ck.ck-button) .ck-button__label {
+    color: white;
+}
+
+.ck-editor__editable_inline {
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+.ck-powered-by {
+    display: none;
 }
