@@ -13,6 +13,10 @@ import {LoadingButton} from '@mui/lab';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
+    '& input:-webkit-autofill': {
+        WebkitBoxShadow: '0 0 0 100px transparent inset',
+        WebkitTextFillColor: '#000',
+    },
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
             borderColor: theme.palette.mode !== 'dark' ? 'auto' : 'rgba(0, 0, 0, 0.87)',
@@ -254,7 +258,7 @@ function Registration() {
                                                     errors.confirmPassword && touched.confirmPassword ? (
                                                         errors.confirmPassword
                                                     ) : (
-                                                        <Box sx={{height: '16px'}}>&nbsp;</Box>
+                                                        <Box sx={{height: '20px'}}>&nbsp;</Box>
                                                     )
                                                 }
                                             />
@@ -283,7 +287,7 @@ function Registration() {
                                     <Typography
                                         component={Link}
                                         to="/login"
-                                        sx={{textDecoration: 'none', color: 'black'}}
+                                        sx={{color: 'black', '&:hover': {color: 'primary.main'}}}
                                     >
                                         Войти в аккаунт
                                     </Typography>

@@ -24,10 +24,10 @@ export const chatAPI = createApi({
                     token_note: id,
                 },
             }),
+            providesTags: ['ChatInfo'],
             transformResponse: (response: ChatGetCheckSummarizationExistsResponse) => {
                 return {chatId: response.chat_id, chatName: response.chat_name};
             },
-            providesTags: ['ChatInfo'],
         }),
         getSummarization: build.mutation<ChatGetSumResponse, {id: string}>({
             query: ({id}) => ({
@@ -38,6 +38,7 @@ export const chatAPI = createApi({
                     token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
+            providesTags: ['Sum'],
         }),
         detachNoteFromChat: build.mutation<void, {id: string}>({
             query: ({id}) => ({
@@ -48,7 +49,7 @@ export const chatAPI = createApi({
                     token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
-            invalidatesTags: ['ChatInfo'],
+            invalidatesTags: ['ChatInfo', 'Sum'],
         }),
     }),
 });

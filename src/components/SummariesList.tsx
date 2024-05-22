@@ -185,7 +185,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                         aria-controls="list-content"
                         id="list-header"
                     >
-                        Краткие итоги
+                        Мои краткие итоги
                     </CustomAccordionSummary>
                     <CustomAccordionDetails sx={{p: 2}}>
                         {(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) && (

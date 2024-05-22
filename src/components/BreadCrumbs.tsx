@@ -18,7 +18,7 @@ const BreadCrumbs = () => {
         () => [
             noteDir ? (
                 <Typography key="1" variant={'subtitle1'} color="text.primary">
-                    {noteDir.name}
+                    {noteDir.name !== 'root_dir' ? noteDir.name : 'Заметки'}
                 </Typography>
             ) : (
                 <Skeleton width={'100px'} />
