@@ -38,6 +38,7 @@ export const chatAPI = createApi({
                     token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
+            providesTags: ['Sum'],
         }),
         detachNoteFromChat: build.mutation<void, {id: string}>({
             query: ({id}) => ({
@@ -48,7 +49,7 @@ export const chatAPI = createApi({
                     token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
-            invalidatesTags: ['ChatInfo'],
+            invalidatesTags: ['ChatInfo', 'Sum'],
         }),
     }),
 });
