@@ -6,12 +6,12 @@
  - Степан Попов
  - Мочалов Илья
 
-## Ссылки на другие репозитории
- - ML и API для кратких итогов звонков - https://github.com/rbeketov/archipelago_ml
- - ML и API для кратких итогов чатов - https://github.com/rbeketov/archipelago_tgbot
- - API заметок - https://github.com/yarikTri/archipelago-notes-api
- - WS sync сервер для Automerge - https://github.com/yarikTri/redis-sync-server
+## Другие компоненты проекта:
 
+1. [Archipelago-ML](https://github.com/rbeketov/archipelago_ml)
+2. [Archipelago-Notes-API](https://github.com/yarikTri/archipelago-notes-api)
+3. [Archipelago-Redis-Sync-Server](https://github.com/yarikTri/redis-sync-server)
+4. [Archipelago-TG-Bot](https://github.com/rbeketov/archipelago_tgbot)
 
 ## Для запуска тестинга
     npm run dev
