@@ -1,6 +1,18 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Alert, Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
+import {
+    Alert,
+    Box,
+    Card,
+    CardContent,
+    CardHeader,
+    IconButton,
+    InputAdornment,
+    Stack,
+    styled,
+    TextField,
+    Typography,
+} from '@mui/material';
 import {authApi} from '../../services/AuthService';
 import {userAPI} from '../../services/UserService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
@@ -11,6 +23,7 @@ import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import {LoadingButton} from '@mui/lab';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {Visibility, VisibilityOff} from '@mui/icons-material';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& input:-webkit-autofill': {
@@ -78,8 +91,8 @@ function Registration() {
         password: Yup.string()
             .required('Необходимо придумать пароль')
             .matches(
-                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/,
-                'Пароль должен содержать как минимум 8 символов, включая одну прописную букву, одну строчную букву, одну цифру и один специальный символ',
+                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
+                'Пароль должен содержать как минимум 8 символов, включая как минимум одну прописную букву и одну цифру',
             ),
         confirmPassword: Yup.string()
             .oneOf([Yup.ref('password')], 'Пароли должны совпадать')
@@ -125,6 +138,19 @@ function Registration() {
 
     const isErrorSomeRegistrationStep = isErrorRegistration || isErrorUser || isErrorRootDir || isErrorSetting;
 
+    const [showPassword, setShowPassword] = React.useState<{1: boolean; 2: boolean}>({1: false, 2: false});
+
+    const handleClickShowPassword = (index: 1 | 2) => {
+        setShowPassword((prevState) => ({
+            ...prevState,
+            [index]: !prevState[index],
+        }));
+    };
+
+    const handleMouseDownPassword = (event: React.MouseEvent) => {
+        event.preventDefault();
+    };
+
     return (
         <Formik
             initialValues={{email: '', name: '', password: '', confirmPassword: ''}}
@@ -161,11 +187,7 @@ function Registration() {
                                             <Stack>
                                                 <Typography variant={'body1'}>
                                                     {isErrorSomeRegistrationStep &&
-                                                        ((
-                                                            (registrationError as FetchBaseQueryError)?.data as {
-                                                                error: string;
-                                                            }
-                                                        )?.error?.includes('User exist')
+                                                        ((registrationError as FetchBaseQueryError)?.status === 400
                                                             ? 'Пользователь уже существует'
                                                             : 'Технические неполадки')}
                                                 </Typography>
@@ -215,7 +237,7 @@ function Registration() {
                                         {({field}: FieldProps<string, RegistrationFormValues>) => (
                                             <StyledTextField
                                                 {...field}
-                                                type="password"
+                                                type={showPassword['1'] ? 'text' : 'password'}
                                                 label="Придумайте пароль"
                                                 variant="outlined"
                                                 error={
@@ -239,6 +261,24 @@ function Registration() {
                                                         </div>
                                                     </Tooltip>
                                                 }
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton
+                                                                aria-label="toggle password visibility"
+                                                                onClick={() => handleClickShowPassword(1)}
+                                                                onMouseDown={handleMouseDownPassword}
+                                                                edge="end"
+                                                            >
+                                                                {showPassword['1'] ? (
+                                                                    <VisibilityOff color={'primary'} />
+                                                                ) : (
+                                                                    <Visibility color={'primary'} />
+                                                                )}
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                }}
                                             />
                                         )}
                                     </Field>
@@ -247,7 +287,7 @@ function Registration() {
                                         {({field}: FieldProps<string, RegistrationFormValues>) => (
                                             <StyledTextField
                                                 {...field}
-                                                type="password"
+                                                type={showPassword['2'] ? 'text' : 'password'}
                                                 label="Введите пароль повторно"
                                                 variant="outlined"
                                                 error={
@@ -261,6 +301,24 @@ function Registration() {
                                                         <Box sx={{height: '20px'}}>&nbsp;</Box>
                                                     )
                                                 }
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton
+                                                                aria-label="toggle password visibility"
+                                                                onClick={() => handleClickShowPassword(2)}
+                                                                onMouseDown={handleMouseDownPassword}
+                                                                edge="end"
+                                                            >
+                                                                {showPassword['2'] ? (
+                                                                    <VisibilityOff color={'primary'} />
+                                                                ) : (
+                                                                    <Visibility color={'primary'} />
+                                                                )}
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                }}
                                             />
                                         )}
                                     </Field>
