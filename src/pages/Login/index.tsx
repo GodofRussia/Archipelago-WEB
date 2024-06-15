@@ -1,6 +1,18 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
-import {Alert, Box, Card, CardContent, CardHeader, Stack, styled, TextField, Typography} from '@mui/material';
+import {
+    Alert,
+    Box,
+    Card,
+    CardContent,
+    CardHeader,
+    IconButton,
+    InputAdornment,
+    Stack,
+    styled,
+    TextField,
+    Typography,
+} from '@mui/material';
 import {userAPI} from '../../services/UserService';
 import {authApi} from '../../services/AuthService';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
@@ -9,6 +21,7 @@ import {LoadingButton} from '@mui/lab';
 import * as Yup from 'yup';
 import {Field, FieldProps, Form, Formik} from 'formik';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {Visibility, VisibilityOff} from '@mui/icons-material';
 
 const StyledTextField = styled(TextField)(({theme}) => ({
     '& input:-webkit-autofill': {
@@ -82,6 +95,16 @@ function Login() {
         }
     }, [currUser, navigate]);
 
+    const [showPassword, setShowPassword] = React.useState<boolean>(false);
+
+    const handleClickShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const handleMouseDownPassword = (event: React.MouseEvent) => {
+        event.preventDefault();
+    };
+
     return (
         <Formik
             initialValues={{email: '', password: ''}}
@@ -122,11 +145,7 @@ function Login() {
                                             </Typography>
 
                                             <Typography variant={'body2'}>
-                                                {(
-                                                    (errorLogin as FetchBaseQueryError)?.data as {
-                                                        error: string;
-                                                    }
-                                                )?.error?.includes('Not found user')
+                                                {(errorLogin as FetchBaseQueryError)?.status === 401
                                                     ? 'Проверьте правильность введенных данных'
                                                     : 'Попробуйте войти позже'}
                                             </Typography>
@@ -165,8 +184,8 @@ function Login() {
                                         {({field}: FieldProps<string, LoginFormValues>) => (
                                             <StyledTextField
                                                 {...field}
-                                                type="password"
                                                 label="Пароль"
+                                                type={showPassword ? 'text' : 'password'}
                                                 variant="outlined"
                                                 error={
                                                     (errors.password && touched.password) || isErrorLogin || isErrorUser
@@ -178,6 +197,24 @@ function Login() {
                                                         <Box sx={{height: '20px'}}>&nbsp;</Box>
                                                     )
                                                 }
+                                                InputProps={{
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton
+                                                                aria-label="toggle password visibility"
+                                                                onClick={handleClickShowPassword}
+                                                                onMouseDown={handleMouseDownPassword}
+                                                                edge="end"
+                                                            >
+                                                                {showPassword ? (
+                                                                    <VisibilityOff color={'primary'} />
+                                                                ) : (
+                                                                    <Visibility color={'primary'} />
+                                                                )}
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                }}
                                             />
                                         )}
                                     </Field>
