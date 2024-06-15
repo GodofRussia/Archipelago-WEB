@@ -119,9 +119,6 @@ export const notesApi = createApi({
                 method: 'DELETE',
                 headers: {'X-User-Id': requestData.userId},
             }),
-            transformResponse: (response: NoteDto) => {
-                return convertFromNoteDto(response);
-            },
             invalidatesTags: ['Notes'],
         }),
         setAccess: build.mutation<string, SetAccessRequest>({

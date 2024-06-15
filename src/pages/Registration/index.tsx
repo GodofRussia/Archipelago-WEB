@@ -110,11 +110,13 @@ function Registration() {
     }, [createRootDir, dispatch, user, userData?.userId]);
 
     React.useEffect(() => {
-        if (rootDir && userData?.userId) {
+        if (user && rootDir && userData?.userId) {
             setUserRootDir({
                 rootDirID: rootDir.id,
                 userId: userData?.userId,
             });
+
+            dispatch(setUser({...user, rootDirId: rootDir.id}));
         }
     }, [createRootDir, dispatch, navigate, rootDir, setUserRootDir, user, userData?.userId]);
 
@@ -123,12 +125,6 @@ function Registration() {
             setUserId(userData.userId);
         }
     }, [isLoadingSetting, rootDir, userData]);
-
-    React.useEffect(() => {
-        if (user) {
-            dispatch(setUser(user));
-        }
-    }, [dispatch, user]);
 
     React.useEffect(() => {
         if (currUser) {
