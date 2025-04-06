@@ -2,7 +2,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
-import {Telegram} from '@mui/icons-material';
 import {Box} from '@mui/material';
 
 export default function Footer() {
@@ -16,7 +15,7 @@ export default function Footer() {
             }}
         >
             <Container maxWidth="lg">
-                <Grid container spacing={5}>
+                <Grid container spacing={5} justifyContent={'space-between'}>
                     <Grid item xs={12} sm={4}>
                         <Typography variant="h6" color="text.primary" gutterBottom>
                             О нас
@@ -32,14 +31,6 @@ export default function Footer() {
                         <Typography variant="body2" color="text.secondary">
                             archipelago_team@mail.ru <br></br>
                         </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <Typography variant="h6" color="text.primary" gutterBottom>
-                            Подпишитесь на нас
-                        </Typography>
-                        <Link href="https://tlgg.ru/@rbeketov" color="inherit">
-                            <Telegram />
-                        </Link>
                     </Grid>
                 </Grid>
                 <Box mt={5}>
