@@ -38,7 +38,7 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
     const {enqueueSnackbar} = useSnackbar();
 
     const dispatch = useAppDispatch();
-    const {activeNote} = useAppSelector((store) => store.notesReducer);
+    const {activeNote, tab} = useAppSelector((store) => store.notesReducer);
     const {user} = useAppSelector((store) => store.userReducer);
 
     const [newTitle, setNewTitle] = React.useState<string>(title);
@@ -72,8 +72,8 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
                 defaultAccess,
             }),
         );
-        navigate(`/notes/${id}`);
-    }, [allowedMethods, automergeUrl, defaultAccess, dirId, dispatch, id, navigate, title]);
+        navigate(`/notes/${id}?tab=${tab}`);
+    }, [allowedMethods, automergeUrl, defaultAccess, dirId, dispatch, id, navigate, tab, title]);
 
     const repo = useRepo();
     const theme = useTheme();

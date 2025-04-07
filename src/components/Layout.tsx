@@ -1,17 +1,7 @@
-import React, {useState} from 'react';
+import React, {PropsWithChildren, useState} from 'react';
 import {Box, CssBaseline, styled} from '@mui/material';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-
-export enum TabType {
-    HOME = 'home',
-    SHARED = 'shared',
-}
-
-interface LayoutProps {
-    children: React.ReactNode;
-    tab?: TabType;
-}
 
 export const DrawerHeader = styled('div')(({theme}) => ({
     display: 'flex',
@@ -45,7 +35,7 @@ export const Main = styled('main', {shouldForwardProp: (prop) => prop !== 'open'
     }),
 }));
 
-export default function Layout({children, tab = TabType.HOME}: LayoutProps) {
+export default function Layout<T>({children}: PropsWithChildren<T>) {
     const [width, setWidth] = useState(240);
     const [open, setOpen] = React.useState(true);
     const refContainer = React.useRef<HTMLDivElement>(null);
@@ -59,14 +49,7 @@ export default function Layout({children, tab = TabType.HOME}: LayoutProps) {
         <Box ref={refContainer} sx={{display: 'flex', overflow: 'auto', position: 'relative'}}>
             <CssBaseline />
             <Navbar setOpen={setOpen} width={width} open={open} />
-            <Sidebar
-                refContainer={refContainer}
-                tab={tab}
-                setWidth={setWidth}
-                width={width}
-                open={open}
-                setOpen={setOpen}
-            />
+            <Sidebar refContainer={refContainer} setWidth={setWidth} width={width} open={open} setOpen={setOpen} />
             <Main open={open} width={width}>
                 <DrawerHeader />
                 {children}

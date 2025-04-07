@@ -23,7 +23,7 @@ export default function LoginLayout({children}: LayoutProps) {
     return (
         <RightHalfBox>
             <CssBaseline />
-            <Navbar isAuthenticationPage={true} setOpen={setOpen} width={width} itemsList={[]} open={open} />
+            <Navbar isAuthenticationPage={true} setOpen={setOpen} width={width} open={open} />
             {children}
         </RightHalfBox>
     );

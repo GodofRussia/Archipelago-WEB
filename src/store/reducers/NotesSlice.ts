@@ -1,6 +1,6 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Note} from '../../types/notes';
-import {TabType} from '../../components/Layout';
+import {TabType} from '../../types/layout';
 
 interface NotesState {
     activeNote: Note | undefined;

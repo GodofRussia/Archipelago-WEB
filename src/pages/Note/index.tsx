@@ -25,17 +25,13 @@ import {LoadingButton} from '@mui/lab';
 import {useParams} from 'react-router-dom';
 import '@mdxeditor/editor/style.css';
 import {CallsDetail, CallsDetailEnum} from '../../types/notes';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import * as A from '@automerge/automerge/next';
 import {useAppDispatch, useAppSelector} from '../../hooks/useRedux';
 import {notesApi} from '../../services/NotesService';
-import {setActiveNote, setTabType} from '../../store/reducers/NotesSlice';
+import {setActiveNote} from '../../store/reducers/NotesSlice';
 import {callAPI} from '../../services/CallService';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LinkIcon from '@mui/icons-material/Link';
 import ChatSumStepper from '../../components/ChatSumStepper';
-import {TabType} from '../../components/Layout';
 import SummariesList from '../../components/SummariesList';
 import {AccessEnum} from '../../types/access';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
@@ -89,9 +85,6 @@ function Note() {
     React.useEffect(() => {
         if (note) {
             dispatch(setActiveNote(note));
-            if (sharedNotes.find(({id: noteId}) => id === noteId)) {
-                dispatch(setTabType({tab: TabType.SHARED}));
-            }
         }
     }, [dispatch, id, note, sharedNotes]);
 
