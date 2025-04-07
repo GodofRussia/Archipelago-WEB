@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {CKEditor} from '@ckeditor/ckeditor5-react';
-
+import {Range as ModelRange} from '@ckeditor/ckeditor5-engine';
 import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
 
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
@@ -44,7 +44,7 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
         }
     };
 
-    const [firstRange, setFirstRange] = React.useState<Range | null>(null);
+    const [firstRange, setFirstRange] = React.useState<ModelRange | null>(null);
 
     const [curDoc, setCurDoc] = React.useState<string | null>(null);
     const [isDataInProgress, setIsDataInProgress] = React.useState<boolean>(false);
@@ -52,16 +52,20 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
     React.useEffect(() => {
         if (doc && editorRef.current && curDoc != doc.text) {
             setIsDataInProgress(true);
-            if (!!firstRange) {
+            if (firstRange) {
                 const data = typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '';
                 editorRef.current?.setData(data);
                 editorRef.current.model.enqueueChange((w) => {
                     try {
-                        const newRange = w.createRange(firstRange.start);
-                        w.setSelection(newRange);
-                        setFirstRange(newRange);
+                        const root = w.model.document.getRoot();
+                        if (root) {
+                            const newRange = w.createRange(w.createPositionAt(root, 'end'));
+                            w.setSelection(newRange);
+                            setFirstRange(newRange);
+                        }
                     } catch (e) {
                         const root = w.model.document.getRoot();
+
                         if (root) {
                             const newRange = w.createRange(w.createPositionAt(root, 'end'));
                             w.setSelection(newRange);
@@ -69,6 +73,7 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
                         }
                     }
                 });
+
                 setCurDoc(data);
             } else {
                 const data = typeof doc?.text === 'string' ? doc?.text || '' : doc?.text.join('') || '';

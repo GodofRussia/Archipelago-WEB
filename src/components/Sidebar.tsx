@@ -2,7 +2,7 @@ import React, {Dispatch, SetStateAction} from 'react';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import {useRepo} from '@automerge/automerge-repo-react-hooks';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {
     Box,
     Button,
@@ -32,7 +32,7 @@ import {dirsApi} from '../services/DirsService';
 import {notesApi} from '../services/NotesService';
 import {addCollapsedDirId, changeCollapsedStateForAllDirs, mergeDirTreeWithNotes} from '../store/reducers/DirsSlice';
 import {createAutomergeUrl} from '../utils/automerge';
-import {TabType} from './Layout';
+import {TabType} from '../types/layout';
 import NoteCard from './NoteCard';
 import {setNotes, setSharedNotesByUserDirs, setTabType} from '../store/reducers/NotesSlice';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -59,7 +59,6 @@ interface SidebarProps {
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
     width: number;
-    tab?: TabType;
     refContainer: React.RefObject<HTMLDivElement>;
 }
 
@@ -90,9 +89,10 @@ const HoverArea = styled('div')<{
     transition: 'all 0.3s ease',
 }));
 
-const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContainer}: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: SidebarProps) => {
     const repo = useRepo();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const {user} = useAppSelector((state) => state.userReducer);
     const {dirTree: fullDirTree, dirIds} = useAppSelector((state) => state.dirsReducer);
@@ -138,8 +138,13 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
     const [noteTitle, setNoteTitle] = React.useState<string>('');
     const [dirIdForCreate, setDirIdForCreate] = React.useState<number>(1);
 
-    const changeTab = (tab: TabType) => {
-        dispatch(setTabType({tab}));
+    const queryParams = new URLSearchParams(location.search);
+    const tab =
+        queryParams.get('tab') === TabType.HOME || queryParams.get('tab') === null ? TabType.HOME : TabType.SHARED;
+
+    const handleTabChange = (newTab: TabType) => {
+        dispatch(setTabType({tab: newTab}));
+        navigate(`/?tab=${newTab}`);
     };
 
     const {enqueueSnackbar} = useSnackbar();
@@ -337,23 +342,21 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                 open={open}
             >
                 <DrawerHeader sx={{display: 'flex', justifyContent: 'space-around'}}>
-                    <Tooltip title={'Свои заметки'}>
+                    <Tooltip title="Свои заметки">
                         <CustomIconButton
                             onClick={() => {
-                                changeTab(TabType.HOME);
-                                navigate('/');
+                                handleTabChange(TabType.HOME);
                             }}
-                            className={noteTab === TabType.HOME ? 'active' : ''}
+                            className={tab === TabType.HOME ? 'active' : ''}
                         >
                             <HomeIcon />
                         </CustomIconButton>
                     </Tooltip>
                     <Tooltip disableFocusListener={!user} title={'Доступные заметки'}>
                         <CustomIconButton
-                            className={noteTab === TabType.SHARED ? 'active' : ''}
+                            className={tab === TabType.SHARED ? 'active' : ''}
                             onClick={() => {
-                                changeTab(TabType.SHARED);
-                                navigate('/shared');
+                                handleTabChange(TabType.SHARED);
                             }}
                         >
                             <ListIcon />
@@ -413,7 +416,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                             <>
                                 {((!fullDirTree || (!fullDirTree.notes.length && !fullDirTree.children.length)) &&
                                     noteTab === TabType.HOME) ||
-                                (!sharedNotes.length && noteTab === TabType.SHARED) ? (
+                                (!sharedNotes.length && noteTab === TabType.SHARED && !isLoadingNotes) ? (
                                     <Typography>Ещё нет заметок</Typography>
                                 ) : (
                                     <>
@@ -428,7 +431,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, tab, refContaine
                                             />
                                         )}
                                         {noteTab === TabType.SHARED &&
-                                            (sharedNotes.length ? (
+                                            (sharedNotes.length || isLoadingNotes ? (
                                                 <List>
                                                     {sharedNotes.map((note, idx) => (
                                                         <ListItem button key={`note-${idx}`} sx={{p: 0}}>

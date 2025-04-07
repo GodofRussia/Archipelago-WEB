@@ -38,7 +38,12 @@ export const chatAPI = createApi({
                     token: import.meta.env.VITE_SERVICE_TOKEN,
                 },
             }),
-            providesTags: ['Sum'],
+            // TODO:
+            // providesTags: ['Sum'],
+            // видимо с мутационных запросов удалили providesTags, так как получаем по ручке суммаризацию и рефрешим,
+            // то сломает логику вызовов, инвалидирующие это поле.
+            // На самом деле могли сделать GET на суммаризацию и отдельно инвалидировать по redux API на нажатии по рефрешу
+            // Если так можно, то стоит сменить логику на GET ручку (на край впилить инвалидационную ручку на POST)
         }),
         detachNoteFromChat: build.mutation<void, {id: string}>({
             query: ({id}) => ({
