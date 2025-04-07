@@ -2,13 +2,15 @@ name: Deploy to Server
 
 on:
   push:
-    branches: [ main ]  # Adjust if you're using a different branch for deployment
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      node_modules-cache: ${{ steps.node_modules-cache.outputs.cache-hit }}
 
     steps:
       - name: Checkout code
@@ -19,18 +21,62 @@ jobs:
         with:
           node-version: '16'  # Adjust to the version you're using
 
+      - name: Cache node_modules
+        id: node_modules-cache
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
+        if: steps.node_modules-cache.outputs.cache-hit != 'true'
         run: npm install
+
+  build:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Build the project
         run: npm run build
 
+      - name: Save build output
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Retrieve build output
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+
       - name: Deploy to server
-        uses: appleboy/scp-action@v0.1.6  # Or latest version
+        uses: appleboy/ssh-action@v0.1.4  # Or latest version
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: yavka
           port: 22
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "dist/*"
-          target: "~/Archipelago-WEB/dist"
+          script: |
+            rm -rf ~/Archipelago-WEB/dist
+            mkdir -p ~/Archipelago-WEB/dist
+            scp -r ./dist/* yavka@${{ secrets.SERVER_HOST }}:~/Archipelago-WEB/dist
