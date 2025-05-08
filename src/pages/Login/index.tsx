@@ -75,8 +75,6 @@ function Login() {
         password: Yup.string().required('Необходимо указать пароль'),
     });
 
-    console.log(errorLogin);
-
     React.useEffect(() => {
         if (userData?.userId) {
             setUserId(userData.userId);

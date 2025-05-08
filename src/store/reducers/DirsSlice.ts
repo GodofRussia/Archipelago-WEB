@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Dir, DirTree, FullDirTreeWithNotes} from '../../types/dirs';
 import {Note} from '../../types/notes';
-import {loadCollapsedDirIds, setCollapsedDirIds} from '../../utils/localStorage';
+import {loadCollapsedDirIds, setCollapsedDirIds} from '../../utils/local_storage';
 
 interface DirsState {
     activeDir: Dir | undefined;

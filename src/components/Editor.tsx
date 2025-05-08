@@ -32,7 +32,7 @@ import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import {AnyDocumentId} from '@automerge/automerge-repo';
 import './Editor.css';
 
-const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
+const Editor = ({automergeUrl, isDisabled}: {automergeUrl: AnyDocumentId | undefined; isDisabled: boolean}) => {
     const [doc, changeDoc] = useDocument<NoteDoc>(automergeUrl);
     const editorRef = React.useRef<ClassicEditor | null>(null);
 
@@ -88,6 +88,7 @@ const Editor = ({automergeUrl}: {automergeUrl: AnyDocumentId}) => {
 
     return (
         <CKEditor
+            disabled={isDisabled}
             onReady={(editor) => {
                 editorRef.current = editor;
             }}

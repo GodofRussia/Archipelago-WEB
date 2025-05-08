@@ -91,7 +91,6 @@ export const notesApi = createApi({
                 headers: {'X-User-Id': requestData.userId},
             }),
             transformResponse: (response: NoteDto) => {
-                console.log(response);
                 return convertFromNoteDto(response);
             },
             invalidatesTags: ['Notes'],

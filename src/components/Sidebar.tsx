@@ -178,7 +178,6 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                     } else {
                         enqueueSnackbar('Папка успешно создана', {variant: 'success'});
                         const dirId = extractNumberAfterLastDot((data as {data: Dir}).data.subpath);
-                        console.log(dirId, data);
                         if (dirId) {
                             dispatch(addCollapsedDirId(dirId));
                         }

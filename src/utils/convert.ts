@@ -2,6 +2,7 @@ import {User, UserDto} from '../types/user';
 import {Note, NoteDto} from '../types/notes';
 import {AuthResponse, AuthResponseDto} from '../types/auth';
 import {Access, AccessDto} from '../types/access';
+import {Tag, TagDto} from '../types/tags';
 
 export function convertFromUserDto(user: UserDto): User {
     return {
@@ -37,8 +38,12 @@ export function convertFromAuthDto(authData: AuthResponseDto): AuthResponse {
     };
 }
 
-export function convertFromAccessDto(access: AccessDto): Access {
-    return {...access, withInvitation: access.with_invitation};
+export function convertFromTagsDto(tag: TagDto): Tag {
+    return {
+        ...tag,
+        id: tag.tag_id,
+        userId: tag.user_id,
+    };
 }
 
 export function convertFromAccessToDto(access: Access): AccessDto {
@@ -46,22 +51,4 @@ export function convertFromAccessToDto(access: Access): AccessDto {
         access: access.access,
         with_invitation: access.withInvitation,
     };
-}
-
-export function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-
-    const options: Intl.DateTimeFormatOptions = {
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-    };
-
-    //console.log(date.toLocaleDateString('en-GB', options));
-    //console.log(date.toLocaleTimeString('en-GB', options));
-
-    return date.toLocaleDateString('en-GB', options);
 }
