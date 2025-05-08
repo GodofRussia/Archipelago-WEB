@@ -18,6 +18,8 @@ import {LoadingButton} from '@mui/lab';
 import Tooltip from '@mui/material/Tooltip';
 import {useDocument} from '@automerge/automerge-repo-react-hooks';
 import {NoteDoc} from '../types/notes';
+import {useAvoidMissingFetchingData} from '../hooks/useAvoidMissingFetchingData';
+import {debounce} from 'lodash';
 
 type DialogType = 'suggest' | 'only_link';
 
@@ -38,18 +40,35 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
 
     const [tagValues, setTagValues] = React.useState<Tag[]>([]);
     const [inputValue, setInputValue] = React.useState<string>('');
-    const [searchTagsByName, {data: searchedTags}] = tagsApi.useClosestTagsMutation();
+
+    const [searchTagsByName, {data: searchedTags, isLoading: isLoadingSearch}] = tagsApi.useClosestTagsMutation();
     const [suggestTagNames, {isLoading: isLoadingSuggest}] = tagsApi.useSuggestTagNamesMutation();
+
     const [createAndLinkTag, {isLoading: isLoadingCreation}] = tagsApi.useCreateAndLinkTagMutation();
     const [linkTagToTag, {isLoading: isLoadingLinking}] = tagsApi.useLink2TagsMutation();
 
     const [doc] = useDocument<NoteDoc>(activeNote?.automergeUrl);
 
+    const closestTagsAvoidMissing = useAvoidMissingFetchingData({
+        data: searchedTags || null,
+        isLoading: isLoadingSearch,
+    });
+
+    const throttledSearch = React.useCallback(
+        () =>
+            debounce((input: string) => {
+                if (input.length > 1) {
+                    searchTagsByName({name: input, limit: 5, userId: user?.id || ''});
+                }
+            }, 500),
+        [user?.id],
+    );
+
     const noteText = React.useMemo(() => {
         return typeof doc?.text === 'string' ? (doc?.text as string) || '' : doc?.text.join('') || '';
     }, [doc?.text]);
 
-    const handleCreateAndLinkTags = async () => {
+    const handleCreateAndLinkTags = React.useCallback(async () => {
         const promises = tagValues.map((tag) => {
             if (type === 'suggest') {
                 return createAndLinkTag({name: tag.name, note_id: noteId, userId: user?.id || ''}).unwrap();
@@ -70,16 +89,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                 .map((result) => result.reason.data?.error || '');
 
             if (success.length > 0) {
-                const alreadyExistsNames = results
-                    .filter(
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-expect-error
-                        (result) => result?.value?.error?.status === 409,
-                    )
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-expect-error
-                    .map((result) => result?.value?.error?.data?.error || '');
-
+                // Если пришли созданные теги, то выводим имена
                 if (success.some(({name}) => !!name)) {
                     enqueueSnackbar(
                         `Успешно ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${success
@@ -92,6 +102,17 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                     );
                 }
 
+                // Если при status = fulfilled пришла ошибка 409 - коллизия - надо вывести такие ошибки для юзера
+                const alreadyExistsNames = results
+                    .filter(
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
+                        (result) => result?.value?.error?.status === 409,
+                    )
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-expect-error
+                    .map((result) => result?.value?.error?.data?.error || '');
+
                 if (alreadyExistsNames.length > 0) {
                     enqueueSnackbar(
                         `Уже ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${alreadyExistsNames.join(', ')}`,
@@ -100,12 +121,6 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                         },
                     );
                 }
-
-                console.log(
-                    success,
-                    success.map(({id}) => id),
-                    tagValues,
-                );
 
                 // При успешном создании удаляем values
                 setTagValues((prevTags) => prevTags.filter(({name}) => !success.map(({name}) => name).includes(name)));
@@ -122,9 +137,9 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                 variant: 'error',
             });
         }
-    };
+    }, [activeTag?.id, createAndLinkTag, enqueueSnackbar, linkTagToTag, noteId, tagValues, type, user?.id]);
 
-    const handleSuggestTags = async () => {
+    const handleSuggestTags = React.useCallback(async () => {
         try {
             const suggested = await suggestTagNames({
                 tags_num: 1,
@@ -153,34 +168,41 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                 variant: 'error',
             });
         }
-    };
+    }, [enqueueSnackbar, noteText, suggestTagNames, tagValues, user?.id]);
 
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-        if (event.key === 'Enter' && inputValue) {
-            if (inputValue.length < 3) {
-                enqueueSnackbar('Длина тега должна быть больше 3 символов', {
-                    variant: 'error',
-                });
+    const handleKeyDown = React.useCallback(
+        (event: React.KeyboardEvent) => {
+            if (event.key === 'Enter' && inputValue) {
+                if (inputValue.length < 3) {
+                    enqueueSnackbar('Длина тега должна быть больше 3 символов', {
+                        variant: 'error',
+                    });
 
-                return;
+                    return;
+                }
+
+                if (!tagValues.map((tag) => tag.name).includes(inputValue)) {
+                    setTagValues([
+                        ...tagValues,
+                        {
+                            id: inputValue,
+                            name: inputValue,
+                            userId: user?.id || '',
+                        },
+                    ]);
+
+                    setInputValue('');
+                }
+
+                event.preventDefault();
             }
+        },
+        [enqueueSnackbar, inputValue, tagValues, user?.id],
+    );
 
-            if (!tagValues.map((tag) => tag.name).includes(inputValue)) {
-                setTagValues([
-                    ...tagValues,
-                    {
-                        id: inputValue,
-                        name: inputValue,
-                        userId: user?.id || '',
-                    },
-                ]);
-
-                setInputValue('');
-            }
-
-            event.preventDefault();
-        }
-    };
+    React.useEffect(() => {
+        throttledSearch()(inputValue);
+    }, [inputValue]);
 
     return (
         <Dialog open={isOpen} onClose={onClose}>
@@ -190,13 +212,16 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                     <Autocomplete
                         multiple
                         id="tags-autocomplete"
-                        options={searchedTags || []}
+                        options={closestTagsAvoidMissing || []}
                         getOptionLabel={(option) => option.name}
-                        noOptionsText={`Не найдено тегов. Попробуйте ввести минимум 3 символа. ${type === 'suggest' ? `Нажмите 'Enter' для нового тега.` : ''}`}
+                        noOptionsText={`Не найдено тегов. Попробуйте ввести минимум 2 символа. ${type === 'suggest' ? `Нажмите 'Enter' для нового тега.` : ''}`}
                         value={tagValues}
                         filterOptions={(options) => (options.length ? options : [])}
                         filterSelectedOptions
-                        onChange={(_, value) => setTagValues(value)}
+                        onChange={(_, value) => {
+                            setTagValues(value);
+                            setInputValue('');
+                        }}
                         inputValue={inputValue}
                         onInputChange={(_, newInputValue, reason) => {
                             if (reason !== 'reset') {
@@ -207,12 +232,6 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                             <Box display={'flex'} flexDirection={'column'} alignItems={'flex-end'}>
                                 <TextField
                                     {...params}
-                                    onChange={(event) => {
-                                        const {value} = event.target;
-                                        if (value.length > 3) {
-                                            searchTagsByName({name: value, limit: 5, userId: user?.id || ''});
-                                        }
-                                    }}
                                     onKeyDown={type === 'suggest' ? handleKeyDown : () => {}}
                                     variant="standard"
                                     label="Теги"
@@ -240,6 +259,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                             variant="outlined"
                             onClick={() => {
                                 onClose();
+
                                 setTagValues([]);
                                 setInputValue('');
                             }}
@@ -249,12 +269,24 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                         <LoadingButton
                             loading={isLoadingCreation || isLoadingLinking}
                             variant="contained"
-                            onClick={() => {
+                            onClick={async () => {
+                                if (inputValue && !tagValues.find(({name}) => name === inputValue)) {
+                                    setTagValues([
+                                        ...tagValues,
+                                        {
+                                            name: inputValue,
+                                            id: inputValue,
+                                            userId: user?.id || '',
+                                        },
+                                    ]);
+                                }
+
                                 if (inputValue) {
                                     setInputValue('');
                                 }
 
-                                handleCreateAndLinkTags();
+                                await handleCreateAndLinkTags();
+                                onClose();
                             }}
                         >
                             {type === 'suggest' ? 'Создать и привязать теги' : 'Связать теги'}

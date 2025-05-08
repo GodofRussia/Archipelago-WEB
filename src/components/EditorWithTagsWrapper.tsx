@@ -6,6 +6,8 @@ import Editor from './Editor';
 import React from 'react';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import CancelIcon from '@mui/icons-material/Cancel';
+import Tooltip from '@mui/material/Tooltip';
 
 interface EditorWithTagsWrapperProps {
     tags?: Tag[];
@@ -57,6 +59,15 @@ const EditorWithTagsWrapper = ({
                                         label={tag.name}
                                         onClick={() => handleTagClicked(tag)}
                                         onDelete={() => handleTagUnlinked(tag)}
+                                        deleteIcon={
+                                            <Tooltip
+                                                title={
+                                                    'Отвязать тег от заметки. При единственной связи тег удалится полностью.'
+                                                }
+                                            >
+                                                <CancelIcon />
+                                            </Tooltip>
+                                        }
                                     />
                                 </ListItem>
                             ))

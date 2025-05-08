@@ -191,7 +191,8 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
                                             <Box
                                                 sx={{flexGrow: 1, cursor: 'pointer'}}
                                                 onClick={() => {
-                                                    navigate(`/notes/${activeNote?.id}?tab=${tab}`);
+                                                    navigate(`/notes/${id}?tab=${tab}`);
+                                                    onClose();
                                                 }}
                                             >
                                                 <Typography variant="body1">{title}</Typography>
