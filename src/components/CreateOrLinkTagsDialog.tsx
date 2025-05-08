@@ -16,6 +16,8 @@ import {useSnackbar} from 'notistack';
 import {Tag} from '../types/tags';
 import {LoadingButton} from '@mui/lab';
 import Tooltip from '@mui/material/Tooltip';
+import {useDocument} from '@automerge/automerge-repo-react-hooks';
+import {NoteDoc} from '../types/notes';
 
 type DialogType = 'suggest' | 'only_link';
 
@@ -31,6 +33,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
 
     // Active tag to link DialogType = 'only_link'
     const {activeTag} = useAppSelector((state) => state.tagsReducer);
+    const {activeNote} = useAppSelector((state) => state.notesReducer);
     const {enqueueSnackbar} = useSnackbar();
 
     const [tagValues, setTagValues] = React.useState<Tag[]>([]);
@@ -39,6 +42,12 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
     const [suggestTagNames, {isLoading: isLoadingSuggest}] = tagsApi.useSuggestTagNamesMutation();
     const [createAndLinkTag, {isLoading: isLoadingCreation}] = tagsApi.useCreateAndLinkTagMutation();
     const [linkTagToTag, {isLoading: isLoadingLinking}] = tagsApi.useLink2TagsMutation();
+
+    const [doc] = useDocument<NoteDoc>(activeNote?.automergeUrl);
+
+    const noteText = React.useMemo(() => {
+        return typeof doc?.text === 'string' ? (doc?.text as string) || '' : doc?.text.join('') || '';
+    }, [doc?.text]);
 
     const handleCreateAndLinkTags = async () => {
         const promises = tagValues.map((tag) => {
@@ -54,17 +63,54 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
 
             const success = results
                 .filter((result): result is PromiseFulfilledResult<Tag> => result.status === 'fulfilled')
-                .map((result) => result.value.name);
+                .map((result) => result.value);
 
             const failures = results
                 .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
                 .map((result) => result.reason.data?.error || '');
 
             if (success.length > 0) {
-                enqueueSnackbar(`Успешно ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${success.join(', ')}`, {
-                    variant: 'success',
-                });
+                const alreadyExistsNames = results
+                    .filter(
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
+                        (result) => result?.value?.error?.status === 409,
+                    )
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-expect-error
+                    .map((result) => result?.value?.error?.data?.error || '');
+
+                if (success.some(({name}) => !!name)) {
+                    enqueueSnackbar(
+                        `Успешно ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${success
+                            .map(({name}) => name)
+                            .filter((name) => !!name)
+                            .join(', ')}`,
+                        {
+                            variant: 'success',
+                        },
+                    );
+                }
+
+                if (alreadyExistsNames.length > 0) {
+                    enqueueSnackbar(
+                        `Уже ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${alreadyExistsNames.join(', ')}`,
+                        {
+                            variant: 'success',
+                        },
+                    );
+                }
+
+                console.log(
+                    success,
+                    success.map(({id}) => id),
+                    tagValues,
+                );
+
+                // При успешном создании удаляем values
+                setTagValues((prevTags) => prevTags.filter(({name}) => !success.map(({name}) => name).includes(name)));
             }
+
             if (failures.length > 0) {
                 enqueueSnackbar(
                     `Ошибка при ${type === 'suggest' ? 'создании' : 'связывании'} тегов: ${failures.join(', ')}`,
@@ -81,12 +127,24 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
     const handleSuggestTags = async () => {
         try {
             const suggested = await suggestTagNames({
-                tags_num: 3,
-                text: inputValue,
+                tags_num: 1,
+                text: noteText,
                 userId: user?.id || '',
             }).unwrap();
 
-            const newTags = suggested.tagNames.map((tagName) => ({id: tagName, name: tagName, userId: user?.id || ''}));
+            const newTags = suggested.tagNames.map((tagName) => ({
+                id: tagName,
+                name: tagName,
+                userId: user?.id || '',
+            }));
+
+            if (newTags.some(({name}) => tagValues.map(({name}) => name).includes(name))) {
+                enqueueSnackbar('Сгенерированный тег уже введен', {
+                    variant: 'error',
+                });
+
+                return;
+            }
 
             setTagValues((prev) => [...prev, ...newTags]);
             setInputValue('');
@@ -152,7 +210,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                                     onChange={(event) => {
                                         const {value} = event.target;
                                         if (value.length > 3) {
-                                            searchTagsByName({name: value, limit: 8, userId: user?.id || ''});
+                                            searchTagsByName({name: value, limit: 5, userId: user?.id || ''});
                                         }
                                     }}
                                     onKeyDown={type === 'suggest' ? handleKeyDown : () => {}}
@@ -161,10 +219,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                                     disabled={isLoadingSuggest}
                                 />
                                 {type === 'suggest' && (
-                                    <Tooltip
-                                        placement={'right-end'}
-                                        title={'Напишите текст в поле ввода и нажмите кнопку для генерации вариантов'}
-                                    >
+                                    <Tooltip placement={'right-end'} title={'Генерирует варианты по тексту заметки'}>
                                         <LoadingButton
                                             loading={isLoadingSuggest}
                                             variant="text"
@@ -180,7 +235,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                         )}
                     />
 
-                    <ButtonGroup sx={{mt: 2}}>
+                    <ButtonGroup sx={{mt: 2, justifyContent: 'flex-end'}}>
                         <Button
                             variant="outlined"
                             onClick={() => {
@@ -195,15 +250,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                             loading={isLoadingCreation || isLoadingLinking}
                             variant="contained"
                             onClick={() => {
-                                if (inputValue && !tagValues.map((tag) => tag.name).includes(inputValue)) {
-                                    setTagValues([
-                                        ...tagValues,
-                                        {
-                                            id: inputValue,
-                                            name: inputValue,
-                                            userId: user?.id || '',
-                                        },
-                                    ]);
+                                if (inputValue) {
                                     setInputValue('');
                                 }
 

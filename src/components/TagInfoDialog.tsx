@@ -31,17 +31,17 @@ interface TagInfoDialogProps {
 const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfoDialogProps) => {
     const {activeTag = {name: '', id: '', userId: ''}} = useAppSelector((state) => state.tagsReducer);
     const {activeNote, tab} = useAppSelector((state) => state.notesReducer);
-    const {user = {id: '', email: '', name: 'string', rootDirId: 0}} = useAppSelector((state) => state.userReducer);
+    const {user = {id: '', email: '', name: '', rootDirId: 0}} = useAppSelector((state) => state.userReducer);
     const navigate = useNavigate();
 
     const {data: linkedTagsList, isLoading: isLoadingLinkedTagsList} = tagsApi.useListLinkedTagsQuery(
         {userId: user.id, tagId: activeTag.id},
-        {skip: !activeTag.id},
+        {skip: !activeTag.id || !isOpen},
     );
 
     const {data: linkedNotesList, isLoading: isLoadingLinkedNotesList} = tagsApi.useListTagNotesQuery(
         {userId: user.id, tagId: activeTag.id},
-        {skip: !activeTag.id},
+        {skip: !activeTag.id} || !isOpen,
     );
 
     const [updateTag, {isLoading: isLoadingTagUpdate}] = tagsApi.useUpdateTagMutation();
@@ -76,23 +76,27 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
                         />
 
                         <Box gap={1}>
-                            <IconButton onClick={() => setLinkTagsDialogIsOpen(true)} sx={{alignSelf: 'flex-end'}}>
-                                <AddLinkIcon />
-                            </IconButton>
+                            <Tooltip title="Добавление связи с тегами">
+                                <IconButton onClick={() => setLinkTagsDialogIsOpen(true)} sx={{alignSelf: 'flex-end'}}>
+                                    <AddLinkIcon />
+                                </IconButton>
+                            </Tooltip>
 
-                            <IconButton
-                                onClick={() => {
-                                    deleteTag({
-                                        tag_id: activeTag.id,
-                                        userId: user.id,
-                                        noteId: activeNote?.id || '',
-                                    });
-                                    onClose();
-                                }}
-                                sx={{alignSelf: 'flex-end'}}
-                            >
-                                {isLoadingDelete ? <CircularProgress size={20} /> : <DeleteIcon />}
-                            </IconButton>
+                            <Tooltip title="Удаление тега приведет к удалению всех его связей">
+                                <IconButton
+                                    onClick={() => {
+                                        deleteTag({
+                                            tag_id: activeTag.id,
+                                            userId: user.id,
+                                            noteId: activeNote?.id || '',
+                                        });
+                                        onClose();
+                                    }}
+                                    sx={{alignSelf: 'flex-end'}}
+                                >
+                                    {isLoadingDelete ? <CircularProgress size={20} /> : <DeleteIcon />}
+                                </IconButton>
+                            </Tooltip>
                         </Box>
                     </Box>
 

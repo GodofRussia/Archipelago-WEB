@@ -132,7 +132,7 @@ export const tagsApi = createApi({
                 {type: 'NoteTagsList', id: arg.noteId},
 
                 // TODO: Сейм с тем, что выше
-                {type: 'LinkedTagsList', id: arg.tag_id},
+                {type: 'TagNotesList', id: arg.tag_id},
             ],
         }),
 
