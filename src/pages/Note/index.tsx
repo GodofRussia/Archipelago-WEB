@@ -99,6 +99,12 @@ function Note() {
         }
     };
 
+    React.useEffect(() => {
+        if (note) {
+            dispatch(setActiveNote(note));
+        }
+    }, [dispatch, id, note, sharedNotes]);
+
     const [open, setOpen] = React.useState(false);
     const [isOpenCallNotification, setIsOpenCallNotification] = React.useState<boolean>(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
