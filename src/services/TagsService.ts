@@ -124,16 +124,7 @@ export const tagsApi = createApi({
                 method: 'POST',
                 headers: {'X-User-Id': userId},
             }),
-            transformResponse: (response: TagDto) => {
-                return convertFromTagsDto(response);
-            },
-            invalidatesTags: (_, __, arg) => [
-                // TODO: пофиксить, не инвалидируется у заметки после выполнения delete
-                {type: 'NoteTagsList', id: arg.noteId},
-
-                // TODO: Сейм с тем, что выше
-                {type: 'TagNotesList', id: arg.tag_id},
-            ],
+            invalidatesTags: (_, __, arg) => [{type: 'NoteTagsList', id: arg.noteId}],
         }),
 
         // Ручки для связи

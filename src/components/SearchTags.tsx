@@ -13,7 +13,7 @@ const SearchTags = () => {
     const {user} = useAppSelector((state) => state.userReducer);
     const dispatch = useAppDispatch();
 
-    const [findClosestTags, {data: closestTags, isLoading: isLoadingSearching}] = tagsApi.useClosestTagsMutation();
+    const [searchTagsByName, {data: closestTags, isLoading: isLoadingSearching}] = tagsApi.useClosestTagsMutation();
     const [tagDialogIsOpen, setTagDialogIsOpen] = React.useState<boolean>(false);
     const [inputValue, setInputValue] = React.useState<string>('');
 
@@ -22,14 +22,14 @@ const SearchTags = () => {
         isLoading: isLoadingSearching,
     });
 
-    const throttledSearch = React.useCallback(
+    const debouncedSearch = React.useMemo(
         () =>
             debounce((input: string) => {
                 if (input.length > 1) {
-                    findClosestTags({name: input, limit: 8, userId: user?.id || ''});
+                    searchTagsByName({name: input, limit: 5, userId: user?.id || ''});
                 }
             }, 500),
-        [user?.id],
+        [searchTagsByName, user?.id],
     );
 
     const handleTagClicked = React.useCallback(
@@ -41,8 +41,8 @@ const SearchTags = () => {
     );
 
     React.useEffect(() => {
-        throttledSearch()(inputValue);
-    }, [inputValue]);
+        debouncedSearch(inputValue);
+    }, [inputValue, debouncedSearch]);
 
     return (
         <>
@@ -90,13 +90,6 @@ const SearchTags = () => {
                                     <SearchIcon sx={{ml: 1}} />
                                 </InputAdornment>
                             ),
-                        }}
-                        onChange={(event) => {
-                            const newValue = event.target.value;
-
-                            if (newValue.length > 1) {
-                                findClosestTags({userId: user?.id || '', limit: 8, name: newValue});
-                            }
                         }}
                     />
                 )}

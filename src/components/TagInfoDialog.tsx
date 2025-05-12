@@ -84,12 +84,13 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
 
                             <Tooltip title="Удаление тега приведет к удалению всех его связей">
                                 <IconButton
-                                    onClick={() => {
-                                        deleteTag({
+                                    onClick={async () => {
+                                        await deleteTag({
                                             tag_id: activeTag.id,
                                             userId: user.id,
                                             noteId: activeNote?.id || '',
                                         });
+
                                         onClose();
                                     }}
                                     sx={{alignSelf: 'flex-end'}}
@@ -105,7 +106,7 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
                             Список связей
                         </Typography>
 
-                        <List sx={{flexGrow: 1, p: 0}}>
+                        <List sx={{flexGrow: 1, p: 0, height: 150, overflow: 'scroll', overflowY: 'scroll', pr: 2}}>
                             {!isLoadingLinkedTagsList ? (
                                 linkedTagsList?.map((tag) => (
                                     <ListItem
@@ -172,7 +173,7 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
                                 Список заметок
                             </Typography>
 
-                            <List sx={{flexGrow: 1, p: 0}}>
+                            <List sx={{flexGrow: 1, p: 0, height: 150, overflow: 'scroll', overflowY: 'scroll', pr: 2}}>
                                 {!isLoadingLinkedNotesList ? (
                                     linkedNotesList?.map(({id, title}) => (
                                         <ListItem

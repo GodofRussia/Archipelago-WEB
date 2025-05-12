@@ -54,115 +54,136 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
         isLoading: isLoadingSearch,
     });
 
-    const throttledSearch = React.useCallback(
+    const debouncedSearch = React.useMemo(
         () =>
             debounce((input: string) => {
                 if (input.length > 1) {
                     searchTagsByName({name: input, limit: 5, userId: user?.id || ''});
                 }
             }, 500),
-        [user?.id],
+        [searchTagsByName, user?.id],
     );
+
+    React.useEffect(() => {
+        debouncedSearch(inputValue);
+    }, [inputValue, debouncedSearch]);
 
     const noteText = React.useMemo(() => {
         return typeof doc?.text === 'string' ? (doc?.text as string) || '' : doc?.text.join('') || '';
     }, [doc?.text]);
 
-    const handleCreateAndLinkTags = React.useCallback(async () => {
-        const promises = tagValues.map((tag) => {
-            if (type === 'suggest') {
-                return createAndLinkTag({name: tag.name, note_id: noteId, userId: user?.id || ''}).unwrap();
-            }
-
-            return linkTagToTag({tag1_id: activeTag?.id || '', tag2_id: tag.id, userId: user?.id || ''});
-        });
-
-        try {
-            const results = await Promise.allSettled(promises);
-
-            const success = results
-                .filter((result): result is PromiseFulfilledResult<Tag> => result.status === 'fulfilled')
-                .map((result) => result.value);
-
-            const failures = results
-                .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-                .map((result) => result.reason.data?.error || '');
-
-            if (success.length > 0) {
-                // Если пришли созданные теги, то выводим имена
-                if (success.some(({name}) => !!name)) {
-                    enqueueSnackbar(
-                        `Успешно ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${success
-                            .map(({name}) => name)
-                            .filter((name) => !!name)
-                            .join(', ')}`,
-                        {
-                            variant: 'success',
-                        },
-                    );
+    const handleCreateAndLinkTags = React.useCallback(
+        async (currentTags: Tag[]) => {
+            const promises = currentTags.map((tag) => {
+                if (type === 'suggest') {
+                    return createAndLinkTag({name: tag.name, note_id: noteId, userId: user?.id || ''}).unwrap();
                 }
 
-                // Если при status = fulfilled пришла ошибка 409 - коллизия - надо вывести такие ошибки для юзера
-                const alreadyExistsNames = results
-                    .filter(
+                return linkTagToTag({tag1_id: activeTag?.id || '', tag2_id: tag.id, userId: user?.id || ''});
+            });
+
+            try {
+                const results = await Promise.allSettled(promises);
+
+                const success = results
+                    .filter((result): result is PromiseFulfilledResult<Tag> => result.status === 'fulfilled')
+                    .map((result) => result.value);
+
+                const failures = results
+                    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+                    .map((result) => result.reason.data?.error || '');
+
+                if (success.length > 0) {
+                    // Если пришли созданные теги, то выводим имена
+                    if (success.some(({name}) => !!name)) {
+                        enqueueSnackbar(
+                            `Успешно ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${success
+                                .map(({name}) => name)
+                                .filter((name) => !!name)
+                                .join(', ')}`,
+                            {
+                                variant: 'success',
+                            },
+                        );
+                    }
+
+                    // Если при status = fulfilled пришла ошибка 409 - коллизия - надо вывести такие ошибки для юзера
+                    const alreadyExistsNames = results
+                        .filter(
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-expect-error
+                            (result) => result?.value?.error?.status === 409,
+                        )
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-expect-error
-                        (result) => result?.value?.error?.status === 409,
-                    )
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-expect-error
-                    .map((result) => result?.value?.error?.data?.error || '');
+                        .map((result) => result?.value?.error?.data?.error || '');
 
-                if (alreadyExistsNames.length > 0) {
-                    enqueueSnackbar(
-                        `Уже ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${alreadyExistsNames.join(', ')}`,
-                        {
-                            variant: 'success',
-                        },
+                    if (alreadyExistsNames.length > 0) {
+                        enqueueSnackbar(
+                            `Уже ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${alreadyExistsNames.join(', ')}`,
+                            {
+                                variant: 'warning',
+                            },
+                        );
+                    }
+
+                    // При успешном создании удаляем values
+                    setTagValues((prevTags) =>
+                        prevTags.filter(({name}) => !success.map(({name}) => name).includes(name)),
                     );
                 }
 
-                // При успешном создании удаляем values
-                setTagValues((prevTags) => prevTags.filter(({name}) => !success.map(({name}) => name).includes(name)));
+                if (failures.length > 0) {
+                    enqueueSnackbar(
+                        `Ошибка при ${type === 'suggest' ? 'создании' : 'связывании'} тегов: ${failures.join(', ')}`,
+                        {variant: 'error'},
+                    );
+                }
+            } catch {
+                enqueueSnackbar(`Ошибка во время ${type === 'suggest' ? 'создании' : 'связывании'} тегов`, {
+                    variant: 'error',
+                });
             }
-
-            if (failures.length > 0) {
-                enqueueSnackbar(
-                    `Ошибка при ${type === 'suggest' ? 'создании' : 'связывании'} тегов: ${failures.join(', ')}`,
-                    {variant: 'error'},
-                );
-            }
-        } catch {
-            enqueueSnackbar(`Ошибка во время ${type === 'suggest' ? 'создании' : 'связывании'} тегов`, {
-                variant: 'error',
-            });
-        }
-    }, [activeTag?.id, createAndLinkTag, enqueueSnackbar, linkTagToTag, noteId, tagValues, type, user?.id]);
+        },
+        [activeTag?.id, createAndLinkTag, enqueueSnackbar, linkTagToTag, noteId, type, user?.id],
+    );
 
     const handleSuggestTags = React.useCallback(async () => {
         try {
-            const suggested = await suggestTagNames({
-                tags_num: 1,
-                text: noteText,
-                userId: user?.id || '',
-            }).unwrap();
+            let retries = 2;
+            let newTags: Tag[];
+            let retrySuccess = false;
 
-            const newTags = suggested.tagNames.map((tagName) => ({
-                id: tagName,
-                name: tagName,
-                userId: user?.id || '',
-            }));
+            while (retries >= 0 && !retrySuccess) {
+                const suggested = await suggestTagNames({
+                    tags_num: 1,
+                    text: noteText,
+                    userId: user?.id || '',
+                }).unwrap();
 
-            if (newTags.some(({name}) => tagValues.map(({name}) => name).includes(name))) {
-                enqueueSnackbar('Сгенерированный тег уже введен', {
-                    variant: 'error',
-                });
+                // Пожддержка для >1 генерируемого тега за раз, сейчас 1 генится, поэтому избыточный some ниже
+                newTags = suggested.tagNames.map((tagName) => ({
+                    id: tagName,
+                    name: tagName,
+                    userId: user?.id || '',
+                }));
 
-                return;
+                if (!newTags.some(({name}) => tagValues.map(({name}) => name).includes(name))) {
+                    retrySuccess = true;
+                    break;
+                }
+
+                retries -= 1;
             }
 
-            setTagValues((prev) => [...prev, ...newTags]);
-            setInputValue('');
+            if (retrySuccess) {
+                setTagValues((prev) => [...prev, ...newTags]);
+                setInputValue('');
+            } else {
+                enqueueSnackbar('По этой заметке не удалось придумать что-то новое, попробуйте дописать текст.', {
+                    variant: 'info',
+                });
+            }
         } catch {
             enqueueSnackbar('Не получилось подсказать, что-то сломалось...', {
                 variant: 'error',
@@ -199,10 +220,6 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
         },
         [enqueueSnackbar, inputValue, tagValues, user?.id],
     );
-
-    React.useEffect(() => {
-        throttledSearch()(inputValue);
-    }, [inputValue]);
 
     return (
         <Dialog open={isOpen} onClose={onClose}>
@@ -270,22 +287,26 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                             loading={isLoadingCreation || isLoadingLinking}
                             variant="contained"
                             onClick={async () => {
-                                if (inputValue && !tagValues.find(({name}) => name === inputValue)) {
-                                    setTagValues([
-                                        ...tagValues,
-                                        {
+                                const allTags = tagValues;
+
+                                if (type === 'suggest') {
+                                    if (inputValue && !tagValues.find(({name}) => name === inputValue)) {
+                                        const tagInTextField = {
                                             name: inputValue,
                                             id: inputValue,
                                             userId: user?.id || '',
-                                        },
-                                    ]);
+                                        };
+
+                                        setTagValues((prevTags) => [...prevTags, tagInTextField]);
+                                        allTags.push(tagInTextField);
+                                    }
                                 }
 
                                 if (inputValue) {
                                     setInputValue('');
                                 }
 
-                                await handleCreateAndLinkTags();
+                                await handleCreateAndLinkTags(allTags);
                                 onClose();
                             }}
                         >
