@@ -40,7 +40,13 @@ const EditorWithTagsWrapper = ({
         <Stack flexGrow={1}>
             <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
                 <Box
-                    sx={{display: 'flex', flexDirection: 'row', alignItems: 'center', overflow: 'hidden', flexGrow: 1}}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                        flexGrow: 1,
+                    }}
                 >
                     <List
                         sx={{
@@ -76,9 +82,17 @@ const EditorWithTagsWrapper = ({
                         )}
 
                         {!tags?.length && !isLoading && (
-                            <Typography color="text.secondary" variant="body2">
-                                Нет привязанных тегов
-                            </Typography>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    minHeight: 32,
+                                    alignItems: 'end',
+                                }}
+                            >
+                                <Typography color="text.secondary" variant="body2">
+                                    Нет привязанных тегов
+                                </Typography>
+                            </Box>
                         )}
                     </List>
 
