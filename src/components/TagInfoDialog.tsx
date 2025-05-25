@@ -41,13 +41,14 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
 
     const {data: linkedNotesList, isLoading: isLoadingLinkedNotesList} = tagsApi.useListTagNotesQuery(
         {userId: user.id, tagId: activeTag.id},
-        {skip: !activeTag.id} || !isOpen,
+        {skip: !activeTag.id || !isOpen},
     );
 
     const [updateTag, {isLoading: isLoadingTagUpdate}] = tagsApi.useUpdateTagMutation();
     const [deleteTag, {isLoading: isLoadingDelete}] = tagsApi.useDeleteTagMutation();
     const [unlink2Tags, {isLoading: isLoadingUnlinkingTags}] = tagsApi.useUnlink2TagsMutation();
     const [unlinkTagFromNote, {isLoading: isLoadingUnlinkingFromNote}] = tagsApi.useUnlinkTagFromNoteMutation();
+    const [updateTagLinkName, {isLoading: isLoadingTagLinkNameUpdating}] = tagsApi.useUpdateTagLinkNameMutation();
 
     const [linkTagsDialogIsOpen, setLinkTagsDialogIsOpen] = React.useState<boolean>(false);
 
@@ -73,6 +74,7 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
                                 });
                             }}
                             isLoading={isLoadingTagUpdate}
+                            variant={'h5'}
                         />
 
                         <Box gap={1}>
@@ -102,53 +104,63 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
                     </Box>
 
                     <Stack gap={1}>
-                        <Typography variant="subtitle1" color="text.primary" fontWeight={500}>
+                        <Typography variant="h6" color="text.primary" fontWeight={500}>
                             Список связей
                         </Typography>
 
-                        <List sx={{flexGrow: 1, p: 0, height: 150, overflow: 'scroll', overflowY: 'scroll', pr: 2}}>
+                        <List sx={{flexGrow: 1, p: 0, height: 150, overflow: 'scroll', overflowY: 'scroll'}}>
                             {!isLoadingLinkedTagsList ? (
                                 linkedTagsList?.map((tag) => (
                                     <ListItem
                                         key={tag.id}
                                         sx={{
                                             pl: 2,
-                                            pr: 0,
+                                            pr: 1,
                                             display: 'flex',
                                             flexGrow: 1,
                                             width: '100%',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
+                                            cursor: 'pointer',
                                             '&:hover': {bgcolor: 'rgba(0, 0, 0, 0.09)'},
                                         }}
+                                        onClick={() => handleTagClicked(tag)}
                                     >
-                                        <Box
-                                            sx={{flexGrow: 1, cursor: 'pointer'}}
-                                            onClick={() => handleTagClicked(tag)}
-                                        >
-                                            <Typography variant="body1">{tag.name}</Typography>
-                                        </Box>
-                                        <Typography variant="body2" sx={{paddingRight: 2}}>
-                                            color
-                                        </Typography>
-
-                                        <Tooltip title={'Отвязать тег от другого тега'}>
-                                            <IconButton
-                                                onClick={() =>
-                                                    unlink2Tags({
+                                        <Typography variant="body1">{tag.name}</Typography>
+                                        <Box display="flex" gap={2}>
+                                            <EditableTitle
+                                                defaultTitle={tag.linkName}
+                                                onUpdateTitle={(newLinkName) => {
+                                                    updateTagLinkName({
                                                         tag1_id: activeTag.id,
                                                         tag2_id: tag.id,
                                                         userId: user.id,
-                                                    })
-                                                }
-                                            >
-                                                {isLoadingUnlinkingTags ? (
-                                                    <CircularProgress size={24} />
-                                                ) : (
-                                                    <DeleteIcon fontSize={'small'} />
-                                                )}
-                                            </IconButton>
-                                        </Tooltip>
+                                                        link_name: newLinkName,
+                                                    });
+                                                }}
+                                                isLoading={isLoadingTagLinkNameUpdating}
+                                                variant={'body1'}
+                                            />
+                                            <Tooltip title={'Отвязать тег от другого тега'}>
+                                                <IconButton
+                                                    onClick={(event) => {
+                                                        unlink2Tags({
+                                                            tag1_id: activeTag.id,
+                                                            tag2_id: tag.id,
+                                                            userId: user.id,
+                                                        });
+
+                                                        event.stopPropagation();
+                                                    }}
+                                                >
+                                                    {isLoadingUnlinkingTags ? (
+                                                        <CircularProgress size={24} />
+                                                    ) : (
+                                                        <DeleteIcon fontSize={'small'} />
+                                                    )}
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Box>
                                     </ListItem>
                                 ))
                             ) : (
@@ -169,45 +181,44 @@ const TagInfoDialog = ({isOpen, onClose, handleTagClicked, notesNeeded}: TagInfo
 
                     {notesNeeded && (
                         <Stack gap={1}>
-                            <Typography variant="subtitle1" color="text.primary" fontWeight={500}>
+                            <Typography variant="h6" color="text.primary" fontWeight={500}>
                                 Список заметок
                             </Typography>
 
-                            <List sx={{flexGrow: 1, p: 0, height: 150, overflow: 'scroll', overflowY: 'scroll', pr: 2}}>
+                            <List sx={{flexGrow: 1, p: 0, height: 150, overflow: 'scroll', overflowY: 'scroll'}}>
                                 {!isLoadingLinkedNotesList ? (
                                     linkedNotesList?.map(({id, title}) => (
                                         <ListItem
                                             key={id}
                                             sx={{
-                                                pl: 1,
-                                                pr: 0,
+                                                pl: 2,
+                                                pr: 1,
                                                 display: 'flex',
                                                 flexGrow: 1,
                                                 width: '100%',
                                                 justifyContent: 'space-between',
                                                 alignItems: 'center',
                                                 '&:hover': {bgcolor: 'rgba(0, 0, 0, 0.09)'},
+                                                cursor: 'pointer',
+                                            }}
+                                            onClick={() => {
+                                                navigate(`/notes/${id}?tab=${tab}`);
+                                                onClose();
                                             }}
                                         >
-                                            <Box
-                                                sx={{flexGrow: 1, cursor: 'pointer'}}
-                                                onClick={() => {
-                                                    navigate(`/notes/${id}?tab=${tab}`);
-                                                    onClose();
-                                                }}
-                                            >
-                                                <Typography variant="body1">{title}</Typography>
-                                            </Box>
+                                            <Typography variant="body1">{title}</Typography>
 
                                             <Tooltip title={'Отвязать тег от заметки'}>
                                                 <IconButton
-                                                    onClick={() =>
+                                                    onClick={(event) => {
                                                         unlinkTagFromNote({
                                                             note_id: id,
                                                             tag_id: activeTag.id,
                                                             userId: user.id,
-                                                        })
-                                                    }
+                                                        });
+
+                                                        event.stopPropagation();
+                                                    }}
                                                 >
                                                     {isLoadingUnlinkingFromNote ? (
                                                         <CircularProgress size={20} />

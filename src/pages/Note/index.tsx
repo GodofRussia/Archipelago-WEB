@@ -99,12 +99,6 @@ function Note() {
         }
     };
 
-    React.useEffect(() => {
-        if (note) {
-            dispatch(setActiveNote(note));
-        }
-    }, [dispatch, id, note, sharedNotes]);
-
     const [open, setOpen] = React.useState(false);
     const [isOpenCallNotification, setIsOpenCallNotification] = React.useState<boolean>(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -251,7 +245,7 @@ function Note() {
                         noteId={id}
                         isOpen={createOrLinkTagsDialogIsOpen}
                         onClose={() => setCreateOrLinkTagsDialogIsOpen(false)}
-                        type="suggest"
+                        type="suggest_and_create_tag"
                     />
 
                     <NoteSharing isOpen={accessRightsDialogIsOpen} close={() => setAccessRightsDialogIsOpen(false)} />

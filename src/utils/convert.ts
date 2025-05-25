@@ -2,7 +2,7 @@ import {User, UserDto} from '../types/user';
 import {Note, NoteDto} from '../types/notes';
 import {AuthResponse, AuthResponseDto} from '../types/auth';
 import {Access, AccessDto} from '../types/access';
-import {Tag, TagDto} from '../types/tags';
+import {Tag, TagDto, TagWithLinkName, TagWithLinkNameDto} from '../types/tags';
 
 export function convertFromUserDto(user: UserDto): User {
     return {
@@ -43,6 +43,15 @@ export function convertFromTagsDto(tag: TagDto): Tag {
         ...tag,
         id: tag.tag_id,
         userId: tag.user_id,
+    };
+}
+
+export function convertFromTagWithLinkNameDto(tag: TagWithLinkNameDto): TagWithLinkName {
+    return {
+        ...tag,
+        id: tag.tag_id,
+        userId: tag.user_id,
+        linkName: tag.link_name,
     };
 }
 

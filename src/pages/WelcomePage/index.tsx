@@ -22,13 +22,23 @@ function WelcomePage() {
                     flexDirection: 'column',
                     width: '100%',
                     height: '120vh',
-                    background: 'url("/background_welcome.jpg") center/cover',
+                    background: 'url("/background2.jpg") center/cover',
                     textAlign: 'center',
                 }}
             >
                 <Typography
                     color="white"
-                    sx={{fontFamily: 'Montserrat', fontSize: 110, fontWeight: 'bold', marginTop: '-8%'}}
+                    sx={{
+                        fontFamily: 'Montserrat',
+                        fontSize: 110,
+                        fontWeight: 'bold',
+                        marginTop: '-8%',
+                        color: 'black',
+                        textShadow: `-1px -1px 0 white,
+                        1px -1px 0 white,
+                        -1px 1px 0 white,
+                        1px 1px 0 white;`,
+                    }}
                 >
                     ARCHIPELAGO
                 </Typography>
@@ -55,47 +65,130 @@ function WelcomePage() {
                             fontFamily: 'Montserrat',
                             fontWeight: 'bold',
                             fontSize: 60,
+                            color: 'black',
+                            textShadow: `-1px -1px 0 white,
+                        1px -1px 0 white,
+                        -1px 1px 0 white,
+                        1px 1px 0 white;`,
                         }}
                     >
                         НАЧАТЬ
                     </Typography>
                 </Button>
 
-                <Typography color="white" sx={{fontFamily: 'Montserrat', fontSize: 30}}>
-                    ПОЛУЧАЙ ИТОГИ<br></br> ВСТРЕЧ И ЧАТОВ ОДНИМ КЛИКОМ
+                <Typography
+                    sx={{
+                        fontFamily: 'Montserrat',
+                        fontSize: 30,
+                        color: 'rgb(7, 13, 26)',
+                        textShadow: `-0.5px -0.5px 0 white,
+                        0.5px -0.5px 0 white,
+                        -0.5px 0.5px 0 white,
+                        0.5px 0.5px 0 white;`,
+                    }}
+                >
+                    ПОЛУЧАЙ ИТОГИ<br></br>ВСТРЕЧ И ЧАТОВ ОДНИМ КЛИКОМ
                 </Typography>
             </Box>
+
             <Box
                 sx={{
-                    display: 'flex',
-                    alignItems: 'start',
-                    justifyContent: 'center',
+                    position: 'relative',
                     backgroundColor: 'rgb(23, 23, 23)',
                     width: '100%',
-                    height: '135vh',
-                    borderTopLeftRadius: '20%',
-                    borderTopRightRadius: '20%',
-                    marginTop: '-21%',
-                    boxShadow: '0px -20px 20px rgba(0, 0, 0, 0.3)',
-                    gap: 20,
-                    pt: '1.5%',
+                    minHeight: 250,
+                    borderTopLeftRadius: {xs: '14vw', md: '12vw'},
+                    borderTopRightRadius: {xs: '14vw', md: '12vw'},
+                    marginTop: {xs: '-23vw', md: '-16vw'},
+                    pb: {xs: 6, md: 9},
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
                 }}
             >
-                <img
-                    src="/points.svg"
-                    alt=""
-                    style={{
-                        width: '100%',
-                        height: '110%',
-                        position: 'absolute',
-                        marginTop: '9%',
+                <Box
+                    sx={{
+                        width: {xs: '95vw', sm: '85vw', md: '70vw', lg: '60vw'},
+                        maxWidth: 1200,
+                        mx: 'auto',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: {xs: 1, sm: 3, md: 8},
+                        mt: {xs: 7, md: 9},
                     }}
-                />
-                <img src="/zoom-logo.png" alt="Zoom Logo" style={{width: '8%', height: '8%'}} />
-                <img src="/meets-logo.png" alt="Meets Logo" style={{width: '8%', height: '8%'}} />
-                <img src="/teams-logo.png" alt="Teams Logo" style={{width: '8%', height: '8%'}} />
-                <img src="/tg-logo.png" alt="Telegram Logo" style={{width: '8%', height: '8%'}} />
+                >
+                    <img
+                        src="/zoom-logo.png"
+                        alt="Zoom Logo"
+                        style={{
+                            width: '120px',
+                            height: '120px',
+                            objectFit: 'contain',
+                            userSelect: 'none',
+                            pointerEvents: 'none',
+                            display: 'block',
+                        }}
+                    />
+                    <img
+                        src="/meets-logo.png"
+                        alt="Google Meet Logo"
+                        style={{
+                            width: '120px',
+                            height: '120px',
+                            objectFit: 'contain',
+                            userSelect: 'none',
+                            pointerEvents: 'none',
+                            display: 'block',
+                        }}
+                    />
+                    <img
+                        src="/teams-logo.png"
+                        alt="Teams Logo"
+                        style={{
+                            width: '120px',
+                            height: '120px',
+                            objectFit: 'contain',
+                            userSelect: 'none',
+                            pointerEvents: 'none',
+                            display: 'block',
+                        }}
+                    />
+                    <img
+                        src="/tg-logo.png"
+                        alt="Telegram Logo"
+                        style={{
+                            width: '120px',
+                            height: '120px',
+                            objectFit: 'contain',
+                            userSelect: 'none',
+                            pointerEvents: 'none',
+                            display: 'block',
+                        }}
+                    />
+                </Box>
+                <Box
+                    sx={{
+                        mt: {xs: 5, md: 8},
+                        width: {xs: '90vw', sm: '75vw', md: '65vw', lg: '50vw'},
+                        maxWidth: 1000,
+                        display: 'flex',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <img
+                        src="/points.svg"
+                        alt="Points"
+                        style={{
+                            width: '100%',
+                            height: 'auto',
+                            display: 'block',
+                        }}
+                    />
+                </Box>
             </Box>
+
             <Footer />
         </Box>
     );

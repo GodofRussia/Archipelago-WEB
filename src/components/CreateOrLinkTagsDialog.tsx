@@ -21,7 +21,7 @@ import {NoteDoc} from '../types/notes';
 import {useAvoidMissingFetchingData} from '../hooks/useAvoidMissingFetchingData';
 import {debounce} from 'lodash';
 
-type DialogType = 'suggest' | 'only_link';
+type DialogType = 'suggest_and_create_tag' | 'only_link';
 
 interface CreateOrLinkTagsDialogProps {
     noteId: string;
@@ -42,7 +42,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
     const [inputValue, setInputValue] = React.useState<string>('');
 
     const [searchTagsByName, {data: searchedTags, isLoading: isLoadingSearch}] = tagsApi.useClosestTagsMutation();
-    const [suggestTagNames, {isLoading: isLoadingSuggest}] = tagsApi.useSuggestTagNamesMutation();
+    const [suggest_and_create_tagTagNames, {isLoading: isLoadingSuggest}] = tagsApi.useSuggestTagNamesMutation();
 
     const [createAndLinkTag, {isLoading: isLoadingCreation}] = tagsApi.useCreateAndLinkTagMutation();
     const [linkTagToTag, {isLoading: isLoadingLinking}] = tagsApi.useLink2TagsMutation();
@@ -75,7 +75,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
     const handleCreateAndLinkTags = React.useCallback(
         async (currentTags: Tag[]) => {
             const promises = currentTags.map((tag) => {
-                if (type === 'suggest') {
+                if (type === 'suggest_and_create_tag') {
                     return createAndLinkTag({name: tag.name, note_id: noteId, userId: user?.id || ''}).unwrap();
                 }
 
@@ -97,7 +97,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                     // Если пришли созданные теги, то выводим имена
                     if (success.some(({name}) => !!name)) {
                         enqueueSnackbar(
-                            `Успешно ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${success
+                            `Успешно ${type === 'suggest_and_create_tag' ? 'созданы' : 'связаны'} теги: ${success
                                 .map(({name}) => name)
                                 .filter((name) => !!name)
                                 .join(', ')}`,
@@ -120,7 +120,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
 
                     if (alreadyExistsNames.length > 0) {
                         enqueueSnackbar(
-                            `Уже ${type === 'suggest' ? 'созданы' : 'связаны'} теги: ${alreadyExistsNames.join(', ')}`,
+                            `Уже ${type === 'suggest_and_create_tag' ? 'созданы' : 'связаны'} теги: ${alreadyExistsNames.join(', ')}`,
                             {
                                 variant: 'warning',
                             },
@@ -131,18 +131,25 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                     setTagValues((prevTags) =>
                         prevTags.filter(({name}) => !success.map(({name}) => name).includes(name)),
                     );
+
+                    if (type === 'only_link') {
+                        setTagValues([]);
+                    }
                 }
 
                 if (failures.length > 0) {
                     enqueueSnackbar(
-                        `Ошибка при ${type === 'suggest' ? 'создании' : 'связывании'} тегов: ${failures.join(', ')}`,
+                        `Ошибка при ${type === 'suggest_and_create_tag' ? 'создании' : 'связывании'} тегов: ${failures.join(', ')}`,
                         {variant: 'error'},
                     );
                 }
             } catch {
-                enqueueSnackbar(`Ошибка во время ${type === 'suggest' ? 'создании' : 'связывании'} тегов`, {
-                    variant: 'error',
-                });
+                enqueueSnackbar(
+                    `Ошибка во время ${type === 'suggest_and_create_tag' ? 'создании' : 'связывании'} тегов`,
+                    {
+                        variant: 'error',
+                    },
+                );
             }
         },
         [activeTag?.id, createAndLinkTag, enqueueSnackbar, linkTagToTag, noteId, type, user?.id],
@@ -155,14 +162,14 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
             let retrySuccess = false;
 
             while (retries >= 0 && !retrySuccess) {
-                const suggested = await suggestTagNames({
+                const suggest_and_create_taged = await suggest_and_create_tagTagNames({
                     tags_num: 1,
                     text: noteText,
                     userId: user?.id || '',
                 }).unwrap();
 
                 // Пожддержка для >1 генерируемого тега за раз, сейчас 1 генится, поэтому избыточный some ниже
-                newTags = suggested.tagNames.map((tagName) => ({
+                newTags = suggest_and_create_taged.tagNames.map((tagName) => ({
                     id: tagName,
                     name: tagName,
                     userId: user?.id || '',
@@ -189,7 +196,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                 variant: 'error',
             });
         }
-    }, [enqueueSnackbar, noteText, suggestTagNames, tagValues, user?.id]);
+    }, [enqueueSnackbar, noteText, suggest_and_create_tagTagNames, tagValues, user?.id]);
 
     const handleKeyDown = React.useCallback(
         (event: React.KeyboardEvent) => {
@@ -223,7 +230,9 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
 
     return (
         <Dialog open={isOpen} onClose={onClose}>
-            <DialogTitle>{type === 'suggest' ? 'Создание и связка тегов к заметке' : 'Связка тегов'}</DialogTitle>
+            <DialogTitle>
+                {type === 'suggest_and_create_tag' ? 'Создание и связка тегов к заметке' : 'Связка тегов'}
+            </DialogTitle>
             <DialogContent>
                 <Stack>
                     <Autocomplete
@@ -231,7 +240,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                         id="tags-autocomplete"
                         options={closestTagsAvoidMissing || []}
                         getOptionLabel={(option) => option.name}
-                        noOptionsText={`Не найдено тегов. Попробуйте ввести минимум 2 символа. ${type === 'suggest' ? `Нажмите 'Enter' для нового тега.` : ''}`}
+                        noOptionsText={`Не найдено тегов. Попробуйте ввести минимум 2 символа. ${type === 'suggest_and_create_tag' ? `Нажмите 'Enter' для нового тега.` : ''}`}
                         value={tagValues}
                         filterOptions={(options) => (options.length ? options : [])}
                         filterSelectedOptions
@@ -249,12 +258,12 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                             <Box display={'flex'} flexDirection={'column'} alignItems={'flex-end'}>
                                 <TextField
                                     {...params}
-                                    onKeyDown={type === 'suggest' ? handleKeyDown : () => {}}
+                                    onKeyDown={type === 'suggest_and_create_tag' ? handleKeyDown : () => {}}
                                     variant="standard"
                                     label="Теги"
                                     disabled={isLoadingSuggest}
                                 />
-                                {type === 'suggest' && (
+                                {type === 'suggest_and_create_tag' && (
                                     <Tooltip placement={'right-end'} title={'Генерирует варианты по тексту заметки'}>
                                         <LoadingButton
                                             loading={isLoadingSuggest}
@@ -289,7 +298,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                             onClick={async () => {
                                 const allTags = tagValues;
 
-                                if (type === 'suggest') {
+                                if (type === 'suggest_and_create_tag') {
                                     if (inputValue && !tagValues.find(({name}) => name === inputValue)) {
                                         const tagInTextField = {
                                             name: inputValue,
@@ -310,7 +319,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                                 onClose();
                             }}
                         >
-                            {type === 'suggest' ? 'Создать и привязать теги' : 'Связать теги'}
+                            {type === 'suggest_and_create_tag' ? 'Создать и привязать теги' : 'Создать связь'}
                         </LoadingButton>
                     </ButtonGroup>
                 </Stack>

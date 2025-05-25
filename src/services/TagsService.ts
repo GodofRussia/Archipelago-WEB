@@ -1,6 +1,6 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
-import {Tag, TagDto} from '../types/tags';
-import {convertFromNoteDto, convertFromTagsDto} from '../utils/convert';
+import {Tag, TagDto, TagWithLinkName, TagWithLinkNameDto} from '../types/tags';
+import {convertFromNoteDto, convertFromTagsDto, convertFromTagWithLinkNameDto} from '../utils/convert';
 import {Note, NoteDto} from '../types/notes';
 
 interface CreateTagRequest {
@@ -25,6 +25,12 @@ interface Link2TagsRequest {
 interface Unlink2TagsRequest {
     tag1_id: string;
     tag2_id: string;
+}
+
+interface UpdateTagsLinkNameRequest {
+    tag1_id: string;
+    tag2_id: string;
+    link_name: string;
 }
 
 interface UnlinkTagFromNoteRequest {
@@ -60,13 +66,13 @@ export const tagsApi = createApi({
             },
             providesTags: (_, __, arg) => [{type: 'NoteTagsList', id: arg.noteId}],
         }),
-        listLinkedTags: build.query<Tag[], {userId: string; tagId: string}>({
+        listLinkedTags: build.query<TagWithLinkName[], {userId: string; tagId: string}>({
             query: ({tagId, userId}) => ({
                 url: `/tags/${tagId}/linked`,
                 headers: {'X-User-Id': userId},
             }),
-            transformResponse: (tags: TagDto[]) => {
-                return tags.map((tag) => convertFromTagsDto(tag));
+            transformResponse: (tags: TagWithLinkNameDto[]) => {
+                return tags.map((tag) => convertFromTagWithLinkNameDto(tag));
             },
             providesTags: (_, __, arg) => [{type: 'LinkedTagsList', id: arg.tagId}],
         }),
@@ -127,7 +133,7 @@ export const tagsApi = createApi({
             invalidatesTags: (_, __, arg) => [{type: 'NoteTagsList', id: arg.noteId}],
         }),
 
-        // Ручки для связи
+        // Ручки для связи 2 тегов
         link2Tags: build.mutation<Tag, Link2TagsRequest & {userId: string}>({
             query: ({userId, ...requestData}) => ({
                 url: `/tags/link`,
@@ -158,7 +164,23 @@ export const tagsApi = createApi({
                 },
             ],
         }),
+        updateTagLinkName: build.mutation<Tag, UpdateTagsLinkNameRequest & {userId: string}>({
+            query: ({userId, ...requestData}) => ({
+                url: `/tags/update-tags-link-name`,
+                body: requestData,
+                method: 'POST',
+                headers: {'X-User-Id': userId},
+            }),
+            invalidatesTags: (_, __, arg) => [
+                {type: 'LinkedTagsList', id: arg.tag1_id},
+                {
+                    type: 'LinkedTagsList',
+                    id: arg.tag2_id,
+                },
+            ],
+        }),
 
+        // Ручки для связи тега и заметки
         linkTagToNote: build.mutation<Tag, {userId: string; tagId: string; noteId: string}>({
             query: ({userId, tagId, noteId}) => ({
                 url: `/tags/${tagId}/link/${noteId}`,

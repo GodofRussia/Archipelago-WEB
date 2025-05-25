@@ -1,14 +1,16 @@
 import React, {useState} from 'react';
 import {Box, CircularProgress, IconButton, TextField, Typography} from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import {Variant} from '@mui/material/styles/createTypography';
 
 interface EditableTitleProps {
     defaultTitle: string;
     onUpdateTitle: (newTitle: string) => void;
     isLoading: boolean;
+    variant: Variant;
 }
 
-const EditableTitle = ({defaultTitle, onUpdateTitle, isLoading}: EditableTitleProps) => {
+const EditableTitle = ({defaultTitle, onUpdateTitle, isLoading, variant}: EditableTitleProps) => {
     const [title, setTitle] = useState(defaultTitle);
     const [isEditing, setIsEditing] = useState(false);
     const [isDebouncing, setIsDebouncing] = useState(false);
@@ -28,9 +30,10 @@ const EditableTitle = ({defaultTitle, onUpdateTitle, isLoading}: EditableTitlePr
         }
     };
 
-    const handleClick = () => {
+    const handleClick = (event: React.MouseEvent) => {
         if (!isLoading) {
             setIsEditing(true);
+            event.stopPropagation();
         }
     };
 
@@ -55,7 +58,7 @@ const EditableTitle = ({defaultTitle, onUpdateTitle, isLoading}: EditableTitlePr
     }, [defaultTitle]);
 
     return (
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" minHeight={40} gap={1}>
             {isEditing ? (
                 <TextField
                     value={title}
@@ -65,26 +68,25 @@ const EditableTitle = ({defaultTitle, onUpdateTitle, isLoading}: EditableTitlePr
                     variant="outlined"
                     size="small"
                     autoFocus
-                    disabled={isLoading}
-                    sx={{
-                        width: '100%',
-                        input: {padding: '8px'},
+                    onClick={(event) => {
+                        event.stopPropagation();
                     }}
+                    disabled={isLoading}
                 />
             ) : (
                 <Typography
-                    variant="h6"
+                    variant={variant}
                     onClick={handleClick}
                     sx={{
                         cursor: isLoading ? 'default' : 'pointer',
-                        borderBottom: '1px dashed gray',
-                        color: isLoading ? 'gray' : 'inherit',
+                        borderBottom: '1px solid gray',
+                        color: isLoading || !title ? 'gray' : 'inherit',
                     }}
                 >
-                    {title}
+                    {title || 'введите имя связи'}
                 </Typography>
             )}
-            {isEditing && (
+            {(isEditing || isLoading) && (
                 <IconButton onClick={handleBlurOrEnter} disabled={isLoading}>
                     {isLoading ? <CircularProgress size={24} /> : <CheckIcon />}
                 </IconButton>
