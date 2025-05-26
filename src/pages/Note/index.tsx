@@ -360,9 +360,20 @@ function Note() {
             </Stack>
         </>
     ) : (
-        <Alert severity={'error'}>
-            Ошибка получения заметки. {(error as FetchBaseQueryError).status === 403 ? 'Нет доступа к заметке.' : ''}
-        </Alert>
+        <Stack
+            sx={{
+                p: 2,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+            }}
+        >
+            <Alert severity="error">
+                Ошибка получения заметки.{' '}
+                {(error as FetchBaseQueryError).status === 403 ? 'Нет доступа к заметке.' : ''}
+            </Alert>
+        </Stack>
     );
 }
 

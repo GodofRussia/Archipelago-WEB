@@ -5,10 +5,12 @@ interface ChatGetSumResponse {
     summ_text: string;
 }
 
-interface ChatGetCheckSummarizationExistsResponse {
-    chat_id: string;
-    chat_name: string;
-}
+type ChatGetCheckSummarizationExistsResponse =
+    | 'string'
+    | {
+          chat_id: string;
+          chat_name: string;
+      };
 
 export const chatAPI = createApi({
     reducerPath: 'chat',
@@ -26,6 +28,10 @@ export const chatAPI = createApi({
             }),
             providesTags: ['ChatInfo'],
             transformResponse: (response: ChatGetCheckSummarizationExistsResponse) => {
+                if (typeof response === 'string') {
+                    return {chatId: null, chatName: ''};
+                }
+
                 return {chatId: response.chat_id, chatName: response.chat_name};
             },
         }),

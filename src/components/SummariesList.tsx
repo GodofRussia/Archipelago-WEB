@@ -138,11 +138,9 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     }, [summaryList]);
 
     React.useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        if (isErrorChatInfo && (errorChatInfo as FetchBaseQueryError).originalStatus === 400) {
+        if (isErrorChatInfo || (!!chatInfo && chatInfo.chatId !== null)) {
             dispatch(setChatInfo({chatInfo: undefined}));
-        } else if (!isErrorChatInfo) {
+        } else {
             dispatch(setChatInfo({chatInfo}));
         }
     }, [chatInfo, dispatch, errorChatInfo, isErrorChatInfo, onGetSum]);
