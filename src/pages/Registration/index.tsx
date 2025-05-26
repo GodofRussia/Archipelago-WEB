@@ -193,7 +193,7 @@ function Registration() {
                                                 <Typography variant={'body2'}>
                                                     {isErrorSomeRegistrationStep &&
                                                         ((registrationError as FetchBaseQueryError)?.status === 400
-                                                            ? 'Пользователь с введёными данными уже существует'
+                                                            ? 'Пользователь с такой почтой уже зарегистрирован'
                                                             : 'Попробуйте войти позже')}
                                                 </Typography>
                                             </Stack>

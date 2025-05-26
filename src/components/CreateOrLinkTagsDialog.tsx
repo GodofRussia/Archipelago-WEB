@@ -33,7 +33,7 @@ interface CreateOrLinkTagsDialogProps {
 const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTagsDialogProps) => {
     const {user} = useAppSelector((state) => state.userReducer);
 
-    // Active tag to link DialogType = 'only_link'
+    // Active tag to link when DialogType = 'only_link'
     const {activeTag} = useAppSelector((state) => state.tagsReducer);
     const {activeNote} = useAppSelector((state) => state.notesReducer);
     const {enqueueSnackbar} = useSnackbar();
@@ -42,17 +42,36 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
     const [inputValue, setInputValue] = React.useState<string>('');
 
     const [searchTagsByName, {data: searchedTags, isLoading: isLoadingSearch}] = tagsApi.useClosestTagsMutation();
-    const [suggest_and_create_tagTagNames, {isLoading: isLoadingSuggest}] = tagsApi.useSuggestTagNamesMutation();
+    const [suggestTagNames, {isLoading: isLoadingSuggest}] = tagsApi.useSuggestTagNamesMutation();
 
     const [createAndLinkTag, {isLoading: isLoadingCreation}] = tagsApi.useCreateAndLinkTagMutation();
     const [linkTagToTag, {isLoading: isLoadingLinking}] = tagsApi.useLink2TagsMutation();
 
+    const {data: existingTags, isLoading: isLoadingExistingTags} = tagsApi.useListTagsQuery(
+        {
+            noteId: activeNote?.id || '',
+            userId: user?.id || '',
+        },
+        {skip: !user || !activeNote},
+    );
     const [doc] = useDocument<NoteDoc>(activeNote?.automergeUrl);
 
     const closestTagsAvoidMissing = useAvoidMissingFetchingData({
         data: searchedTags || null,
         isLoading: isLoadingSearch,
     });
+
+    const [localOptions, setLocalOptions] = React.useState<Tag[]>([]);
+
+    React.useEffect(() => {
+        setLocalOptions(closestTagsAvoidMissing?.filter(({id}) => id !== activeTag?.id) || []);
+    }, [closestTagsAvoidMissing, activeTag]);
+
+    const handleBlur = () => {
+        if (inputValue.length < 2) {
+            setLocalOptions([]);
+        }
+    };
 
     const debouncedSearch = React.useMemo(
         () =>
@@ -64,23 +83,28 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
         [searchTagsByName, user?.id],
     );
 
-    React.useEffect(() => {
-        debouncedSearch(inputValue);
-    }, [inputValue, debouncedSearch]);
-
     const noteText = React.useMemo(() => {
         return typeof doc?.text === 'string' ? (doc?.text as string) || '' : doc?.text.join('') || '';
     }, [doc?.text]);
 
     const handleCreateAndLinkTags = React.useCallback(
         async (currentTags: Tag[]) => {
-            const promises = currentTags.map((tag) => {
-                if (type === 'suggest_and_create_tag') {
-                    return createAndLinkTag({name: tag.name, note_id: noteId, userId: user?.id || ''}).unwrap();
-                }
+            if (currentTags.find(({id}) => id === activeTag?.id)) {
+                enqueueSnackbar(`Нельзя связать тег с самим собой!`, {
+                    variant: 'warning',
+                });
+            }
 
-                return linkTagToTag({tag1_id: activeTag?.id || '', tag2_id: tag.id, userId: user?.id || ''});
-            });
+            // фильтруем теги на отправку: для связывания нельзя отправить два одинаковых тега (связка активного с самим собой)
+            const promises = currentTags
+                .filter(({id}) => id !== activeTag?.id)
+                .map((tag) => {
+                    if (type === 'suggest_and_create_tag') {
+                        return createAndLinkTag({name: tag.name, note_id: noteId, userId: user?.id || ''}).unwrap();
+                    }
+
+                    return linkTagToTag({tag1_id: activeTag?.id || '', tag2_id: tag.id, userId: user?.id || ''});
+                });
 
             try {
                 const results = await Promise.allSettled(promises);
@@ -162,20 +186,25 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
             let retrySuccess = false;
 
             while (retries >= 0 && !retrySuccess) {
-                const suggest_and_create_taged = await suggest_and_create_tagTagNames({
+                const suggested = await suggestTagNames({
                     tags_num: 1,
                     text: noteText,
                     userId: user?.id || '',
                 }).unwrap();
 
                 // Пожддержка для >1 генерируемого тега за раз, сейчас 1 генится, поэтому избыточный some ниже
-                newTags = suggest_and_create_taged.tagNames.map((tagName) => ({
+                newTags = suggested.tagNames.map((tagName) => ({
                     id: tagName,
                     name: tagName,
                     userId: user?.id || '',
                 }));
 
-                if (!newTags.some(({name}) => tagValues.map(({name}) => name).includes(name))) {
+                // смотрим, чтобы появились новые в списке на создание И что также нет в тегах на странице заметки
+                if (
+                    !newTags.some(({name}) =>
+                        [...tagValues, ...(existingTags || [])].map(({name}) => name).includes(name),
+                    )
+                ) {
                     retrySuccess = true;
                     break;
                 }
@@ -196,7 +225,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                 variant: 'error',
             });
         }
-    }, [enqueueSnackbar, noteText, suggest_and_create_tagTagNames, tagValues, user?.id]);
+    }, [enqueueSnackbar, existingTags, noteText, suggestTagNames, tagValues, user?.id]);
 
     const handleKeyDown = React.useCallback(
         (event: React.KeyboardEvent) => {
@@ -228,6 +257,16 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
         [enqueueSnackbar, inputValue, tagValues, user?.id],
     );
 
+    React.useEffect(() => {
+        debouncedSearch(inputValue);
+    }, [inputValue, debouncedSearch]);
+
+    // Обнуление стейта при смене заметки
+    React.useEffect(() => {
+        setTagValues([]);
+        setInputValue('');
+    }, [noteId]);
+
     return (
         <Dialog open={isOpen} onClose={onClose}>
             <DialogTitle>
@@ -238,7 +277,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                     <Autocomplete
                         multiple
                         id="tags-autocomplete"
-                        options={closestTagsAvoidMissing || []}
+                        options={localOptions}
                         getOptionLabel={(option) => option.name}
                         noOptionsText={`Не найдено тегов. Попробуйте ввести минимум 2 символа. ${type === 'suggest_and_create_tag' ? `Нажмите 'Enter' для нового тега.` : ''}`}
                         value={tagValues}
@@ -254,6 +293,7 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                                 setInputValue(newInputValue);
                             }
                         }}
+                        onBlur={handleBlur}
                         renderInput={(params) => (
                             <Box display={'flex'} flexDirection={'column'} alignItems={'flex-end'}>
                                 <TextField
@@ -261,12 +301,21 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                                     onKeyDown={type === 'suggest_and_create_tag' ? handleKeyDown : () => {}}
                                     variant="standard"
                                     label="Теги"
-                                    disabled={isLoadingSuggest}
+                                    disabled={isLoadingSuggest || isLoadingExistingTags}
                                 />
                                 {type === 'suggest_and_create_tag' && (
-                                    <Tooltip placement={'right-end'} title={'Генерирует варианты по тексту заметки'}>
+                                    <Tooltip
+                                        placement="right-end"
+                                        title={
+                                            !!noteText
+                                                ? 'Генерирует варианты по тексту заметки'
+                                                : 'Впишите текст в заметку, чтобы воспользоваться функцией генерации'
+                                        }
+                                    >
                                         <LoadingButton
-                                            loading={isLoadingSuggest}
+                                            loading={isLoadingSuggest || isLoadingExistingTags}
+                                            // Если заметка пустая, не из чего генерить, дизейблим
+                                            disabled={!noteText}
                                             variant="text"
                                             color="primary"
                                             onClick={handleSuggestTags}
