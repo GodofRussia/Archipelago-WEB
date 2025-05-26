@@ -312,17 +312,19 @@ const CreateOrLinkTagsDialog = ({isOpen, type, onClose, noteId}: CreateOrLinkTag
                                                 : 'Впишите текст в заметку, чтобы воспользоваться функцией генерации'
                                         }
                                     >
-                                        <LoadingButton
-                                            loading={isLoadingSuggest || isLoadingExistingTags}
-                                            // Если заметка пустая, не из чего генерить, дизейблим
-                                            disabled={!noteText}
-                                            variant="text"
-                                            color="primary"
-                                            onClick={handleSuggestTags}
-                                            sx={{mt: 2}}
-                                        >
-                                            Подсказать
-                                        </LoadingButton>
+                                        <span>
+                                            <LoadingButton
+                                                loading={isLoadingSuggest || isLoadingExistingTags}
+                                                // Если заметка пустая, не из чего генерить, дизейблим
+                                                disabled={!noteText}
+                                                variant="text"
+                                                color="primary"
+                                                onClick={handleSuggestTags}
+                                                sx={{mt: 2}}
+                                            >
+                                                Подсказать
+                                            </LoadingButton>
+                                        </span>
                                     </Tooltip>
                                 )}
                             </Box>
