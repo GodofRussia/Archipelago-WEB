@@ -74,23 +74,20 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         data: chatInfo,
         isLoading: isLoadingChatInfo,
         isError: isErrorChatInfo,
-        error: errorChatInfo,
     } = chatAPI.useGetSummarizationExistsInfoQuery({id: noteId}, {skip: !user, pollingInterval: 20000});
 
     const [getChatSum, {data: chatSumData, isError: isErrorChatSum, isLoading: isLoadingChatSum}] =
         chatAPI.useGetSummarizationMutation();
 
-    const onGetSum = React.useCallback(
-        () =>
-            getChatSum({id: noteId}).then((data) => {
-                if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
-                    enqueueSnackbar('Ошибка получения суммаризации чата', {variant: 'error'});
-                } else {
-                    enqueueSnackbar('Суммаризация чата получена', {variant: 'success'});
-                }
-            }),
-        [enqueueSnackbar, getChatSum, noteId],
-    );
+    const onGetSum = React.useCallback(() => {
+        getChatSum({id: noteId}).then((data) => {
+            if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
+                enqueueSnackbar('Ошибка получения суммаризации чата', {variant: 'error'});
+            } else {
+                enqueueSnackbar('Суммаризация чата получена', {variant: 'success'});
+            }
+        });
+    }, [enqueueSnackbar, getChatSum, noteId]);
 
     const onExpandedStateChanged = (_: React.SyntheticEvent, expanded: boolean) => {
         dispatch(setExpandedDefault(expanded));
@@ -138,15 +135,15 @@ const SummariesList = ({noteId}: {noteId: string}) => {
     }, [summaryList]);
 
     React.useEffect(() => {
-        if (isErrorChatInfo || (!!chatInfo && chatInfo.chatId !== null)) {
+        if (isErrorChatInfo || (!!chatInfo && chatInfo.chatId === null)) {
             dispatch(setChatInfo({chatInfo: undefined}));
         } else {
             dispatch(setChatInfo({chatInfo}));
         }
-    }, [chatInfo, dispatch, errorChatInfo, isErrorChatInfo, onGetSum]);
+    }, [chatInfo, dispatch, isErrorChatInfo]);
 
     React.useEffect(() => {
-        if (noteId && chatInfo) getChatSum({id: noteId});
+        if (noteId && chatInfo && chatInfo.chatId !== null) getChatSum({id: noteId});
     }, [noteId, chatInfo, getChatSum]);
 
     React.useEffect(() => {
@@ -199,7 +196,8 @@ const SummariesList = ({noteId}: {noteId: string}) => {
                             (!summaryList ||
                                 (!summaryList.activeSummaryIds.length && !summaryList.nonActiveSummaryIds.length)) &&
                             !(isErrorCallSummaries || isErrorSummaryList || isErrorChatSum) &&
-                            !chatInfo &&
+                            !!chatInfo &&
+                            chatInfo.chatId === null &&
                             !isErrorChatSum && (
                                 <Paper square sx={{p: 4}}>
                                     <Typography variant={'body1'}>
