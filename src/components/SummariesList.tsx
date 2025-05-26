@@ -74,7 +74,7 @@ const SummariesList = ({noteId}: {noteId: string}) => {
         data: chatInfo,
         isLoading: isLoadingChatInfo,
         isError: isErrorChatInfo,
-    } = chatAPI.useGetSummarizationExistsInfoQuery({id: noteId}, {skip: !user, pollingInterval: 20000});
+    } = chatAPI.useGetSummarizationExistsInfoQuery({id: noteId}, {skip: !user, pollingInterval: 5000});
 
     const [getChatSum, {data: chatSumData, isError: isErrorChatSum, isLoading: isLoadingChatSum}] =
         chatAPI.useGetSummarizationMutation();
