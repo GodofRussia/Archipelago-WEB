@@ -18,6 +18,7 @@ export const Main = styled('main', {shouldForwardProp: (prop) => prop !== 'open'
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 10,
+    overflow: 'hidden',
     padding: theme.spacing(3),
     paddingTop: 0,
     paddingBottom: 0,

@@ -1,4 +1,5 @@
 import {User} from '../types/user';
+import {Tag} from '../types/tags';
 
 export const loadUser = (): User | undefined => {
     try {
@@ -45,5 +46,35 @@ export const setCollapsedDirIds = (dirIds: number[]) => {
         localStorage.setItem('collapsedDirIds', serialized);
     } catch (err) {
         console.error('Save collapsedDirIds failed', err);
+    }
+};
+
+export const loadActiveTag = (): Tag | undefined => {
+    try {
+        const serializedTag = localStorage.getItem('tag');
+        if (serializedTag === null) return undefined;
+
+        return JSON.parse(serializedTag);
+    } catch (err) {
+        console.error('Load tag failed', err);
+
+        return undefined;
+    }
+};
+
+export const saveOrUpdateActiveTag = (tag: Tag) => {
+    try {
+        const serializedTag = JSON.stringify(tag);
+        localStorage.setItem('tag', serializedTag);
+    } catch (err) {
+        console.error('Save/update tag failed', err);
+    }
+};
+
+export const removeActiveTag = () => {
+    try {
+        localStorage.removeItem('tag');
+    } catch (err) {
+        console.error('Remove tag failed', err);
     }
 };

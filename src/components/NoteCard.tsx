@@ -72,6 +72,7 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
                 defaultAccess,
             }),
         );
+
         navigate(`/notes/${id}?tab=${tab}`);
     }, [allowedMethods, automergeUrl, defaultAccess, dirId, dispatch, id, navigate, tab, title]);
 
@@ -193,9 +194,9 @@ const NoteCard: React.FC<Note & {accumulatedPadding?: number}> = ({
                 </MenuItem>
             </Menu>
 
-            <Dialog open={isOpenNewTitleDialog} onClose={() => setIsOpenNewTitleDialog(false)}>
+            <Dialog open={isOpenNewTitleDialog} onClose={() => setIsOpenNewTitleDialog(false)} fullWidth={true}>
                 <DialogTitle id="change-title-dialog-title">Переименовать заметку</DialogTitle>
-                <DialogContent>
+                <DialogContent sx={{minHeight: 70}}>
                     <Stack gap={3}>
                         <TextField
                             type="text"

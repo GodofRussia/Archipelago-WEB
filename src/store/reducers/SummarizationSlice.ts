@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 
 export interface ChatInfo {
-    chatId: string;
+    chatId: string | null;
     chatName: string;
 }
 

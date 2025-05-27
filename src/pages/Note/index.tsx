@@ -37,7 +37,12 @@ import {AccessEnum} from '../../types/access';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
 import BreadCrumbs from '../../components/BreadCrumbs';
 import NoteSharing from '../../components/NoteSharing';
-import Editor from '../../components/Editor';
+import EditorWithTagsWrapper from '../../components/EditorWithTagsWrapper';
+import {Tag} from '../../types/tags';
+import {tagsApi} from '../../services/TagsService';
+import {setActiveTag} from '../../store/reducers/TagsSlice';
+import TagInfoDialog from '../../components/TagInfoDialog';
+import CreateOrLinkTagsDialog from '../../components/CreateOrLinkTagsDialog';
 
 function Note() {
     const {id = ''} = useParams();
@@ -58,6 +63,16 @@ function Note() {
         {skip: !user},
     );
 
+    const {data: tags, isLoading: isLoadingListTags} = tagsApi.useListTagsQuery(
+        {
+            noteId: id,
+            userId: user?.id || '',
+        },
+        {skip: !user},
+    );
+
+    const [unlinkTag, {isLoading: isUnlinkingTag}] = tagsApi.useUnlinkTagFromNoteMutation();
+
     const [startRecording, {isLoading: isLoadingStartRecording}] = callAPI.useStartCallRecordingMutation();
     const [attachSummary, {isLoading: isAttachingSummary}] = notesApi.useAttachSummaryMutation();
 
@@ -67,6 +82,8 @@ function Note() {
     const [infoModalIsOpen, setInfoModalIsOpen] = React.useState(false);
     const [formModalIsOpen, setFormModalIsOpen] = React.useState(false);
     const [accessRightsDialogIsOpen, setAccessRightsDialogIsOpen] = React.useState(false);
+    const [tagsDialogIsOpen, setTagsDialogIsOpen] = React.useState<boolean>(false);
+    const [createOrLinkTagsDialogIsOpen, setCreateOrLinkTagsDialogIsOpen] = React.useState<boolean>(false);
 
     const handleFormSubmit = async () => {
         if (!!callUrl) {
@@ -81,12 +98,6 @@ function Note() {
             });
         }
     };
-
-    React.useEffect(() => {
-        if (note) {
-            dispatch(setActiveNote(note));
-        }
-    }, [dispatch, id, note, sharedNotes]);
 
     const [open, setOpen] = React.useState(false);
     const [isOpenCallNotification, setIsOpenCallNotification] = React.useState<boolean>(false);
@@ -106,6 +117,31 @@ function Note() {
         setOpen(false);
     };
 
+    const handleOpenTagsDialog = React.useCallback(
+        (tag: Tag) => {
+            dispatch(setActiveTag(tag));
+            setTagsDialogIsOpen(true);
+        },
+        [dispatch],
+    );
+
+    const handleOpenLinkOrCreateTagsDialog = React.useCallback(() => {
+        setCreateOrLinkTagsDialogIsOpen(true);
+    }, []);
+
+    const handleUnlinkTagFromNote = React.useCallback(
+        (tag: Tag) => {
+            unlinkTag({userId: user?.id || '', tag_id: tag.id, note_id: id});
+        },
+        [id, unlinkTag, user?.id],
+    );
+
+    React.useEffect(() => {
+        if (note) {
+            dispatch(setActiveNote(note));
+        }
+    }, [dispatch, id, note, sharedNotes]);
+
     return !isError ? (
         <>
             <BreadCrumbs />
@@ -115,7 +151,7 @@ function Note() {
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    flexGrow: 10,
+                    flexGrow: 1,
                 }}
             >
                 <Box gap={2} display="flex" alignItems={'center'} justifyContent={'space-between'}>
@@ -198,6 +234,19 @@ function Note() {
                             </Grow>
                         )}
                     </Popper>
+
+                    <TagInfoDialog
+                        notesNeeded={false}
+                        handleTagClicked={handleOpenTagsDialog}
+                        isOpen={tagsDialogIsOpen}
+                        onClose={() => setTagsDialogIsOpen(false)}
+                    />
+                    <CreateOrLinkTagsDialog
+                        noteId={id}
+                        isOpen={createOrLinkTagsDialogIsOpen}
+                        onClose={() => setCreateOrLinkTagsDialogIsOpen(false)}
+                        type="suggest_and_create_tag"
+                    />
 
                     <NoteSharing isOpen={accessRightsDialogIsOpen} close={() => setAccessRightsDialogIsOpen(false)} />
 
@@ -285,7 +334,7 @@ function Note() {
                                 Пожалуйста, впустите его и выдайте все необходимые права.
                                 <br />
                                 <br />
-                                Суммаризацию вы сможете увидеть во вкладке &quot;Управление суммаризацией&quot;
+                                Суммаризацию вы сможете увидеть во вкладке &quot;Мои краткие итоги&quot;
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
@@ -298,13 +347,33 @@ function Note() {
 
                 <SummariesList noteId={id} />
 
-                {note && <Editor automergeUrl={note.automergeUrl} />}
+                <EditorWithTagsWrapper
+                    tags={tags}
+                    isLoading={isLoadingListTags}
+                    isTagsDisabled={isUnlinkingTag}
+                    isDisabledEditor={!note || !note.allowedMethods.includes(AccessEnum.update)}
+                    automergeUrl={note?.automergeUrl}
+                    handleTagClicked={handleOpenTagsDialog}
+                    handleTagUnlinked={handleUnlinkTagFromNote}
+                    handleAddTagButtonClicked={handleOpenLinkOrCreateTagsDialog}
+                />
             </Stack>
         </>
     ) : (
-        <Alert severity={'error'}>
-            Ошибка получения заметки. {(error as FetchBaseQueryError).status === 403 ? 'Нет доступа к заметке.' : ''}
-        </Alert>
+        <Stack
+            sx={{
+                p: 2,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexGrow: 1,
+            }}
+        >
+            <Alert severity="error">
+                Ошибка получения заметки.{' '}
+                {(error as FetchBaseQueryError).status === 403 ? 'Нет доступа к заметке.' : ''}
+            </Alert>
+        </Stack>
     );
 }
 

@@ -59,6 +59,9 @@ export default function App() {
                     },
                     typography: {
                         fontFamily: 'Roboto, Arial, sans-serif',
+                        h6: {
+                            fontSize: '18px',
+                        },
                     },
                 },
                 ruRU,

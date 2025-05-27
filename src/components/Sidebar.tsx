@@ -34,7 +34,7 @@ import {addCollapsedDirId, changeCollapsedStateForAllDirs, mergeDirTreeWithNotes
 import {createAutomergeUrl} from '../utils/automerge';
 import {TabType} from '../types/layout';
 import NoteCard from './NoteCard';
-import {setNotes, setSharedNotesByUserDirs, setTabType} from '../store/reducers/NotesSlice';
+import {setActiveNote, setNotes, setSharedNotesByUserDirs, setTabType} from '../store/reducers/NotesSlice';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import {FetchBaseQueryError} from '@reduxjs/toolkit/query';
@@ -123,8 +123,15 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
         {skip: !user},
     );
 
-    const [createNoteApi, {data: createdNote, isLoading: isLoadingNoteCreation, isError: isErrorNoteCreation}] =
-        notesApi.useCreateNoteMutation();
+    const [
+        createNoteApi,
+        {
+            data: createdNote,
+            isLoading: isLoadingNoteCreation,
+            isError: isErrorNoteCreation,
+            reset: resetCreatedNoteData,
+        },
+    ] = notesApi.useCreateNoteMutation();
 
     const [createDirApi, {isLoading: isLoadingDirCreation, isError: isErrorDirCreation}] =
         dirsApi.useCreateDirMutation();
@@ -178,10 +185,12 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                     } else {
                         enqueueSnackbar('Папка успешно создана', {variant: 'success'});
                         const dirId = extractNumberAfterLastDot((data as {data: Dir}).data.subpath);
-                        console.log(dirId, data);
                         if (dirId) {
                             dispatch(addCollapsedDirId(dirId));
                         }
+
+                        setIsOpenCreateDialog(false);
+                        setDirName('');
                     }
                 });
             }
@@ -207,21 +216,22 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
         if (user) {
             setDirIdForCreate(user.rootDirId);
         }
-    }, [createdNote, navigate, user]);
+    }, [user]);
 
     React.useEffect(() => {
         if (createdNote) {
             navigate(`/notes/${createdNote.id}`);
+            resetCreatedNoteData();
+            setNoteTitle('');
         }
-    }, [createdNote, navigate]);
+    }, [createdNote, navigate, resetCreatedNoteData]);
 
     const handleKeyDown = React.useCallback(
-        (event: React.KeyboardEvent<HTMLDivElement>, type: 'dir' | 'note') => {
+        async (event: React.KeyboardEvent<HTMLDivElement>, type: 'dir' | 'note') => {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 if (type === 'dir') {
-                    handleCreateDir(dirIdForCreate, dirName);
-                    setIsOpenCreateDialog(false);
+                    await handleCreateDir(dirIdForCreate, dirName);
                 } else {
                     handleCreateNote(noteTitle, dirIdForCreate);
                     setIsOpenCreateNoteDialog(false);
@@ -346,6 +356,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                         <CustomIconButton
                             onClick={() => {
                                 handleTabChange(TabType.HOME);
+                                dispatch(setActiveNote(undefined));
                             }}
                             className={tab === TabType.HOME ? 'active' : ''}
                         >
@@ -357,6 +368,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                             className={tab === TabType.SHARED ? 'active' : ''}
                             onClick={() => {
                                 handleTabChange(TabType.SHARED);
+                                dispatch(setActiveNote(undefined));
                             }}
                         >
                             <ListIcon />
@@ -380,9 +392,13 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                         <IconButton
                             disabled={!user || noteTab === TabType.SHARED}
                             onClick={() => {
-                                if (activeNote) {
+                                // если мы не выбрали заметку, то в activeNote undefined, тогда берем как папку корень
+                                if (!!activeNote) {
                                     setDirIdForCreate(activeNote.dirId);
+                                } else if (!!user) {
+                                    setDirIdForCreate(user.rootDirId);
                                 }
+
                                 setIsOpenCreateNoteDialog(true);
                             }}
                         >
@@ -451,9 +467,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                     </Box>
                 )}
 
-                <Dialog open={isOpenCreateDialog} onClose={() => setIsOpenCreateDialog(false)}>
+                <Dialog open={isOpenCreateDialog} onClose={() => setIsOpenCreateDialog(false)} fullWidth={true}>
                     <DialogTitle id="alert-dialog-title">Создать директорию</DialogTitle>
-                    <DialogContent>
+                    <DialogContent sx={{minHeight: 70}}>
                         <Stack gap={3}>
                             <TextField
                                 type="text"
@@ -475,11 +491,10 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                     <DialogActions>
                         <Button onClick={() => setIsOpenCreateDialog(false)}>Закрыть</Button>
                         <LoadingButton
+                            variant="contained"
                             loading={isLoadingDirCreation}
-                            onClick={() => {
-                                handleCreateDir(dirIdForCreate, dirName);
-                                setIsOpenCreateDialog(false);
-                                setDirName('');
+                            onClick={async () => {
+                                await handleCreateDir(dirIdForCreate, dirName);
                             }}
                         >
                             Подтвердить
@@ -487,9 +502,9 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                     </DialogActions>
                 </Dialog>
 
-                <Dialog open={isOpenCreateNoteDialog} onClose={() => setIsOpenCreateNoteDialog(false)}>
+                <Dialog open={isOpenCreateNoteDialog} onClose={() => setIsOpenCreateNoteDialog(false)} fullWidth={true}>
                     <DialogTitle id="alert-dialog-title">Создать заметку</DialogTitle>
-                    <DialogContent>
+                    <DialogContent sx={{minHeight: 70}}>
                         <Stack gap={3}>
                             <TextField
                                 type="text"
@@ -511,7 +526,7 @@ const Sidebar: React.FC<SidebarProps> = ({width, setOpen, open, refContainer}: S
                     <DialogActions>
                         <Button onClick={() => setIsOpenCreateNoteDialog(false)}>Закрыть</Button>
                         <LoadingButton
-                            variant={'outlined'}
+                            variant="contained"
                             loading={isLoadingNoteCreation}
                             onClick={() => {
                                 handleCreateNote(noteTitle, dirIdForCreate);

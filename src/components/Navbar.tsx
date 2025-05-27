@@ -7,6 +7,7 @@ import {useAppDispatch, useAppSelector} from '../hooks/useRedux';
 import {logoutUser} from '../store/reducers/UserSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {authApi} from '../services/AuthService';
+import SearchTags from './SearchTags';
 
 interface NavbarProps {
     open: boolean;
@@ -52,14 +53,9 @@ function Navbar(props: NavbarProps) {
         navigate('/registration');
     }, [navigate]);
 
-    // const {enqueueSnackbar} = useSnackbar();
     const handleLogoutClicked = React.useCallback(() => {
         logout().then(() => {
-            // if ((data as {error: FetchBaseQueryError | SerializedError}).error) {
-            //     enqueueSnackbar('Ошибка во время выхода из аккаунта. Попробуйте позже.', {variant: 'error'});
-            // } else {
             dispatch(logoutUser());
-            // }
         });
     }, [dispatch, logout]);
 
@@ -74,22 +70,26 @@ function Navbar(props: NavbarProps) {
                     </Box>
                 </Box>
 
-                {!isAuthenticationPage && !user && (
-                    <ButtonGroup>
-                        <Button onClick={handleLoginClicked} startIcon={<LoginIcon fontSize={'medium'} />}>
-                            Войти
-                        </Button>
-                        <Button onClick={handleRegisterClicked}>Зарегистрироваться</Button>
-                    </ButtonGroup>
-                )}
-                {!isAuthenticationPage && user && (
-                    <Box display={'flex'} alignItems="center" gap={2}>
-                        <Typography variant={'body1'}>{user.name}</Typography>
-                        <Button onClick={handleLogoutClicked} startIcon={<LogoutIcon fontSize={'medium'} />}>
-                            Выйти
-                        </Button>
-                    </Box>
-                )}
+                {!!user && <SearchTags />}
+
+                <Box display={'flex'} alignItems={'center'} flexDirection={'row'} gap={2}>
+                    {!isAuthenticationPage && !user && (
+                        <ButtonGroup>
+                            <Button onClick={handleLoginClicked} startIcon={<LoginIcon fontSize={'medium'} />}>
+                                Войти
+                            </Button>
+                            <Button onClick={handleRegisterClicked}>Зарегистрироваться</Button>
+                        </ButtonGroup>
+                    )}
+                    {!isAuthenticationPage && user && (
+                        <Box display={'flex'} alignItems="center" gap={2}>
+                            <Typography variant={'body1'}>{user.name}</Typography>
+                            <Button onClick={handleLogoutClicked} startIcon={<LogoutIcon fontSize={'medium'} />}>
+                                Выйти
+                            </Button>
+                        </Box>
+                    )}
+                </Box>
             </Toolbar>
         </AppBar>
     );

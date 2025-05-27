@@ -246,9 +246,9 @@ function Folder({
                     </MenuItem>
                 </Menu>
 
-                <Dialog open={isOpenNewTitleDialog} onClose={() => setIsOpenNewTitleDialog(false)}>
+                <Dialog open={isOpenNewTitleDialog} onClose={() => setIsOpenNewTitleDialog(false)} fullWidth={true}>
                     <DialogTitle id="change-name-dialog-title">Переименовать папку</DialogTitle>
-                    <DialogContent>
+                    <DialogContent sx={{minHeight: 70}}>
                         <Stack gap={3}>
                             <TextField
                                 type="text"

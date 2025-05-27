@@ -57,7 +57,6 @@ const NoteSharing = ({isOpen, close}: NoteSharingProps) => {
     };
 
     const handleSetRoleButtonClicked = () => {
-        console.log(usersValue, accessType);
         if (accessType === 'personal') {
             Promise.all(
                 usersValue.map(({id}) =>
@@ -137,7 +136,10 @@ const NoteSharing = ({isOpen, close}: NoteSharingProps) => {
                                     id="tags-standard"
                                     options={
                                         searchedUsers?.filter(
-                                            ({id}) => !usersValue.find(({id: userID}) => userID === id),
+                                            ({id}) =>
+                                                ![...usersValue, ...(user ? [user] : [])].find(
+                                                    ({id: userID}) => userID === id,
+                                                ),
                                         ) || []
                                     }
                                     getOptionLabel={(option) => option.email}

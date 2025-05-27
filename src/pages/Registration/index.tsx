@@ -147,6 +147,8 @@ function Registration() {
         event.preventDefault();
     };
 
+    console.log(registrationError);
+
     return (
         <Formik
             initialValues={{email: '', name: '', password: '', confirmPassword: ''}}
@@ -190,12 +192,8 @@ function Registration() {
 
                                                 <Typography variant={'body2'}>
                                                     {isErrorSomeRegistrationStep &&
-                                                        ((
-                                                            (registrationError as FetchBaseQueryError)?.data as {
-                                                                error: string;
-                                                            }
-                                                        )?.error?.includes('User exist')
-                                                            ? 'Проверьте правильность введенных данных'
+                                                        ((registrationError as FetchBaseQueryError)?.status === 400
+                                                            ? 'Пользователь с такой почтой уже зарегистрирован'
                                                             : 'Попробуйте войти позже')}
                                                 </Typography>
                                             </Stack>

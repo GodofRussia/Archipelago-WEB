@@ -26,7 +26,7 @@ export const notesSlice = createSlice({
         setSharedNotesByUserDirs(store, action: PayloadAction<{dirIds: number[]}>) {
             store.sharedNotes = store.allNotes.filter(({dirId}) => !action.payload.dirIds.includes(dirId));
         },
-        setActiveNote(store, action: PayloadAction<Note>) {
+        setActiveNote(store, action: PayloadAction<Note | undefined>) {
             store.activeNote = action.payload;
         },
         setTabType(store, action: PayloadAction<{tab: TabType}>) {
