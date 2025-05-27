@@ -351,7 +351,7 @@ function Note() {
                     tags={tags}
                     isLoading={isLoadingListTags}
                     isTagsDisabled={isUnlinkingTag}
-                    isDisabledEditor={!note}
+                    isDisabledEditor={!note || !note.allowedMethods.includes(AccessEnum.update)}
                     automergeUrl={note?.automergeUrl}
                     handleTagClicked={handleOpenTagsDialog}
                     handleTagUnlinked={handleUnlinkTagFromNote}
